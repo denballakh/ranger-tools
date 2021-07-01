@@ -1,0 +1,2030 @@
+==================================================
+Function Name     : AddBitmapHSAI
+Address           : 0x100240b0
+Relative Address  : 0x000240b0
+Ordinal           : 1 (0x1)
+Filename          : okgf.dll
+Full Path         : D:\GitHub\unsorted\interface_colorer\okgf.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : CreateMemoryHSAI
+Address           : 0x10023ed0
+Relative Address  : 0x00023ed0
+Ordinal           : 2 (0x2)
+Filename          : okgf.dll
+Full Path         : D:\GitHub\unsorted\interface_colorer\okgf.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : DestroyMemoryHSAI
+Address           : 0x10023f30
+Relative Address  : 0x00023f30
+Ordinal           : 4 (0x4)
+Filename          : okgf.dll
+Full Path         : D:\GitHub\unsorted\interface_colorer\okgf.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : DXVersion
+Address           : 0x1005da20
+Relative Address  : 0x0005da20
+Ordinal           : 3 (0x3)
+Filename          : okgf.dll
+Full Path         : D:\GitHub\unsorted\interface_colorer\okgf.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : GetBitmapHSAI
+Address           : 0x10024310
+Relative Address  : 0x00024310
+Ordinal           : 5 (0x5)
+Filename          : okgf.dll
+Full Path         : D:\GitHub\unsorted\interface_colorer\okgf.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : LoadFromFileHSAI
+Address           : 0x10023fc0
+Relative Address  : 0x00023fc0
+Ordinal           : 6 (0x6)
+Filename          : okgf.dll
+Full Path         : D:\GitHub\unsorted\interface_colorer\okgf.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : OKGF_Convert5658toBGRA
+Address           : 0x1005b790
+Relative Address  : 0x0005b790
+Ordinal           : 7 (0x7)
+Filename          : okgf.dll
+Full Path         : D:\GitHub\unsorted\interface_colorer\okgf.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : OKGF_Convert5658toRGBA
+Address           : 0x1005b710
+Relative Address  : 0x0005b710
+Ordinal           : 8 (0x8)
+Filename          : okgf.dll
+Full Path         : D:\GitHub\unsorted\interface_colorer\okgf.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : OKGF_Convert565toBGR
+Address           : 0x1005b690
+Relative Address  : 0x0005b690
+Ordinal           : 9 (0x9)
+Filename          : okgf.dll
+Full Path         : D:\GitHub\unsorted\interface_colorer\okgf.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : OKGF_Convert565toBGRA
+Address           : 0x1005b8a0
+Relative Address  : 0x0005b8a0
+Ordinal           : 10 (0xa)
+Filename          : okgf.dll
+Full Path         : D:\GitHub\unsorted\interface_colorer\okgf.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : OKGF_Convert565toRGB
+Address           : 0x1005b610
+Relative Address  : 0x0005b610
+Ordinal           : 11 (0xb)
+Filename          : okgf.dll
+Full Path         : D:\GitHub\unsorted\interface_colorer\okgf.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : OKGF_Convert565toRGBA
+Address           : 0x1005b810
+Relative Address  : 0x0005b810
+Ordinal           : 12 (0xc)
+Filename          : okgf.dll
+Full Path         : D:\GitHub\unsorted\interface_colorer\okgf.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : OKGF_Convert_8888to565
+Address           : 0x1005baa0
+Relative Address  : 0x0005baa0
+Ordinal           : 14 (0xe)
+Filename          : okgf.dll
+Full Path         : D:\GitHub\unsorted\interface_colorer\okgf.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : OKGF_Convert_888to565
+Address           : 0x1005b930
+Relative Address  : 0x0005b930
+Ordinal           : 15 (0xf)
+Filename          : okgf.dll
+Full Path         : D:\GitHub\unsorted\interface_colorer\okgf.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : OKGF_Convert_RGBAtoRGB
+Address           : 0x1005ba10
+Relative Address  : 0x0005ba10
+Ordinal           : 16 (0x10)
+Filename          : okgf.dll
+Full Path         : D:\GitHub\unsorted\interface_colorer\okgf.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : OKGF_ConvertRGBto565
+Address           : 0x1005b4d0
+Relative Address  : 0x0005b4d0
+Ordinal           : 13 (0xd)
+Filename          : okgf.dll
+Full Path         : D:\GitHub\unsorted\interface_colorer\okgf.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : OKGF_GetCPUFeatures
+Address           : 0x100603c0
+Relative Address  : 0x000603c0
+Ordinal           : 17 (0x11)
+Filename          : okgf.dll
+Full Path         : D:\GitHub\unsorted\interface_colorer\okgf.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : OKGF_IsMMX
+Address           : 0x10060320
+Relative Address  : 0x00060320
+Ordinal           : 18 (0x12)
+Filename          : okgf.dll
+Full Path         : D:\GitHub\unsorted\interface_colorer\okgf.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : OKGF_LineIp_16
+Address           : 0x1002cd20
+Relative Address  : 0x0002cd20
+Ordinal           : 19 (0x13)
+Filename          : okgf.dll
+Full Path         : D:\GitHub\unsorted\interface_colorer\okgf.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : OKGF_LineIp_32
+Address           : 0x10025c20
+Relative Address  : 0x00025c20
+Ordinal           : 20 (0x14)
+Filename          : okgf.dll
+Full Path         : D:\GitHub\unsorted\interface_colorer\okgf.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : OKGF_MulTable256x256
+Address           : 0x1005edf0
+Relative Address  : 0x0005edf0
+Ordinal           : 21 (0x15)
+Filename          : okgf.dll
+Full Path         : D:\GitHub\unsorted\interface_colorer\okgf.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : OKGF_Read
+Address           : 0x1005f210
+Relative Address  : 0x0005f210
+Ordinal           : 23 (0x17)
+Filename          : okgf.dll
+Full Path         : D:\GitHub\unsorted\interface_colorer\okgf.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : OKGF_Read_BMP
+Address           : 0x10021e20
+Relative Address  : 0x00021e20
+Ordinal           : 29 (0x1d)
+Filename          : okgf.dll
+Full Path         : D:\GitHub\unsorted\interface_colorer\okgf.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : OKGF_Read_BMPPAL
+Address           : 0x100221d0
+Relative Address  : 0x000221d0
+Ordinal           : 30 (0x1e)
+Filename          : okgf.dll
+Full Path         : D:\GitHub\unsorted\interface_colorer\okgf.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : OKGF_Read_GI
+Address           : 0x10022570
+Relative Address  : 0x00022570
+Ordinal           : 31 (0x1f)
+Filename          : okgf.dll
+Full Path         : D:\GitHub\unsorted\interface_colorer\okgf.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : OKGF_Read_JPEG
+Address           : 0x100227e0
+Relative Address  : 0x000227e0
+Ordinal           : 32 (0x20)
+Filename          : okgf.dll
+Full Path         : D:\GitHub\unsorted\interface_colorer\okgf.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : OKGF_Read_PNG
+Address           : 0x10022b30
+Relative Address  : 0x00022b30
+Ordinal           : 33 (0x21)
+Filename          : okgf.dll
+Full Path         : D:\GitHub\unsorted\interface_colorer\okgf.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : OKGF_Read_PNGPAL
+Address           : 0x10023180
+Relative Address  : 0x00023180
+Ordinal           : 34 (0x22)
+Filename          : okgf.dll
+Full Path         : D:\GitHub\unsorted\interface_colorer\okgf.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : OKGF_Read_PSD
+Address           : 0x10023810
+Relative Address  : 0x00023810
+Ordinal           : 35 (0x23)
+Filename          : okgf.dll
+Full Path         : D:\GitHub\unsorted\interface_colorer\okgf.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : OKGF_Read_PSDPAL
+Address           : 0x10023ca0
+Relative Address  : 0x00023ca0
+Ordinal           : 36 (0x24)
+Filename          : okgf.dll
+Full Path         : D:\GitHub\unsorted\interface_colorer\okgf.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : OKGF_ReadPal
+Address           : 0x100601c0
+Relative Address  : 0x000601c0
+Ordinal           : 24 (0x18)
+Filename          : okgf.dll
+Full Path         : D:\GitHub\unsorted\interface_colorer\okgf.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : OKGF_ReadStart_Buf
+Address           : 0x1005f0d0
+Relative Address  : 0x0005f0d0
+Ordinal           : 27 (0x1b)
+Filename          : okgf.dll
+Full Path         : D:\GitHub\unsorted\interface_colorer\okgf.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : OKGF_ReadStart_File
+Address           : 0x1005efd0
+Relative Address  : 0x0005efd0
+Ordinal           : 28 (0x1c)
+Filename          : okgf.dll
+Full Path         : D:\GitHub\unsorted\interface_colorer\okgf.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : OKGF_ReadStartPal_Buf
+Address           : 0x10060090
+Relative Address  : 0x00060090
+Ordinal           : 25 (0x19)
+Filename          : okgf.dll
+Full Path         : D:\GitHub\unsorted\interface_colorer\okgf.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : OKGF_ReadStartPal_File
+Address           : 0x1005ff90
+Relative Address  : 0x0005ff90
+Ordinal           : 26 (0x1a)
+Filename          : okgf.dll
+Full Path         : D:\GitHub\unsorted\interface_colorer\okgf.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : OKGF_Rescale
+Address           : 0x10061480
+Relative Address  : 0x00061480
+Ordinal           : 37 (0x25)
+Filename          : okgf.dll
+Full Path         : D:\GitHub\unsorted\interface_colorer\okgf.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : OKGF_RGBAtoIndexed8
+Address           : 0x1005a920
+Relative Address  : 0x0005a920
+Ordinal           : 22 (0x16)
+Filename          : okgf.dll
+Full Path         : D:\GitHub\unsorted\interface_colorer\okgf.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : OKGF_Tip
+Address           : 0x1005ef10
+Relative Address  : 0x0005ef10
+Ordinal           : 38 (0x26)
+Filename          : okgf.dll
+Full Path         : D:\GitHub\unsorted\interface_colorer\okgf.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : OKGF_Tip_File
+Address           : 0x1005ee60
+Relative Address  : 0x0005ee60
+Ordinal           : 39 (0x27)
+Filename          : okgf.dll
+Full Path         : D:\GitHub\unsorted\interface_colorer\okgf.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : OKGF_Triangle_16
+Address           : 0x10049f10
+Relative Address  : 0x00049f10
+Ordinal           : 40 (0x28)
+Filename          : okgf.dll
+Full Path         : D:\GitHub\unsorted\interface_colorer\okgf.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : OKGF_Triangle_32
+Address           : 0x100383d0
+Relative Address  : 0x000383d0
+Ordinal           : 41 (0x29)
+Filename          : okgf.dll
+Full Path         : D:\GitHub\unsorted\interface_colorer\okgf.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : OKGF_Triangle_32Alpha
+Address           : 0x10040fc0
+Relative Address  : 0x00040fc0
+Ordinal           : 42 (0x2a)
+Filename          : okgf.dll
+Full Path         : D:\GitHub\unsorted\interface_colorer\okgf.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : OKGF_Write_BMP_File
+Address           : 0x10022380
+Relative Address  : 0x00022380
+Ordinal           : 43 (0x2b)
+Filename          : okgf.dll
+Full Path         : D:\GitHub\unsorted\interface_colorer\okgf.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : OKGF_Write_PNG_File
+Address           : 0x100233b0
+Relative Address  : 0x000233b0
+Ordinal           : 44 (0x2c)
+Filename          : okgf.dll
+Full Path         : D:\GitHub\unsorted\interface_colorer\okgf.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : OKGR_Alpha128Trapezium_16
+Address           : 0x10056230
+Relative Address  : 0x00056230
+Ordinal           : 45 (0x2d)
+Filename          : okgf.dll
+Full Path         : D:\GitHub\unsorted\interface_colorer\okgf.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : OKGR_Alpha64Trapezium_16
+Address           : 0x10056050
+Relative Address  : 0x00056050
+Ordinal           : 46 (0x2e)
+Filename          : okgf.dll
+Full Path         : D:\GitHub\unsorted\interface_colorer\okgf.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : OKGR_AlphaBuf_BuildFromRGBA
+Address           : 0x10054190
+Relative Address  : 0x00054190
+Ordinal           : 47 (0x2f)
+Filename          : okgf.dll
+Full Path         : D:\GitHub\unsorted\interface_colorer\okgf.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : OKGR_AlphaBuf_Draw_16
+Address           : 0x10053400
+Relative Address  : 0x00053400
+Ordinal           : 49 (0x31)
+Filename          : okgf.dll
+Full Path         : D:\GitHub\unsorted\interface_colorer\okgf.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : OKGR_AlphaBuf_Draw_5658
+Address           : 0x10053590
+Relative Address  : 0x00053590
+Ordinal           : 50 (0x32)
+Filename          : okgf.dll
+Full Path         : D:\GitHub\unsorted\interface_colorer\okgf.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : OKGR_AlphaBuf_Draw_RGBA
+Address           : 0x10053500
+Relative Address  : 0x00053500
+Ordinal           : 51 (0x33)
+Filename          : okgf.dll
+Full Path         : D:\GitHub\unsorted\interface_colorer\okgf.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : OKGR_AlphaBuf_DrawClip_16
+Address           : 0x10053640
+Relative Address  : 0x00053640
+Ordinal           : 48 (0x30)
+Filename          : okgf.dll
+Full Path         : D:\GitHub\unsorted\interface_colorer\okgf.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : OKGR_AlphaIndexed_AlphaBuild_16
+Address           : 0x10055020
+Relative Address  : 0x00055020
+Ordinal           : 52 (0x34)
+Filename          : okgf.dll
+Full Path         : D:\GitHub\unsorted\interface_colorer\okgf.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : OKGR_AlphaIndexed_AlphaDraw_16
+Address           : 0x10055330
+Relative Address  : 0x00055330
+Ordinal           : 55 (0x37)
+Filename          : okgf.dll
+Full Path         : D:\GitHub\unsorted\interface_colorer\okgf.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : OKGR_AlphaIndexed_AlphaDraw_5658
+Address           : 0x10055780
+Relative Address  : 0x00055780
+Ordinal           : 56 (0x38)
+Filename          : okgf.dll
+Full Path         : D:\GitHub\unsorted\interface_colorer\okgf.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : OKGR_AlphaIndexed_AlphaDraw_Alpha_16
+Address           : 0x10055460
+Relative Address  : 0x00055460
+Ordinal           : 57 (0x39)
+Filename          : okgf.dll
+Full Path         : D:\GitHub\unsorted\interface_colorer\okgf.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : OKGR_AlphaIndexed_AlphaDraw_RGBA
+Address           : 0x100555f0
+Relative Address  : 0x000555f0
+Ordinal           : 58 (0x3a)
+Filename          : okgf.dll
+Full Path         : D:\GitHub\unsorted\interface_colorer\okgf.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : OKGR_AlphaIndexed_AlphaDrawClip_16
+Address           : 0x10055920
+Relative Address  : 0x00055920
+Ordinal           : 53 (0x35)
+Filename          : okgf.dll
+Full Path         : D:\GitHub\unsorted\interface_colorer\okgf.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : OKGR_AlphaIndexed_AlphaDrawClip_Alpha_16
+Address           : 0x10055c00
+Relative Address  : 0x00055c00
+Ordinal           : 54 (0x36)
+Filename          : okgf.dll
+Full Path         : D:\GitHub\unsorted\interface_colorer\okgf.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : OKGR_AlphaIndexed_CopyBuild_16
+Address           : 0x100543c0
+Relative Address  : 0x000543c0
+Ordinal           : 59 (0x3b)
+Filename          : okgf.dll
+Full Path         : D:\GitHub\unsorted\interface_colorer\okgf.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : OKGR_AlphaIndexed_CopyDraw_5658
+Address           : 0x10054980
+Relative Address  : 0x00054980
+Ordinal           : 62 (0x3e)
+Filename          : okgf.dll
+Full Path         : D:\GitHub\unsorted\interface_colorer\okgf.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : OKGR_AlphaIndexed_CopyDraw_Alpha_16
+Address           : 0x10054730
+Relative Address  : 0x00054730
+Ordinal           : 63 (0x3f)
+Filename          : okgf.dll
+Full Path         : D:\GitHub\unsorted\interface_colorer\okgf.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : OKGR_AlphaIndexed_CopyDraw_WORD
+Address           : 0x10054670
+Relative Address  : 0x00054670
+Ordinal           : 64 (0x40)
+Filename          : okgf.dll
+Full Path         : D:\GitHub\unsorted\interface_colorer\okgf.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : OKGR_AlphaIndexed_CopyDrawClip_Alpha_16
+Address           : 0x10054cb0
+Relative Address  : 0x00054cb0
+Ordinal           : 60 (0x3c)
+Filename          : okgf.dll
+Full Path         : D:\GitHub\unsorted\interface_colorer\okgf.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : OKGR_AlphaIndexed_CopyDrawClip_WORD
+Address           : 0x10054a20
+Relative Address  : 0x00054a20
+Ordinal           : 61 (0x3d)
+Filename          : okgf.dll
+Full Path         : D:\GitHub\unsorted\interface_colorer\okgf.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : OKGR_AlphaIndexed_Draw_RGBA
+Address           : 0x100548b0
+Relative Address  : 0x000548b0
+Ordinal           : 65 (0x41)
+Filename          : okgf.dll
+Full Path         : D:\GitHub\unsorted\interface_colorer\okgf.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : OKGR_AlphaSimpleBuf_Draw_16
+Address           : 0x100538f0
+Relative Address  : 0x000538f0
+Ordinal           : 68 (0x44)
+Filename          : okgf.dll
+Full Path         : D:\GitHub\unsorted\interface_colorer\okgf.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : OKGR_AlphaSimpleBufPal_Draw_16
+Address           : 0x10053aa0
+Relative Address  : 0x00053aa0
+Ordinal           : 67 (0x43)
+Filename          : okgf.dll
+Full Path         : D:\GitHub\unsorted\interface_colorer\okgf.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : OKGR_AlphaSimpleBufPalAlpha_Draw_16
+Address           : 0x10053c50
+Relative Address  : 0x00053c50
+Ordinal           : 66 (0x42)
+Filename          : okgf.dll
+Full Path         : D:\GitHub\unsorted\interface_colorer\okgf.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : OKGR_AnimLine_Draw_16
+Address           : 0x10024930
+Relative Address  : 0x00024930
+Ordinal           : 69 (0x45)
+Filename          : okgf.dll
+Full Path         : D:\GitHub\unsorted\interface_colorer\okgf.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : OKGR_AnimShadowLine_Draw_15
+Address           : 0x10056670
+Relative Address  : 0x00056670
+Ordinal           : 70 (0x46)
+Filename          : okgf.dll
+Full Path         : D:\GitHub\unsorted\interface_colorer\okgf.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : OKGR_AnimShadowLine_Draw_16
+Address           : 0x100569b0
+Relative Address  : 0x000569b0
+Ordinal           : 71 (0x47)
+Filename          : okgf.dll
+Full Path         : D:\GitHub\unsorted\interface_colorer\okgf.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : OKGR_Circle_Draw_BYTE
+Address           : 0x1005ab40
+Relative Address  : 0x0005ab40
+Ordinal           : 78 (0x4e)
+Filename          : okgf.dll
+Full Path         : D:\GitHub\unsorted\interface_colorer\okgf.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : OKGR_Circle_Draw_WORD
+Address           : 0x1005aa30
+Relative Address  : 0x0005aa30
+Ordinal           : 79 (0x4f)
+Filename          : okgf.dll
+Full Path         : D:\GitHub\unsorted\interface_colorer\okgf.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : OKGR_Circle_DrawClip_BYTE
+Address           : 0x1005ae20
+Relative Address  : 0x0005ae20
+Ordinal           : 72 (0x48)
+Filename          : okgf.dll
+Full Path         : D:\GitHub\unsorted\interface_colorer\okgf.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : OKGR_Circle_DrawClip_WORD
+Address           : 0x1005ac20
+Relative Address  : 0x0005ac20
+Ordinal           : 73 (0x49)
+Filename          : okgf.dll
+Full Path         : D:\GitHub\unsorted\interface_colorer\okgf.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : OKGR_Circle_DrawFill_BYTE
+Address           : 0x1005b0f0
+Relative Address  : 0x0005b0f0
+Ordinal           : 76 (0x4c)
+Filename          : okgf.dll
+Full Path         : D:\GitHub\unsorted\interface_colorer\okgf.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : OKGR_Circle_DrawFill_WORD
+Address           : 0x1005afd0
+Relative Address  : 0x0005afd0
+Ordinal           : 77 (0x4d)
+Filename          : okgf.dll
+Full Path         : D:\GitHub\unsorted\interface_colorer\okgf.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : OKGR_Circle_DrawFillClip_BYTE
+Address           : 0x1005b370
+Relative Address  : 0x0005b370
+Ordinal           : 74 (0x4a)
+Filename          : okgf.dll
+Full Path         : D:\GitHub\unsorted\interface_colorer\okgf.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : OKGR_Circle_DrawFillClip_WORD
+Address           : 0x1005b210
+Relative Address  : 0x0005b210
+Ordinal           : 75 (0x4b)
+Filename          : okgf.dll
+Full Path         : D:\GitHub\unsorted\interface_colorer\okgf.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : OKGR_Copy_XY_XY_WORD
+Address           : 0x1005bc50
+Relative Address  : 0x0005bc50
+Ordinal           : 84 (0x54)
+Filename          : okgf.dll
+Full Path         : D:\GitHub\unsorted\interface_colorer\okgf.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : OKGR_CopyBed_XY_XY_WORD
+Address           : 0x1005bd40
+Relative Address  : 0x0005bd40
+Ordinal           : 80 (0x50)
+Filename          : okgf.dll
+Full Path         : D:\GitHub\unsorted\interface_colorer\okgf.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : OKGR_CopySingleBuf_XY_XY_WORD
+Address           : 0x1005bea0
+Relative Address  : 0x0005bea0
+Ordinal           : 81 (0x51)
+Filename          : okgf.dll
+Full Path         : D:\GitHub\unsorted\interface_colorer\okgf.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : OKGR_CopySingleBuf_XY_XY_WORD_MMX
+Address           : 0x1005c060
+Relative Address  : 0x0005c060
+Ordinal           : 82 (0x52)
+Filename          : okgf.dll
+Full Path         : D:\GitHub\unsorted\interface_colorer\okgf.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : OKGR_CopyTrans_XY_XY_WORD
+Address           : 0x1005bde0
+Relative Address  : 0x0005bde0
+Ordinal           : 83 (0x53)
+Filename          : okgf.dll
+Full Path         : D:\GitHub\unsorted\interface_colorer\okgf.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : OKGR_F5_DrawRGBA
+Address           : 0x1005da40
+Relative Address  : 0x0005da40
+Ordinal           : 85 (0x55)
+Filename          : okgf.dll
+Full Path         : D:\GitHub\unsorted\interface_colorer\okgf.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : OKGR_F6_DrawRGBA
+Address           : 0x1005ddb0
+Relative Address  : 0x0005ddb0
+Ordinal           : 86 (0x56)
+Filename          : okgf.dll
+Full Path         : D:\GitHub\unsorted\interface_colorer\okgf.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : OKGR_Fill_WORD
+Address           : 0x1005c860
+Relative Address  : 0x0005c860
+Ordinal           : 88 (0x58)
+Filename          : okgf.dll
+Full Path         : D:\GitHub\unsorted\interface_colorer\okgf.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : OKGR_FillTrapezium_DWORD
+Address           : 0x10056400
+Relative Address  : 0x00056400
+Ordinal           : 87 (0x57)
+Filename          : okgf.dll
+Full Path         : D:\GitHub\unsorted\interface_colorer\okgf.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : OKGR_GLine_Draw_BYTE
+Address           : 0x10024620
+Relative Address  : 0x00024620
+Ordinal           : 91 (0x5b)
+Filename          : okgf.dll
+Full Path         : D:\GitHub\unsorted\interface_colorer\okgf.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : OKGR_GLine_Draw_WORD
+Address           : 0x10024420
+Relative Address  : 0x00024420
+Ordinal           : 92 (0x5c)
+Filename          : okgf.dll
+Full Path         : D:\GitHub\unsorted\interface_colorer\okgf.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : OKGR_GLine_DrawClip_BYTE
+Address           : 0x10024560
+Relative Address  : 0x00024560
+Ordinal           : 89 (0x59)
+Filename          : okgf.dll
+Full Path         : D:\GitHub\unsorted\interface_colorer\okgf.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : OKGR_GLine_DrawClip_WORD
+Address           : 0x100244e0
+Relative Address  : 0x000244e0
+Ordinal           : 90 (0x5a)
+Filename          : okgf.dll
+Full Path         : D:\GitHub\unsorted\interface_colorer\okgf.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : OKGR_HACopy_XY_XY_16
+Address           : 0x1005c380
+Relative Address  : 0x0005c380
+Ordinal           : 93 (0x5d)
+Filename          : okgf.dll
+Full Path         : D:\GitHub\unsorted\interface_colorer\okgf.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : OKGR_HalfLight_16
+Address           : 0x1005c460
+Relative Address  : 0x0005c460
+Ordinal           : 94 (0x5e)
+Filename          : okgf.dll
+Full Path         : D:\GitHub\unsorted\interface_colorer\okgf.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : OKGR_Hor_Alpha64Line_16
+Address           : 0x10055fe0
+Relative Address  : 0x00055fe0
+Ordinal           : 95 (0x5f)
+Filename          : okgf.dll
+Full Path         : D:\GitHub\unsorted\interface_colorer\okgf.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : OKGR_Hor_AlphaLine_16
+Address           : 0x10055f70
+Relative Address  : 0x00055f70
+Ordinal           : 96 (0x60)
+Filename          : okgf.dll
+Full Path         : D:\GitHub\unsorted\interface_colorer\okgf.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : OKGR_Light_BYTE
+Address           : 0x1005c800
+Relative Address  : 0x0005c800
+Ordinal           : 106 (0x6a)
+Filename          : okgf.dll
+Full Path         : D:\GitHub\unsorted\interface_colorer\okgf.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : OKGR_LightBuf_Create
+Address           : 0x1005e550
+Relative Address  : 0x0005e550
+Ordinal           : 97 (0x61)
+Filename          : okgf.dll
+Full Path         : D:\GitHub\unsorted\interface_colorer\okgf.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : OKGR_LightBuf_Destroy
+Address           : 0x1005e590
+Relative Address  : 0x0005e590
+Ordinal           : 98 (0x62)
+Filename          : okgf.dll
+Full Path         : D:\GitHub\unsorted\interface_colorer\okgf.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : OKGR_LightBuf_Init
+Address           : 0x1005e5d0
+Relative Address  : 0x0005e5d0
+Ordinal           : 99 (0x63)
+Filename          : okgf.dll
+Full Path         : D:\GitHub\unsorted\interface_colorer\okgf.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : OKGR_LightBuf_LoadFromPalBuf
+Address           : 0x1005e610
+Relative Address  : 0x0005e610
+Ordinal           : 100 (0x64)
+Filename          : okgf.dll
+Full Path         : D:\GitHub\unsorted\interface_colorer\okgf.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : OKGR_LightBuf_Rotate
+Address           : 0x1005e7c0
+Relative Address  : 0x0005e7c0
+Ordinal           : 101 (0x65)
+Filename          : okgf.dll
+Full Path         : D:\GitHub\unsorted\interface_colorer\okgf.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : OKGR_LightBuf_SaveInPalBuf
+Address           : 0x1005e680
+Relative Address  : 0x0005e680
+Ordinal           : 102 (0x66)
+Filename          : okgf.dll
+Full Path         : D:\GitHub\unsorted\interface_colorer\okgf.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : OKGR_LightBuf_SetSme
+Address           : 0x1005e5b0
+Relative Address  : 0x0005e5b0
+Ordinal           : 103 (0x67)
+Filename          : okgf.dll
+Full Path         : D:\GitHub\unsorted\interface_colorer\okgf.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : OKGR_LightPal_Build_WORD
+Address           : 0x1005e3b0
+Relative Address  : 0x0005e3b0
+Ordinal           : 104 (0x68)
+Filename          : okgf.dll
+Full Path         : D:\GitHub\unsorted\interface_colorer\okgf.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : OKGR_LightPal_Del_WORD
+Address           : 0x1005e540
+Relative Address  : 0x0005e540
+Ordinal           : 105 (0x69)
+Filename          : okgf.dll
+Full Path         : D:\GitHub\unsorted\interface_colorer\okgf.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : OKGR_Line_Clip
+Address           : 0x100250b0
+Relative Address  : 0x000250b0
+Ordinal           : 108 (0x6c)
+Filename          : okgf.dll
+Full Path         : D:\GitHub\unsorted\interface_colorer\okgf.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : OKGR_Line_Copy_WORD
+Address           : 0x10024be0
+Relative Address  : 0x00024be0
+Ordinal           : 111 (0x6f)
+Filename          : okgf.dll
+Full Path         : D:\GitHub\unsorted\interface_colorer\okgf.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : OKGR_Line_CopyFromBuf_WORD
+Address           : 0x10024e30
+Relative Address  : 0x00024e30
+Ordinal           : 109 (0x6d)
+Filename          : okgf.dll
+Full Path         : D:\GitHub\unsorted\interface_colorer\okgf.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : OKGR_Line_CopyToBuf_WORD
+Address           : 0x10024d10
+Relative Address  : 0x00024d10
+Ordinal           : 110 (0x6e)
+Filename          : okgf.dll
+Full Path         : D:\GitHub\unsorted\interface_colorer\okgf.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : OKGR_Line_Draw_Alpha_16
+Address           : 0x10024f50
+Relative Address  : 0x00024f50
+Ordinal           : 115 (0x73)
+Filename          : okgf.dll
+Full Path         : D:\GitHub\unsorted\interface_colorer\okgf.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : OKGR_Line_Draw_DWORD
+Address           : 0x10024860
+Relative Address  : 0x00024860
+Ordinal           : 116 (0x74)
+Filename          : okgf.dll
+Full Path         : D:\GitHub\unsorted\interface_colorer\okgf.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : OKGR_Line_Draw_WORD
+Address           : 0x10024780
+Relative Address  : 0x00024780
+Ordinal           : 117 (0x75)
+Filename          : okgf.dll
+Full Path         : D:\GitHub\unsorted\interface_colorer\okgf.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : OKGR_Line_DrawClip_Alpha_16
+Address           : 0x10025940
+Relative Address  : 0x00025940
+Ordinal           : 112 (0x70)
+Filename          : okgf.dll
+Full Path         : D:\GitHub\unsorted\interface_colorer\okgf.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : OKGR_Line_DrawClip_DWORD
+Address           : 0x100257e0
+Relative Address  : 0x000257e0
+Ordinal           : 113 (0x71)
+Filename          : okgf.dll
+Full Path         : D:\GitHub\unsorted\interface_colorer\okgf.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : OKGR_Line_DrawClip_WORD
+Address           : 0x10025680
+Relative Address  : 0x00025680
+Ordinal           : 114 (0x72)
+Filename          : okgf.dll
+Full Path         : D:\GitHub\unsorted\interface_colorer\okgf.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : OKGR_LineColor_Clip
+Address           : 0x10025230
+Relative Address  : 0x00025230
+Ordinal           : 107 (0x6b)
+Filename          : okgf.dll
+Full Path         : D:\GitHub\unsorted\interface_colorer\okgf.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : OKGR_MaskBuf_Build_BYTE
+Address           : 0x10060b40
+Relative Address  : 0x00060b40
+Ordinal           : 118 (0x76)
+Filename          : okgf.dll
+Full Path         : D:\GitHub\unsorted\interface_colorer\okgf.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : OKGR_MaskBuf_Draw_DWORD
+Address           : 0x10060870
+Relative Address  : 0x00060870
+Ordinal           : 125 (0x7d)
+Filename          : okgf.dll
+Full Path         : D:\GitHub\unsorted\interface_colorer\okgf.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : OKGR_MaskBuf_Draw_WORD
+Address           : 0x100605b0
+Relative Address  : 0x000605b0
+Ordinal           : 126 (0x7e)
+Filename          : okgf.dll
+Full Path         : D:\GitHub\unsorted\interface_colorer\okgf.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : OKGR_MaskBuf_DrawClip_DWORD
+Address           : 0x10060910
+Relative Address  : 0x00060910
+Ordinal           : 119 (0x77)
+Filename          : okgf.dll
+Full Path         : D:\GitHub\unsorted\interface_colorer\okgf.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : OKGR_MaskBuf_DrawClip_WORD
+Address           : 0x10060650
+Relative Address  : 0x00060650
+Ordinal           : 120 (0x78)
+Filename          : okgf.dll
+Full Path         : D:\GitHub\unsorted\interface_colorer\okgf.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : OKGR_MaskBuf_DrawShadow_15
+Address           : 0x10060f40
+Relative Address  : 0x00060f40
+Ordinal           : 123 (0x7b)
+Filename          : okgf.dll
+Full Path         : D:\GitHub\unsorted\interface_colorer\okgf.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : OKGR_MaskBuf_DrawShadow_16
+Address           : 0x10060cb0
+Relative Address  : 0x00060cb0
+Ordinal           : 124 (0x7c)
+Filename          : okgf.dll
+Full Path         : D:\GitHub\unsorted\interface_colorer\okgf.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : OKGR_MaskBuf_DrawShadowClip_15
+Address           : 0x10060fd0
+Relative Address  : 0x00060fd0
+Ordinal           : 121 (0x79)
+Filename          : okgf.dll
+Full Path         : D:\GitHub\unsorted\interface_colorer\okgf.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : OKGR_MaskBuf_DrawShadowClip_16
+Address           : 0x10060d40
+Relative Address  : 0x00060d40
+Ordinal           : 122 (0x7a)
+Filename          : okgf.dll
+Full Path         : D:\GitHub\unsorted\interface_colorer\okgf.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : OKGR_MulLightMask_16
+Address           : 0x1005c660
+Relative Address  : 0x0005c660
+Ordinal           : 127 (0x7f)
+Filename          : okgf.dll
+Full Path         : D:\GitHub\unsorted\interface_colorer\okgf.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : OKGR_PalCopy_XY_XY_DWORD
+Address           : 0x1005c270
+Relative Address  : 0x0005c270
+Ordinal           : 129 (0x81)
+Filename          : okgf.dll
+Full Path         : D:\GitHub\unsorted\interface_colorer\okgf.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : OKGR_PalCopy_XY_XY_WORD
+Address           : 0x1005c1f0
+Relative Address  : 0x0005c1f0
+Ordinal           : 130 (0x82)
+Filename          : okgf.dll
+Full Path         : D:\GitHub\unsorted\interface_colorer\okgf.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : OKGR_PalCopySwap_XY_XY_DWORD
+Address           : 0x1005c2f0
+Relative Address  : 0x0005c2f0
+Ordinal           : 128 (0x80)
+Filename          : okgf.dll
+Full Path         : D:\GitHub\unsorted\interface_colorer\okgf.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : OKGR_PixelAlpha_16
+Address           : 0x10025aa0
+Relative Address  : 0x00025aa0
+Ordinal           : 131 (0x83)
+Filename          : okgf.dll
+Full Path         : D:\GitHub\unsorted\interface_colorer\okgf.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : OKGR_Planet2_DrawAndLight_16
+Address           : 0x100349f0
+Relative Address  : 0x000349f0
+Ordinal           : 134 (0x86)
+Filename          : okgf.dll
+Full Path         : D:\GitHub\unsorted\interface_colorer\okgf.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : OKGR_Planet2_DrawAndLight_32
+Address           : 0x100347e0
+Relative Address  : 0x000347e0
+Ordinal           : 135 (0x87)
+Filename          : okgf.dll
+Full Path         : D:\GitHub\unsorted\interface_colorer\okgf.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : OKGR_Planet2_DrawAndLightClip_16
+Address           : 0x100351b0
+Relative Address  : 0x000351b0
+Ordinal           : 132 (0x84)
+Filename          : okgf.dll
+Full Path         : D:\GitHub\unsorted\interface_colorer\okgf.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : OKGR_Planet2_DrawAndLightClip_32
+Address           : 0x10034d80
+Relative Address  : 0x00034d80
+Ordinal           : 133 (0x85)
+Filename          : okgf.dll
+Full Path         : D:\GitHub\unsorted\interface_colorer\okgf.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : OKGR_Planet2_TemplBuild
+Address           : 0x10034310
+Relative Address  : 0x00034310
+Ordinal           : 136 (0x88)
+Filename          : okgf.dll
+Full Path         : D:\GitHub\unsorted\interface_colorer\okgf.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : OKGR_Planet2_TemplDel
+Address           : 0x10034780
+Relative Address  : 0x00034780
+Ordinal           : 137 (0x89)
+Filename          : okgf.dll
+Full Path         : D:\GitHub\unsorted\interface_colorer\okgf.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : OKGR_Planet3_DrawAndLight_16
+Address           : 0x100359f0
+Relative Address  : 0x000359f0
+Ordinal           : 140 (0x8c)
+Filename          : okgf.dll
+Full Path         : D:\GitHub\unsorted\interface_colorer\okgf.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : OKGR_Planet3_DrawAndLight_32
+Address           : 0x10035740
+Relative Address  : 0x00035740
+Ordinal           : 141 (0x8d)
+Filename          : okgf.dll
+Full Path         : D:\GitHub\unsorted\interface_colorer\okgf.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : OKGR_Planet3_DrawAndLightClip_16
+Address           : 0x10036270
+Relative Address  : 0x00036270
+Ordinal           : 138 (0x8a)
+Filename          : okgf.dll
+Full Path         : D:\GitHub\unsorted\interface_colorer\okgf.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : OKGR_Planet3_DrawAndLightClip_32
+Address           : 0x10035de0
+Relative Address  : 0x00035de0
+Ordinal           : 139 (0x8b)
+Filename          : okgf.dll
+Full Path         : D:\GitHub\unsorted\interface_colorer\okgf.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : OKGR_Planet4_DrawAndLight_16
+Address           : 0x10036b30
+Relative Address  : 0x00036b30
+Ordinal           : 144 (0x90)
+Filename          : okgf.dll
+Full Path         : D:\GitHub\unsorted\interface_colorer\okgf.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : OKGR_Planet4_DrawAndLight_32
+Address           : 0x10036890
+Relative Address  : 0x00036890
+Ordinal           : 145 (0x91)
+Filename          : okgf.dll
+Full Path         : D:\GitHub\unsorted\interface_colorer\okgf.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : OKGR_Planet4_DrawAndLightClip_16
+Address           : 0x10037480
+Relative Address  : 0x00037480
+Ordinal           : 142 (0x8e)
+Filename          : okgf.dll
+Full Path         : D:\GitHub\unsorted\interface_colorer\okgf.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : OKGR_Planet4_DrawAndLightClip_32
+Address           : 0x10036ff0
+Relative Address  : 0x00036ff0
+Ordinal           : 143 (0x8f)
+Filename          : okgf.dll
+Full Path         : D:\GitHub\unsorted\interface_colorer\okgf.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : OKGR_ReadStart_BMP_Buf
+Address           : 0x10021d30
+Relative Address  : 0x00021d30
+Ordinal           : 148 (0x94)
+Filename          : okgf.dll
+Full Path         : D:\GitHub\unsorted\interface_colorer\okgf.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : OKGR_ReadStart_BMP_File
+Address           : 0x10021c40
+Relative Address  : 0x00021c40
+Ordinal           : 149 (0x95)
+Filename          : okgf.dll
+Full Path         : D:\GitHub\unsorted\interface_colorer\okgf.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : OKGR_ReadStart_BMPPAL_Buf
+Address           : 0x10022080
+Relative Address  : 0x00022080
+Ordinal           : 146 (0x92)
+Filename          : okgf.dll
+Full Path         : D:\GitHub\unsorted\interface_colorer\okgf.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : OKGR_ReadStart_BMPPAL_File
+Address           : 0x10021f70
+Relative Address  : 0x00021f70
+Ordinal           : 147 (0x93)
+Filename          : okgf.dll
+Full Path         : D:\GitHub\unsorted\interface_colorer\okgf.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : OKGR_ReadStart_GI_Buf
+Address           : 0x10022530
+Relative Address  : 0x00022530
+Ordinal           : 150 (0x96)
+Filename          : okgf.dll
+Full Path         : D:\GitHub\unsorted\interface_colorer\okgf.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : OKGR_ReadStart_GI_File
+Address           : 0x10022440
+Relative Address  : 0x00022440
+Ordinal           : 151 (0x97)
+Filename          : okgf.dll
+Full Path         : D:\GitHub\unsorted\interface_colorer\okgf.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : OKGR_ReadStart_JPEG_Buf
+Address           : 0x10022720
+Relative Address  : 0x00022720
+Ordinal           : 152 (0x98)
+Filename          : okgf.dll
+Full Path         : D:\GitHub\unsorted\interface_colorer\okgf.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : OKGR_ReadStart_JPEG_File
+Address           : 0x10022630
+Relative Address  : 0x00022630
+Ordinal           : 153 (0x99)
+Filename          : okgf.dll
+Full Path         : D:\GitHub\unsorted\interface_colorer\okgf.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : OKGR_ReadStart_PNG_Buf
+Address           : 0x10022950
+Relative Address  : 0x00022950
+Ordinal           : 156 (0x9c)
+Filename          : okgf.dll
+Full Path         : D:\GitHub\unsorted\interface_colorer\okgf.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : OKGR_ReadStart_PNG_File
+Address           : 0x10022860
+Relative Address  : 0x00022860
+Ordinal           : 157 (0x9d)
+Filename          : okgf.dll
+Full Path         : D:\GitHub\unsorted\interface_colorer\okgf.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : OKGR_ReadStart_PNGPAL_Buf
+Address           : 0x10022f90
+Relative Address  : 0x00022f90
+Ordinal           : 154 (0x9a)
+Filename          : okgf.dll
+Full Path         : D:\GitHub\unsorted\interface_colorer\okgf.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : OKGR_ReadStart_PNGPAL_File
+Address           : 0x10022e90
+Relative Address  : 0x00022e90
+Ordinal           : 155 (0x9b)
+Filename          : okgf.dll
+Full Path         : D:\GitHub\unsorted\interface_colorer\okgf.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : OKGR_ReadStart_PSD_Buf
+Address           : 0x10023680
+Relative Address  : 0x00023680
+Ordinal           : 160 (0xa0)
+Filename          : okgf.dll
+Full Path         : D:\GitHub\unsorted\interface_colorer\okgf.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : OKGR_ReadStart_PSD_File
+Address           : 0x10023590
+Relative Address  : 0x00023590
+Ordinal           : 161 (0xa1)
+Filename          : okgf.dll
+Full Path         : D:\GitHub\unsorted\interface_colorer\okgf.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : OKGR_ReadStart_PSDPAL_Buf
+Address           : 0x10023b20
+Relative Address  : 0x00023b20
+Ordinal           : 158 (0x9e)
+Filename          : okgf.dll
+Full Path         : D:\GitHub\unsorted\interface_colorer\okgf.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : OKGR_ReadStart_PSDPAL_File
+Address           : 0x10023a10
+Relative Address  : 0x00023a10
+Ordinal           : 159 (0x9f)
+Filename          : okgf.dll
+Full Path         : D:\GitHub\unsorted\interface_colorer\okgf.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : OKGR_RotateBuf_Build
+Address           : 0x10061f30
+Relative Address  : 0x00061f30
+Ordinal           : 162 (0xa2)
+Filename          : okgf.dll
+Full Path         : D:\GitHub\unsorted\interface_colorer\okgf.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : OKGR_RotateBuf_Draw_BYTE
+Address           : 0x10062b50
+Relative Address  : 0x00062b50
+Ordinal           : 167 (0xa7)
+Filename          : okgf.dll
+Full Path         : D:\GitHub\unsorted\interface_colorer\okgf.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : OKGR_RotateBuf_Draw_DWORD
+Address           : 0x100629a0
+Relative Address  : 0x000629a0
+Ordinal           : 168 (0xa8)
+Filename          : okgf.dll
+Full Path         : D:\GitHub\unsorted\interface_colorer\okgf.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : OKGR_RotateBuf_Draw_WORD
+Address           : 0x10062a70
+Relative Address  : 0x00062a70
+Ordinal           : 169 (0xa9)
+Filename          : okgf.dll
+Full Path         : D:\GitHub\unsorted\interface_colorer\okgf.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : OKGR_RotateBuf_DrawTrans_BYTE
+Address           : 0x10062e20
+Relative Address  : 0x00062e20
+Ordinal           : 165 (0xa5)
+Filename          : okgf.dll
+Full Path         : D:\GitHub\unsorted\interface_colorer\okgf.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : OKGR_RotateBuf_DrawTrans_WORD
+Address           : 0x100628c0
+Relative Address  : 0x000628c0
+Ordinal           : 166 (0xa6)
+Filename          : okgf.dll
+Full Path         : D:\GitHub\unsorted\interface_colorer\okgf.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : OKGR_RotateBuf_DrawTransClip_BYTE
+Address           : 0x10062f00
+Relative Address  : 0x00062f00
+Ordinal           : 163 (0xa3)
+Filename          : okgf.dll
+Full Path         : D:\GitHub\unsorted\interface_colorer\okgf.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : OKGR_RotateBuf_DrawTransClip_WORD
+Address           : 0x10062c20
+Relative Address  : 0x00062c20
+Ordinal           : 164 (0xa4)
+Filename          : okgf.dll
+Full Path         : D:\GitHub\unsorted\interface_colorer\okgf.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : OKGR_RotateBuf_Free
+Address           : 0x10062830
+Relative Address  : 0x00062830
+Ordinal           : 170 (0xaa)
+Filename          : okgf.dll
+Full Path         : D:\GitHub\unsorted\interface_colorer\okgf.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : OKGR_RotateBuf_Size
+Address           : 0x10062870
+Relative Address  : 0x00062870
+Ordinal           : 171 (0xab)
+Filename          : okgf.dll
+Full Path         : D:\GitHub\unsorted\interface_colorer\okgf.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : OKGR_ShrLight_16
+Address           : 0x1005c4f0
+Relative Address  : 0x0005c4f0
+Ordinal           : 173 (0xad)
+Filename          : okgf.dll
+Full Path         : D:\GitHub\unsorted\interface_colorer\okgf.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : OKGR_ShrLightMask_16
+Address           : 0x1005c710
+Relative Address  : 0x0005c710
+Ordinal           : 172 (0xac)
+Filename          : okgf.dll
+Full Path         : D:\GitHub\unsorted\interface_colorer\okgf.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : OKGR_StretchGdi_WORD
+Address           : 0x10063530
+Relative Address  : 0x00063530
+Ordinal           : 174 (0xae)
+Filename          : okgf.dll
+Full Path         : D:\GitHub\unsorted\interface_colorer\okgf.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : OKGR_TransAlphaBuf_BuildFromRGBA_16
+Address           : 0x10053df0
+Relative Address  : 0x00053df0
+Ordinal           : 175 (0xaf)
+Filename          : okgf.dll
+Full Path         : D:\GitHub\unsorted\interface_colorer\okgf.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : OKGR_TransAlphaBuf_Draw_5658
+Address           : 0x10052fc0
+Relative Address  : 0x00052fc0
+Ordinal           : 177 (0xb1)
+Filename          : okgf.dll
+Full Path         : D:\GitHub\unsorted\interface_colorer\okgf.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : OKGR_TransAlphaBuf_Draw_RGBA
+Address           : 0x10052e90
+Relative Address  : 0x00052e90
+Ordinal           : 178 (0xb2)
+Filename          : okgf.dll
+Full Path         : D:\GitHub\unsorted\interface_colorer\okgf.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : OKGR_TransAlphaBuf_Draw_WORD
+Address           : 0x10052d60
+Relative Address  : 0x00052d60
+Ordinal           : 179 (0xb3)
+Filename          : okgf.dll
+Full Path         : D:\GitHub\unsorted\interface_colorer\okgf.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : OKGR_TransAlphaBuf_DrawClip_WORD
+Address           : 0x10053110
+Relative Address  : 0x00053110
+Ordinal           : 176 (0xb0)
+Filename          : okgf.dll
+Full Path         : D:\GitHub\unsorted\interface_colorer\okgf.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : OKGR_TransBuf_Build_BYTE
+Address           : 0x10064f90
+Relative Address  : 0x00064f90
+Ordinal           : 181 (0xb5)
+Filename          : okgf.dll
+Full Path         : D:\GitHub\unsorted\interface_colorer\okgf.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : OKGR_TransBuf_Build_WORD
+Address           : 0x100651b0
+Relative Address  : 0x000651b0
+Ordinal           : 182 (0xb6)
+Filename          : okgf.dll
+Full Path         : D:\GitHub\unsorted\interface_colorer\okgf.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : OKGR_TransBuf_BuildFromRGBA_16
+Address           : 0x10065390
+Relative Address  : 0x00065390
+Ordinal           : 180 (0xb4)
+Filename          : okgf.dll
+Full Path         : D:\GitHub\unsorted\interface_colorer\okgf.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : OKGR_TransBuf_Draw_5658
+Address           : 0x10063890
+Relative Address  : 0x00063890
+Ordinal           : 186 (0xba)
+Filename          : okgf.dll
+Full Path         : D:\GitHub\unsorted\interface_colorer\okgf.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : OKGR_TransBuf_Draw_RGBA
+Address           : 0x100637d0
+Relative Address  : 0x000637d0
+Ordinal           : 187 (0xbb)
+Filename          : okgf.dll
+Full Path         : D:\GitHub\unsorted\interface_colorer\okgf.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : OKGR_TransBuf_Draw_WORD
+Address           : 0x100636a0
+Relative Address  : 0x000636a0
+Ordinal           : 188 (0xbc)
+Filename          : okgf.dll
+Full Path         : D:\GitHub\unsorted\interface_colorer\okgf.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : OKGR_TransBuf_DrawClip_WORD
+Address           : 0x10063930
+Relative Address  : 0x00063930
+Ordinal           : 183 (0xb7)
+Filename          : okgf.dll
+Full Path         : D:\GitHub\unsorted\interface_colorer\okgf.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : OKGR_TransBuf_DrawPal_WORD
+Address           : 0x10063740
+Relative Address  : 0x00063740
+Ordinal           : 185 (0xb9)
+Filename          : okgf.dll
+Full Path         : D:\GitHub\unsorted\interface_colorer\okgf.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : OKGR_TransBuf_DrawPalClip_WORD
+Address           : 0x10063c10
+Relative Address  : 0x00063c10
+Ordinal           : 184 (0xb8)
+Filename          : okgf.dll
+Full Path         : D:\GitHub\unsorted\interface_colorer\okgf.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : OKGR_TransBuf_Fill_BYTE
+Address           : 0x10064130
+Relative Address  : 0x00064130
+Ordinal           : 195 (0xc3)
+Filename          : okgf.dll
+Full Path         : D:\GitHub\unsorted\interface_colorer\okgf.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : OKGR_TransBuf_Fill_WORD
+Address           : 0x10064470
+Relative Address  : 0x00064470
+Ordinal           : 196 (0xc4)
+Filename          : okgf.dll
+Full Path         : D:\GitHub\unsorted\interface_colorer\okgf.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : OKGR_TransBuf_FillAlpha_16
+Address           : 0x10064a70
+Relative Address  : 0x00064a70
+Ordinal           : 191 (0xbf)
+Filename          : okgf.dll
+Full Path         : D:\GitHub\unsorted\interface_colorer\okgf.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : OKGR_TransBuf_FillAlpha_RGBA
+Address           : 0x10064780
+Relative Address  : 0x00064780
+Ordinal           : 192 (0xc0)
+Filename          : okgf.dll
+Full Path         : D:\GitHub\unsorted\interface_colorer\okgf.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : OKGR_TransBuf_FillAlphaClip_16
+Address           : 0x10064c20
+Relative Address  : 0x00064c20
+Ordinal           : 189 (0xbd)
+Filename          : okgf.dll
+Full Path         : D:\GitHub\unsorted\interface_colorer\okgf.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : OKGR_TransBuf_FillAlphaClip_RGBA
+Address           : 0x10064830
+Relative Address  : 0x00064830
+Ordinal           : 190 (0xbe)
+Filename          : okgf.dll
+Full Path         : D:\GitHub\unsorted\interface_colorer\okgf.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : OKGR_TransBuf_FillClip_BYTE
+Address           : 0x100641f0
+Relative Address  : 0x000641f0
+Ordinal           : 193 (0xc1)
+Filename          : okgf.dll
+Full Path         : D:\GitHub\unsorted\interface_colorer\okgf.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : OKGR_TransBuf_FillClip_WORD
+Address           : 0x10064520
+Relative Address  : 0x00064520
+Ordinal           : 194 (0xc2)
+Filename          : okgf.dll
+Full Path         : D:\GitHub\unsorted\interface_colorer\okgf.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : OKGR_TransBuf_HADraw_16
+Address           : 0x10063e40
+Relative Address  : 0x00063e40
+Ordinal           : 198 (0xc6)
+Filename          : okgf.dll
+Full Path         : D:\GitHub\unsorted\interface_colorer\okgf.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : OKGR_TransBuf_HADrawClip_16
+Address           : 0x10063ef0
+Relative Address  : 0x00063ef0
+Ordinal           : 197 (0xc5)
+Filename          : okgf.dll
+Full Path         : D:\GitHub\unsorted\interface_colorer\okgf.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : OKGR_VLine_Draw_BYTE
+Address           : 0x100244a0
+Relative Address  : 0x000244a0
+Ordinal           : 201 (0xc9)
+Filename          : okgf.dll
+Full Path         : D:\GitHub\unsorted\interface_colorer\okgf.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : OKGR_VLine_Draw_WORD
+Address           : 0x10024460
+Relative Address  : 0x00024460
+Ordinal           : 202 (0xca)
+Filename          : okgf.dll
+Full Path         : D:\GitHub\unsorted\interface_colorer\okgf.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : OKGR_VLine_DrawClip_BYTE
+Address           : 0x10024700
+Relative Address  : 0x00024700
+Ordinal           : 199 (0xc7)
+Filename          : okgf.dll
+Full Path         : D:\GitHub\unsorted\interface_colorer\okgf.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : OKGR_VLine_DrawClip_WORD
+Address           : 0x10024680
+Relative Address  : 0x00024680
+Ordinal           : 200 (0xc8)
+Filename          : okgf.dll
+Full Path         : D:\GitHub\unsorted\interface_colorer\okgf.dll
+Type              : Exported Function
+==================================================
+
+==================================================
+Function Name     : SaveToFileHSAI
+Address           : 0x10024050
+Relative Address  : 0x00024050
+Ordinal           : 203 (0xcb)
+Filename          : okgf.dll
+Full Path         : D:\GitHub\unsorted\interface_colorer\okgf.dll
+Type              : Exported Function
+==================================================
+
