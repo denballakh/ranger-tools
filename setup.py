@@ -1,3 +1,3 @@
-from setuptools import setup, find_packages
+import setuptools
 
-setup(name='ranger_tools', version='1.1', packages=find_packages())
+setuptools.setup(name='rangers_tools', version='0.1', packages=setuptools.find_packages())
