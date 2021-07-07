@@ -1,9 +1,0 @@
-dir1 ~{
-    par1=val1
-    par2=val2
-    dir3 ~{
-        par_=
-    }
-}
-x=y
-z=a

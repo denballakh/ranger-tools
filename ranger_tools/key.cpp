@@ -1,3 +1,21 @@
+/*
+Программа для перебора ключей шифрования датников
+Она открывает датник и пытается подобрать такой ключ, 
+    чтобы в расшифрованных данных был заголовок ZL01
+Программа выводит несколько чисел, одно из них является
+    настоящим ключом
+
+Ключи для разных форматов датников:
+keys = {
+    'HDMain': -1310144887,
+    'HDCache': -359710921,
+    'ReloadMain': 1050086386,
+    'ReloadCache': 1929242201,
+    'SR1': 0,
+}
+*/
+#define FILENAME "find_keys_reload_cache.dat"
+
 #include <iostream>
 #include <fstream>
 
@@ -13,7 +31,7 @@ int rnd(int seed) {
 
 int main() {
     ifstream file;
-    file.open("find_keys.dat", ios::in | ios::binary);
+    file.open(FILENAME, ios::in | ios::binary);
 
     if (!file.is_open()) {
         cout << "Error while opening file!" << endl;
@@ -64,6 +82,6 @@ int main() {
             cout << key << endl;
         }
     }
-
+    cout << "END" << endl;
     getchar();
 }

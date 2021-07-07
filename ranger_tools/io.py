@@ -105,3 +105,16 @@ class OBuffer:
         self.write_byte(0)
 
 
+class AbstractIBuffer:
+    def __init__(self, data: list):
+        self.data = data
+        self.pos = 0
+
+    def get(self):
+        assert 0 <= self.pos < len(self.data)
+        result = self.data[self.pos]
+        self.pos += 1
+        return result
+
+    def end(self) -> bool:
+        return 0 <= self.pos < len(self.data)
