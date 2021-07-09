@@ -1,8 +1,9 @@
-import io
 import zlib
 import os
+import time
 
-from .common import bytes_to_uint, uint_to_bytes, str_to_bytes, bytes_to_str, check_dir
+from ..io import IBuffer, OBuffer
+from ..common import check_dir
 
 __all__ = [
     'PKG',
@@ -17,14 +18,9 @@ COMPRESS_PNG = False
 COMPRESS_CHUNK_SIZE = 2 ** 16
 COMPRESS_CHUNK_MAX_SIZE = 2 ** 16 # 64 KB
 
-ZL01_SIGNATURE = 0x31304c5a
-ZL02_SIGNATURE = 0x32304c5a
-
 PKG_DATATYPE_RAW = 1
 PKG_DATATYPE_ZLIB = 2
 PKG_DATATYPE_DIR = 3
-
-
 
 
 class PKGItem:
@@ -36,55 +32,65 @@ class PKGItem:
         self.parent = None
 
     def __repr__(self) -> str:
-        s = f'''
-        PKGItem:
-        Name: {self.name!r}
-        Type: {self.type}
-        Size: {len(self.data)} b
-        Number of childs: {len(self.childs)}
-        Childs names: {[child.name for child in self.childs]!r}
-        Parent name: {None if self.parent is None else self.parent.name}
-        '''
+        s = f'' + \
+        'Package item:' + '\n' + \
+        f' Name: {self.name!r}' + '\n' + \
+        f' Type: {self.type} ({["raw file", "compressed file", "directory"][self.type]})' + '\n' + \
+        f' Size: {len(self.data)} b' + '\n' + \
+        f' Number of childs: {len(self.childs)}' + '\n' + \
+        f' Childs names: {[child.name for child in self.childs]!r}' + '\n' + \
+        f' Parent name: {None if self.parent is None else self.parent.name!r}' + '\n' + \
+        ''
         return s
 
     @classmethod
     def _compress(cls, data) -> bytes:
         assert 0 < COMPRESS_CHUNK_SIZE <= COMPRESS_CHUNK_MAX_SIZE, f'Invalid COMPRESS_CHUNK_SIZE: {COMPRESS_CHUNK_SIZE}. Should be in range from 1 to {COMPRESS_CHUNK_MAX_SIZE}'
         chunks = []
-        stream = io.BytesIO(data)
-        while stream.tell() != len(data):
-            buf = stream.read(COMPRESS_CHUNK_SIZE)
+        din = IBuffer.from_bytes(data)
+        while not din.end():
+            buf = din.read(min(COMPRESS_CHUNK_SIZE, len(din)))
             chunks.append(buf)
-        result = []
+        dout = OBuffer()
         for chunk in chunks:
             comp = zlib.compress(chunk, level=9)
-            x = uint_to_bytes(len(comp) + 8) + b'ZL02' + uint_to_bytes(len(chunk)) + comp
-            result.append(x)
-        result = b''.join(result)
+            dout.write_uint(len(comp) + 8)
+            dout.write_bytes(b'ZL02')
+            dout.write_uint(len(chunk))
+            dout.write_bytes(comp)
+        result = dout.to_bytes()
         return result
 
     @classmethod
     def _decompress(cls, data) -> bytes:
-        result = b''
-        index = 0
-        while index < len(data):
-            bufsize = bytes_to_uint(data[index : index + 4])
-            index += 4
-            buf = data[index : index + bufsize]
-            index += bufsize
-            assert bytes_to_uint(buf[0 : 4]) in (ZL01_SIGNATURE, ZL02_SIGNATURE), f'Invalid ZL signature: {buf[0 : 4]}'
-            result += zlib.decompress(buf[8 :])
+        din = IBuffer.from_bytes(data)
+        dout = OBuffer()
+
+        while not din.end():
+            bufsize = din.read_uint()
+            buf = din.read(bufsize)
+
+            bufin = IBuffer.from_bytes(buf)
+
+            zl02 = bufin.read(4)
+            assert zl02 == b'ZL02', f'Invalid ZL signature: {zl02}'
+            unpacked_size = bufin.read_uint()
+            unpacked = zlib.decompress(bufin.read())
+            assert len(unpacked) == unpacked_size
+            dout.write_bytes(unpacked)
+
+        result = dout.to_bytes()
         return result
 
-    def decompressed_length(self):
+    def decompressed_size(self):
         if self.type == PKG_DATATYPE_ZLIB:
-            data = self.data
+            din = IBuffer.from_bytes(self.data)
             result = 0
-            index = 0
-            while index < len(data):
-                bufsize = bytes_to_uint(data[index + 0 : index + 4])
-                result += bytes_to_uint(data[index + 8 : index + 12])
-                index += 4 + bufsize
+            while not din.end():
+                bufsize = din.read_uint()
+                din.read(4)
+                result += din.read_uint()
+                din.pos += bufsize - 8
             return result
 
         if self.type == PKG_DATATYPE_RAW:
@@ -170,50 +176,30 @@ class PKGItem:
         else:
             size = len(self.data) + 4
 
-        original_size = self.decompressed_length()
+        original_size = self.decompressed_size()
 
         full_path = self.full_path()
         assert full_path in offsets, f'Unknown error while calculating offsets: {offsets}'
         offset = offsets[full_path]
 
-        result = b''
-        result += uint_to_bytes(size)
-        result += uint_to_bytes(original_size)
-        result += str_to_bytes(self.name.upper(), 63)
-        result += str_to_bytes(self.name, 63)
-        result += uint_to_bytes(self.type)
-        result += uint_to_bytes(self.type)
-        result += b'\0\0\0\0'
-        result += b'\0\0\0\0'
-        result += uint_to_bytes(offset)
-        result += b'\0\0\0\0'
+        result = OBuffer()
+        result.write_uint(size)
+        result.write_uint(original_size)
+        result.write_str(self.name.upper(), 63)
+        result.write_str(self.name, 63)
+        result.write_uint(self.type)
+        result.write_uint(self.type)
+        result.write_bytes(b'\0\0\0\0')
+        result.write_bytes(b'\0\0\0\0')
+        result.write_uint(offset)
+        result.write_bytes(b'\0\0\0\0')
 
-        return result
+        return result.to_bytes()
 
-    def get_data(self, offset: int, offsets: dict[str, int]):
-        result = b''
-
-        if self.type == PKG_DATATYPE_DIR:
-
-            result += b'\xaa\0\0\0' # zero1
-            result += uint_to_bytes(len(self.childs))
-            result += b'\x9e\0\0\0' # zero2
-
-            for child in self.childs:
-                data = child.header(offsets)
-                result += data
-
-            for child in self.childs:
-                data = child.get_data(offset + len(result), offsets)
-                result += data
-
-        else:
-            result += uint_to_bytes(len(self.data))
-            result += self.data
-
-
-        return result
-
+    def to_bytes(self, offsets: dict[str, int]):
+        buf = OBuffer()
+        self.to_buffer(buf, offsets)
+        return buf.to_bytes()
 
     def check_offsets(self, offset: int, offsets: dict[str, int]):
         size = 0
@@ -227,33 +213,53 @@ class PKGItem:
             size += 4 + len(self.data)
         return size
 
+    def to_buffer(self, buf: OBuffer, offsets: dict[str, int]) -> OBuffer:
+        if self.type == PKG_DATATYPE_DIR:
+            buf.write_bytes(b'\xaa\0\0\0') # zero1
+            buf.write_uint(len(self.childs))
+            buf.write_bytes(b'\x9e\0\0\0') # zero2
+
+            for child in self.childs:
+                data = child.header(offsets)
+                buf.write_bytes(data)
+
+            for child in self.childs:
+                child.to_buffer(buf, offsets)
+
+        else:
+            buf.write_uint(len(self.data))
+            buf.write_bytes(self.data)
+        return buf
+
+
     @classmethod
     def from_bytes(cls, data: bytes, offset: int) -> list['PKGItem']:
         result = []
 
-        index = offset
+        din = IBuffer.from_bytes(data)
+        din.pos = offset
 
-        index += 4
-        items_count = bytes_to_uint(data[index : index + 4]); index += 4
-        index += 4
+        din.skip(4)
+        items_count = din.read_uint()
+        din.skip(4)
 
         for i in range(items_count):
             child = PKGItem()
             result.append(child)
 
-            index = offset + 12 + 158 * i
+            din.pos = offset + 12 + 158 * i
 
-            index += 4
-            index += 4
-            index += 63
-            child.name = bytes_to_str(data[index : index + 63]); index += 63
-            child.type = bytes_to_uint(data[index : index + 4]); index += 4
-            assert child.type in (PKG_DATATYPE_DIR, PKG_DATATYPE_RAW, PKG_DATATYPE_ZLIB), f'Invalid item type: {child.type}. Should be in {(PKG_DATATYPE_DIR, PKG_DATATYPE_RAW, PKG_DATATYPE_ZLIB)}'
-            index += 4
-            index += 4
-            index += 4
-            child_offset = bytes_to_uint(data[index : index + 4]); index += 4
-            index += 4
+            din.skip(4)
+            din.skip(4)
+            din.skip(63)
+            child.name = din.read_str(63)
+            child.type = din.read_uint()
+            assert child.type in {PKG_DATATYPE_DIR, PKG_DATATYPE_RAW, PKG_DATATYPE_ZLIB}, f'Invalid item type: {child.type}. Should be in {(PKG_DATATYPE_DIR, PKG_DATATYPE_RAW, PKG_DATATYPE_ZLIB)}'
+            din.skip(4)
+            din.skip(4)
+            din.skip(4)
+            child_offset = din.read_uint()
+            din.skip(4)
 
             if child.type == PKG_DATATYPE_DIR:
                 child.childs = cls.from_bytes(data, child_offset)
@@ -261,9 +267,9 @@ class PKGItem:
                     child_child.parent = child
 
             else:
-                index = child_offset
-                size = bytes_to_uint(data[index : index + 4]); index += 4
-                child.data = data[index : index + size]
+                din.pos = child_offset
+                size = din.read_uint()
+                child.data = din.read(size)
 
         return result
 
@@ -278,43 +284,63 @@ class PKGItem:
 
 
 class PKG:
-    def __init__(self, root: PKGItem):
+    def __init__(self, root: PKGItem, metadata: bytes = None):
         self.root = root
+        if metadata is None:
+            self.metadata = b'[timestamp: ' + str(int(time.time())).encode() + b']'
+        else:
+            self.metadata = metadata
+
+    def __repr__(self) -> str:
+        return f'' + \
+        'Package:' + '\n' + \
+        f' Current size: {self.size()}' + '\n' + \
+        f' Decompressed size: {self.decompressed_size()}' + '\n' + \
+        f' Number of items: {self.count()}' + '\n' + \
+        f' Number of items in root: {len(self.root.childs)}' + '\n' + \
+        f' Metadata: {self.metadata!r}' + '\n' + \
+        ''
 
     @classmethod
-    def open(cls, filename: str):
+    def from_pkg(cls, filename: str):
         with open(filename, 'rb') as fp:
             data = fp.read()
+        din = IBuffer.from_bytes(data)
+        offset = din.read_uint()
+        metadata = din.read(offset - 4)
 
         root = PKGItem()
         root.type = PKG_DATATYPE_DIR
-        root.childs = PKGItem.from_bytes(data, 4)
+        root.childs = PKGItem.from_bytes(data, offset)
         for child in root.childs:
             child.parent = root
 
-        return PKG(root)
+        pkg = cls(root, metadata)
+        return pkg
 
-    def save(self, filename: str):
+    def to_pkg(self, filename: str):
         root = self.root
 
-        result = b''
-        result += uint_to_bytes(4)
+        result = OBuffer()
+        result.write_uint(4 + len(self.metadata))
+        result.write_bytes(self.metadata)
 
         offsets = {}
-        root.check_offsets(4, offsets)
-        data = root.get_data(4, offsets)
-        result += data
+        root.check_offsets(4 + len(self.metadata), offsets)
+        data = root.to_bytes(offsets)
+        result.write_bytes(data)
 
+        check_dir(filename)
         with open(filename, 'wb') as fp:
-            fp.write(result)
+            fp.write(result.to_bytes())
 
 
     @classmethod
-    def open_directory(cls, path: str):
+    def from_dir(cls, path: str):
         root = PKGItem()
         root.type = PKG_DATATYPE_DIR
 
-        pkg = PKG(root)
+        pkg = cls(root)
 
         files = [f for f in os.listdir(path) if os.path.isfile(os.path.join(path, f))]
         dirs = [f for f in os.listdir(path) if not os.path.isfile(os.path.join(path, f))]
@@ -335,7 +361,7 @@ class PKG:
         for directory in dirs:
             dirname = os.path.join(path, directory)
 
-            sub_item = cls.open_directory(dirname).root
+            sub_item = cls.from_dir(dirname).root
 
             item = PKGItem()
             item.data = b''
@@ -350,7 +376,7 @@ class PKG:
 
         return pkg
 
-    def save_directory(self, path: str):
+    def to_dir(self, path: str):
         self.decompress()
         for item in self.items_list():
             filename = path + '/' + item.full_path()
@@ -362,7 +388,8 @@ class PKG:
                     fp.write(item.data)
 
 
-    def size(self): return self.root.size()
+    def size(self): return self.root.size() + len(self.metadata)
+    def decompressed_size(self): return sum(item.decompressed_size() for item in self.items_list())
     def count(self): return self.root.count()
 
     def compress(self): self.root.compress()
@@ -370,13 +397,3 @@ class PKG:
     def copy(self): return self.root.copy()
     def items_list(self): return self.root.items_list()
 
-
-if __name__ == '__main__':
-    # pkg = PKG.open_directory('common/')
-    # pkg.save('common.pkg')
-    # pkg.compress()
-    # pkg.save('common_compressed.pkg')
-    # pkg.save_directory('common_extracted/')
-    pkg = PKG.open('common.pkg')
-    pkg.save('common_compressed.pkg')
-    pkg = PKG.open('common_compressed.pkg')

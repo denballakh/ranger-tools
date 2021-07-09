@@ -1,8 +1,10 @@
 from PIL import Image
 
-from .common import bytes_to_uint, uint_to_bytes, rgb24_to_rgb16, rgb16_to_rgb24
+from ..common import bytes_to_uint, uint_to_bytes, rgb24_to_rgb16, rgb16_to_rgb24
 
-__all__ = ['GI']
+__all__ = [
+    'GI',
+]
 
 class Layer:
     _size = 32

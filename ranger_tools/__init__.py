@@ -1,3 +1,8 @@
-__all__ = ['pkg', 'dat', 'gi', 'gai', 'io']
+from . import pkg
+from . import dat
+from . import gi
+from . import gai
+from . import scr
 
-from . import pkg, dat, gi, gai, io
+from . import io
+from . import common
