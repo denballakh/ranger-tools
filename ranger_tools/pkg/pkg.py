@@ -32,7 +32,7 @@ class PKGItem:
         self.parent = None
 
     def __repr__(self) -> str:
-        s = f'' + \
+        s = '' + \
         'Package item:' + '\n' + \
         f' Name: {self.name!r}' + '\n' + \
         f' Type: {self.type} ({["raw file", "compressed file", "directory"][self.type]})' + '\n' + \
@@ -292,7 +292,7 @@ class PKG:
             self.metadata = metadata
 
     def __repr__(self) -> str:
-        return f'' + \
+        return '' + \
         'Package:' + '\n' + \
         f' Current size: {self.size()}' + '\n' + \
         f' Decompressed size: {self.decompressed_size()}' + '\n' + \

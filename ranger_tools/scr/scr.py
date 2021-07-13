@@ -1,36 +1,29 @@
 from typing import Union
 
-RACE = lambda *args: args
-RACE_FLAG = lambda *args: args
-OWNER_FLAG = lambda *args: args
-SHIP_TYPE_FLAG = lambda *args: args
-ECONOMY_FLAG = lambda *args: args
-GOVERNMENT_FLAG = lambda *args: args
-WEAPON = lambda *args: args
-VAR_TYPE = lambda *args: args
-FRIENDSHIP = lambda *args: args
-PLACE_TYPE = lambda *args: args
-MOVE_TYPE = lambda *args: args
-OP_TYPE = lambda *args: args
-RELATION = lambda *args: args
-ETHER_TYPE = lambda *args: args
-ITEM_TYPE = lambda *args: args
-EQUIPMENT_TYPE = lambda *args: args
-
 from ..io import IBuffer, OBuffer
 from . import *
 
 __all__ = ['SCR']
 
 
+class MinMax:
+    def __repr__(self) -> str:
+        return f'<MinMax: min={self.min!r} max={self.max!r}>'
+
+    def __init__(self, mn, mx):
+        self.min = mn
+        self.max = mx
+
+
 class Status:
     def __repr__(self) -> str:
         return f'<Status: trader={self.trader!r} warrior={self.warrior!r} pirate={self.pirate!r}>'
 
-    def __init__(self, trader: tuple[int,int], warrior: tuple[int,int], pirate: tuple[int,int]):
+    def __init__(self, trader: MinMax, warrior: MinMax, pirate: MinMax):
         self.trader = trader
         self.warrior = warrior
         self.pirate = pirate
+
 
 class SCRObj:
     name: str
@@ -102,7 +95,7 @@ class Var(SCRObj):
 
 class StarLink(SCRObj):
     end_star: int
-    distance: tuple[int, int]
+    distance: MinMax
     is_hole: bool
 
     def __repr__(self) -> str:
@@ -112,14 +105,14 @@ class StarLink(SCRObj):
     def from_buffer(cls, buf: IBuffer):
         sl = cls()
         sl.end_star = buf.read_uint()
-        sl.distance = (buf.read_int(), buf.read_int())
+        sl.distance = MinMax(buf.read_int(), buf.read_int())
         sl.is_hole = buf.read_bool()
         return sl
 
     def to_buffer(self, buf: OBuffer):
         buf.write_uint(self.end_star)
-        buf.write_int(self.distance[0])
-        buf.write_int(self.distance[1])
+        buf.write_int(self.distance.min)
+        buf.write_int(self.distance.max)
         buf.write_bool(self.is_hole)
 
 class Planet(SCRObj):
@@ -128,7 +121,7 @@ class Planet(SCRObj):
     owner: OWNER_FLAG
     economy: ECONOMY_FLAG
     government: GOVERNMENT_FLAG
-    range: tuple[int, int]
+    range: MinMax
     dialog: str
 
     def __repr__(self) -> str:
@@ -142,7 +135,7 @@ class Planet(SCRObj):
         p.owner = OWNER_FLAG(buf.read_uint())
         p.economy = ECONOMY_FLAG(buf.read_uint())
         p.government = GOVERNMENT_FLAG(buf.read_uint())
-        p.range = (buf.read_int(), buf.read_int())
+        p.range = MinMax(buf.read_int(), buf.read_int())
         p.dialog = buf.read_wstr()
         return p
 
@@ -153,8 +146,8 @@ class Planet(SCRObj):
         buf.write_uint(int(self.owner))
         buf.write_uint(int(self.economy))
         buf.write_uint(int(self.government))
-        buf.write_int(self.range[0])
-        buf.write_int(self.range[1])
+        buf.write_int(self.range.min)
+        buf.write_int(self.range.max)
         buf.write_wstr(self.dialog)
 
 class Ship(SCRObj):
@@ -162,13 +155,13 @@ class Ship(SCRObj):
     owner: OWNER_FLAG
     type: SHIP_TYPE_FLAG
     is_player: bool
-    speed: tuple[int,int]
+    speed: MinMax
     weapon: WEAPON
     cargohook: int
     emptyspace: int
     status: Status
-    strength: tuple[int,int]
-    ruins = ""
+    strength: MinMax
+    ruins: str
 
     def __repr__(self) -> str:
         return f'<Ship: count={self.count!r} owner={self.owner!r} type={self.type!r} is_player={self.is_player!r} speed={self.speed!r} weapon={self.weapon!r} cargohook={self.cargohook!r} emptyspace={self.emptyspace!r} status={self.status!r} strength={self.strength!r} ruins={self.ruins!r}>'
@@ -180,14 +173,13 @@ class Ship(SCRObj):
         e.owner = OWNER_FLAG(buf.read_uint())
         e.type = SHIP_TYPE_FLAG(buf.read_uint())
         e.is_player = buf.read_bool()
-        e.speed = (buf.read_int(), buf.read_int())
+        e.speed = MinMax(buf.read_int(), buf.read_int())
         e.weapon = WEAPON(buf.read_uint())
         e.cargohook = buf.read_int()
         e.emptyspace = buf.read_int()
-        e.status = Status((buf.read_int(),buf.read_int()),(buf.read_int(),buf.read_int()),(buf.read_int(),buf.read_int()))
-        e.strength = (buf.read_int(),buf.read_int())
+        e.status = Status(MinMax(buf.read_int(),buf.read_int()),MinMax(buf.read_int(),buf.read_int()),MinMax(buf.read_int(),buf.read_int()))
+        e.strength = MinMax(buf.read_int(),buf.read_int())
         e.ruins = buf.read_wstr()
-
         return e
 
     def to_buffer(self, buf: OBuffer):
@@ -195,19 +187,19 @@ class Ship(SCRObj):
         buf.write_uint(int(self.owner))
         buf.write_uint(int(self.type))
         buf.write_bool(self.is_player)
-        buf.write_int(self.speed[0])
-        buf.write_int(self.speed[1])
+        buf.write_int(self.speed.min)
+        buf.write_int(self.speed.max)
         buf.write_uint(int(self.weapon))
         buf.write_int(self.cargohook)
         buf.write_int(self.emptyspace)
-        buf.write_int(self.status.trader[0])
-        buf.write_int(self.status.trader[1])
-        buf.write_int(self.status.warrior[0])
-        buf.write_int(self.status.warrior[1])
-        buf.write_int(self.status.pirate[0])
-        buf.write_int(self.status.pirate[1])
-        buf.write_int(self.strength[0])
-        buf.write_int(self.strength[1])
+        buf.write_int(self.status.trader.min)
+        buf.write_int(self.status.trader.max)
+        buf.write_int(self.status.warrior.min)
+        buf.write_int(self.status.warrior.max)
+        buf.write_int(self.status.pirate.min)
+        buf.write_int(self.status.pirate.max)
+        buf.write_int(self.strength.min)
+        buf.write_int(self.strength.max)
         buf.write_wstr(self.ruins)
 
 class Star(SCRObj):
@@ -373,8 +365,8 @@ class Group(SCRObj):
     state: int
     owner: OWNER_FLAG
     type: SHIP_TYPE_FLAG
-    count: tuple[int,int]
-    speed: tuple[int,int]
+    count: MinMax
+    speed: MinMax
     weapon: WEAPON
     cargohook: int
     emptyspace: int
@@ -382,7 +374,7 @@ class Group(SCRObj):
     status: Status
     search_distance: int
     dialog: str
-    strength: tuple[int,int]
+    strength: MinMax
     ruins: str
 
 
@@ -397,16 +389,16 @@ class Group(SCRObj):
         e.state = buf.read_int()
         e.owner = OWNER_FLAG(buf.read_uint())
         e.type = SHIP_TYPE_FLAG(buf.read_uint())
-        e.count = (buf.read_int(), buf.read_int())
-        e.speed = (buf.read_int(), buf.read_int())
+        e.count = MinMax(buf.read_int(), buf.read_int())
+        e.speed = MinMax(buf.read_int(), buf.read_int())
         e.weapon = WEAPON(buf.read_uint())
         e.cargohook = buf.read_int()
         e.emptyspace = buf.read_int()
         e.add_player = buf.read_bool()
-        e.status = Status((buf.read_int(),buf.read_int()),(buf.read_int(),buf.read_int()),(buf.read_int(),buf.read_int()))
+        e.status = Status(MinMax(buf.read_int(),buf.read_int()),MinMax(buf.read_int(),buf.read_int()),MinMax(buf.read_int(),buf.read_int()))
         e.search_distance = buf.read_int()
         e.dialog = buf.read_wstr()
-        e.strength = (buf.read_float(), buf.read_float())
+        e.strength = MinMax(buf.read_float(), buf.read_float())
         e.ruins = buf.read_wstr()
 
         return e
@@ -417,51 +409,51 @@ class Group(SCRObj):
         buf.write_int(self.state)
         buf.write_uint(int(self.owner))
         buf.write_uint(int(self.type))
-        buf.write_int(self.count[0])
-        buf.write_int(self.count[1])
-        buf.write_int(self.speed[0])
-        buf.write_int(self.speed[1])
+        buf.write_int(self.count.min)
+        buf.write_int(self.count.max)
+        buf.write_int(self.speed.min)
+        buf.write_int(self.speed.max)
         buf.write_uint(int(self.weapon))
         buf.write_int(self.cargohook)
         buf.write_int(self.emptyspace)
         buf.write_bool(self.add_player)
-        buf.write_int(self.status.trader[0])
-        buf.write_int(self.status.trader[1])
-        buf.write_int(self.status.warrior[0])
-        buf.write_int(self.status.warrior[1])
-        buf.write_int(self.status.pirate[0])
-        buf.write_int(self.status.pirate[1])
+        buf.write_int(self.status.trader.min)
+        buf.write_int(self.status.trader.max)
+        buf.write_int(self.status.warrior.min)
+        buf.write_int(self.status.warrior.max)
+        buf.write_int(self.status.pirate.min)
+        buf.write_int(self.status.pirate.max)
         buf.write_int(self.search_distance)
         buf.write_wstr(self.dialog)
-        buf.write_float(self.strength[0])
-        buf.write_float(self.strength[1])
+        buf.write_float(self.strength.min)
+        buf.write_float(self.strength.max)
         buf.write_wstr(self.ruins)
 
 class GroupLink(SCRObj):
     begin: int
     end: int
-    relations: tuple[RELATION, RELATION]
-    war_weight: tuple[int,int]
+    relations: MinMax(RELATION, RELATION)
+    war_weight: MinMax
 
     def __repr__(self) -> str:
-        return f'<GroupLink>'
+        return f'<GroupLink: begin={self.begin!r} end={self.end!r} relations={self.relations!r} war_weight={self.war_weight!r}>'
 
     @classmethod
     def from_buffer(cls, buf: IBuffer):
         e = cls()
         e.begin = buf.read_int()
         e.end = buf.read_int()
-        e.relations = (RELATION(buf.read_uint()), RELATION(buf.read_uint()))
-        e.war_weight = (buf.read_float(), buf.read_float())
+        e.relations = MinMax(RELATION(buf.read_uint()), RELATION(buf.read_uint()))
+        e.war_weight = MinMax(buf.read_float(), buf.read_float())
         return e
 
     def to_buffer(self, buf: OBuffer):
         buf.write_int(self.begin)
         buf.write_int(self.end)
-        buf.write_uint(int(self.relations[0]))
-        buf.write_uint(int(self.relations[1]))
-        buf.write_float(self.war_weight[0])
-        buf.write_float(self.war_weight[1])
+        buf.write_uint(int(self.relations.min))
+        buf.write_uint(int(self.relations.max))
+        buf.write_float(self.war_weight.min)
+        buf.write_float(self.war_weight.max)
 
 class State(SCRObj):
     name: str
@@ -485,8 +477,6 @@ class State(SCRObj):
         e.type = MOVE_TYPE(buf.read_uint())
         if e.type not in {MOVE_TYPE.NONE, MOVE_TYPE.FREE}:
             e.object = buf.read_wstr()
-        else:
-            e.object = ""
         e.attack = []
         for _ in range(buf.read_uint()):
             e.attack.append(buf.read_wstr())
@@ -526,7 +516,6 @@ class Dialog(SCRObj):
         e = cls()
         e.name = buf.read_wstr()
         e.code = buf.read_wstr()
-
         return e
 
     def to_buffer(self, buf: OBuffer):
@@ -759,4 +748,3 @@ class SCR:
     def to_scr(self, path: str):
         with open(path, 'wb') as file:
             file.write(self.to_bytes())
-

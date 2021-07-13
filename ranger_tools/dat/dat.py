@@ -3,8 +3,10 @@ import random
 
 from ..io import IBuffer, OBuffer, AbstractIBuffer
 
-def get_sign(_): return b''
-def check_signed(_): return False
+# заглушки для подписи
+# если рядом с текущим файлом есть файл dat_sign.py, то код возьмется оттуда
+def get_sign(_: bytes) -> bytes: return b''
+def check_signed(_: bytes) -> bool: return False
 try:
     exec(open('\\'.join(__file__.split('\\')[:-1]) + '\\dat_sign.py', 'rt').read())
 except:
