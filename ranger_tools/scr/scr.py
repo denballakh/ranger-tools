@@ -3,10 +3,11 @@ from typing import Union
 from ..io import IBuffer, OBuffer
 from . import *
 
-__all__ = ['SCR']
+# __all__ = ['SCR']
 
 
 class MinMax:
+    __slots__ = ['min', 'max']
     def __repr__(self) -> str:
         return f'<MinMax: min={self.min!r} max={self.max!r}>'
 
@@ -14,8 +15,8 @@ class MinMax:
         self.min = mn
         self.max = mx
 
-
 class Status:
+    __slots__ = ['trader', 'warrior', 'pirate']
     def __repr__(self) -> str:
         return f'<Status: trader={self.trader!r} warrior={self.warrior!r} pirate={self.pirate!r}>'
 
@@ -24,26 +25,33 @@ class Status:
         self.warrior = warrior
         self.pirate = pirate
 
-
 class SCRObj:
-    name: str
-    def __init__(self): pass
+    # def __init__(self, script): raise NotImplementedError
     def __repr__(self) -> str: pass
     @classmethod
-    def from_buffer(cls, buf: IBuffer): pass
+    def from_buffer(cls, buf: IBuffer, script: 'SCR'): pass
     def to_buffer(self, buf: OBuffer): pass
+
+
 
 class Var(SCRObj):
     name: str
     type: VAR_TYPE
-    value: Union[None, int, str, float]
+    value: Union[None, int, str, float, list]
 
     def __repr__(self) -> str:
         return f'<Var: name={self.name!r} type={self.type!r} value={self.value!r}>'
 
+    def __init__(self, script):
+        self._script = script
+
+        self.name = 'VarNew'
+        self.type = VAR_TYPE.UNKNOWN
+        self.value = None
+
     @classmethod
-    def from_buffer(cls, buf: IBuffer):
-        var = cls()
+    def from_buffer(cls, buf: IBuffer, script: 'SCR'):
+        var = cls(script)
         var.name = buf.read_wstr()
         var.type = VAR_TYPE(buf.read_byte())
         if var.type is VAR_TYPE.UNKNOWN:
@@ -101,9 +109,16 @@ class StarLink(SCRObj):
     def __repr__(self) -> str:
         return f'<StarLink: end_star={self.end_star!r} distance={self.distance!r} is_hole={self.is_hole!r}>'
 
+    def __init__(self, script):
+        self._script = script
+
+        self.end_star = 0
+        self.distance = MinMax(0, 150)
+        self.is_hole = False
+
     @classmethod
-    def from_buffer(cls, buf: IBuffer):
-        sl = cls()
+    def from_buffer(cls, buf: IBuffer, script: 'SCR'):
+        sl = cls(script)
         sl.end_star = buf.read_uint()
         sl.distance = MinMax(buf.read_int(), buf.read_int())
         sl.is_hole = buf.read_bool()
@@ -127,9 +142,20 @@ class Planet(SCRObj):
     def __repr__(self) -> str:
         return f'<Planet: name={self.name!r} race={self.race!r} owner={self.owner!r} economy={self.economy!r} government={self.government!r} range={self.range!r} dialog={self.dialog!r}>'
 
+    def __init__(self, script):
+        self._script = script
+
+        self.name = 'PlanetNew'
+        self.race = RACE_FLAG(62)
+        self.owner = OWNER_FLAG(62)
+        self.economy = ECONOMY_FLAG(14)
+        self.government = GOVERNMENT_FLAG(62)
+        self.range = MinMax(0, 100)
+        self.dialog = ''
+
     @classmethod
-    def from_buffer(cls, buf: IBuffer):
-        p = cls()
+    def from_buffer(cls, buf: IBuffer, script: 'SCR'):
+        p = cls(script)
         p.name = buf.read_wstr()
         p.race = RACE_FLAG(buf.read_uint())
         p.owner = OWNER_FLAG(buf.read_uint())
@@ -166,9 +192,24 @@ class Ship(SCRObj):
     def __repr__(self) -> str:
         return f'<Ship: count={self.count!r} owner={self.owner!r} type={self.type!r} is_player={self.is_player!r} speed={self.speed!r} weapon={self.weapon!r} cargohook={self.cargohook!r} emptyspace={self.emptyspace!r} status={self.status!r} strength={self.strength!r} ruins={self.ruins!r}>'
 
+    def __init__(self, script):
+        self._script = script
+
+        self.count = 1
+        self.owner = OWNER_FLAG(62)
+        self.type = SHIP_TYPE_FLAG(126)
+        self.is_player = False
+        self.speed = MinMax(0, 10000)
+        self.weapon = WEAPON.UNDEF
+        self.cargohook = 0
+        self.emptyspace = 0
+        self.status = Status(MinMax(0, 100), MinMax(0, 100), MinMax(0, 100))
+        self.strength = MinMax(0, 0)
+        self.ruins = ''
+
     @classmethod
-    def from_buffer(cls, buf: IBuffer):
-        e = cls()
+    def from_buffer(cls, buf: IBuffer, script: 'SCR'):
+        e = cls(script)
         e.count = buf.read_int()
         e.owner = OWNER_FLAG(buf.read_uint())
         e.type = SHIP_TYPE_FLAG(buf.read_uint())
@@ -214,9 +255,20 @@ class Star(SCRObj):
     def __repr__(self) -> str:
         return f'<Star:  name={self.name!r} constellation={self.constellation!r} no_kling={self.no_kling!r} no_come_kling={self.no_come_kling!r} starlinks={self.starlinks!r} planets={self.planets!r} ships={self.ships!r}>'
 
+    def __init__(self, script):
+        self._script = script
+
+        self.name = 'StarNew'
+        self.constellation = 0
+        self.no_kling = False
+        self.no_come_kling = False
+        self.starlinks = []
+        self.planets = []
+        self.ships = []
+
     @classmethod
-    def from_buffer(cls, buf: IBuffer):
-        star = cls()
+    def from_buffer(cls, buf: IBuffer, script: 'SCR'):
+        star = cls(script)
         star.name = buf.read_wstr()
         star.constellation = buf.read_int()
         star.no_kling = buf.read_bool()
@@ -227,15 +279,15 @@ class Star(SCRObj):
         star.ships = []
 
         for _ in range(buf.read_uint()):
-            e = StarLink.from_buffer(buf)
+            e = StarLink.from_buffer(buf, script)
             star.starlinks.append(e)
 
         for _ in range(buf.read_uint()):
-            e = Planet.from_buffer(buf)
+            e = Planet.from_buffer(buf, script)
             star.planets.append(e)
 
         for _ in range(buf.read_uint()):
-            e = Ship.from_buffer(buf)
+            e = Ship.from_buffer(buf, script)
             star.ships.append(e)
 
         return star
@@ -271,9 +323,21 @@ class Place(SCRObj):
     def __repr__(self) -> str:
         return f'<Place: name={self.name!r} star={self.star!r} type={self.type!r} object={self.object!r} angle={self.angle!r} distance={self.distance!r} radius={self.radius!r}>'
 
+    def __init__(self, script):
+        self._script = script
+
+        self.name = 'PlaceNew'
+        self.star = ''
+        self.type = PLACE_TYPE.FREE
+        self.object = ''
+        self.angle = 0.0
+        self.distance = 0.5
+        self.radius = 300
+
+
     @classmethod
-    def from_buffer(cls, buf: IBuffer):
-        e = cls()
+    def from_buffer(cls, buf: IBuffer, script: 'SCR'):
+        e = cls(script)
         e.name = buf.read_wstr()
         e.star = buf.read_wstr()
         e.type = PLACE_TYPE(buf.read_uint())
@@ -333,9 +397,23 @@ class Item(SCRObj):
     def __repr__(self) -> str:
         return f'<Item: name={self.name!r} place={self.place!r} kind={self.kind!r} type={self.type!r} size={self.size!r} level={self.level!r} radius={self.radius!r} owner={self.owner!r} useless={self.useless!r}>'
 
+    def __init__(self, script):
+        self._script = script
+
+        self.name = 'ItemNew'
+        self.place = ''
+        self.kind = ITEM_TYPE.EQUIPMENT
+        self.type = 0
+        self.size = 10
+        self.level = 1
+        self.radius = 150
+        self.owner = RACE.NONE
+        self.useless = ''
+
+
     @classmethod
-    def from_buffer(cls, buf: IBuffer):
-        e = cls()
+    def from_buffer(cls, buf: IBuffer, script: 'SCR'):
+        e = cls(script)
         e.name = buf.read_wstr()
         e.place = buf.read_wstr()
         e.kind = ITEM_TYPE(buf.read_uint())
@@ -381,9 +459,29 @@ class Group(SCRObj):
     def __repr__(self) -> str:
         return f'<Group: name={self.name!r} planet={self.planet!r} state={self.state!r} owner={self.owner!r} type={self.type!r} count={self.count!r} speed={self.speed!r} weapon={self.weapon!r} cargohook={self.cargohook!r} emptyspace={self.emptyspace!r} add_player={self.add_player!r} status={self.status!r} search_distance={self.search_distance!r} dialog={self.dialog!r} strength={self.strength!r} ruins={self.ruins!r}>'
 
+    def __init__(self, script):
+        self._script = script
+
+        self.name = 'GroupNew'
+        self.planet = ''
+        self.state = 0
+        self.owner = OWNER_FLAG(62)
+        self.type = SHIP_TYPE_FLAG(126)
+        self.count = MinMax(2, 3)
+        self.speed = MinMax(100, 10000)
+        self.weapon = WEAPON.UNDEF
+        self.cargohook = 0
+        self.emptyspace = 0
+        self.add_player = False
+        self.status = Status(MinMax(0, 100), MinMax(0, 100), MinMax(0, 100))
+        self.search_distance = 10000
+        self.dialog = ''
+        self.strength = MinMax(0, 0)
+        self.ruins = ''
+
     @classmethod
-    def from_buffer(cls, buf: IBuffer):
-        e = cls()
+    def from_buffer(cls, buf: IBuffer, script: 'SCR'):
+        e = cls(script)
         e.name = buf.read_wstr()
         e.planet = buf.read_wstr()
         e.state = buf.read_int()
@@ -438,9 +536,17 @@ class GroupLink(SCRObj):
     def __repr__(self) -> str:
         return f'<GroupLink: begin={self.begin!r} end={self.end!r} relations={self.relations!r} war_weight={self.war_weight!r}>'
 
+    def __init__(self, script):
+        self._script = script
+
+        self.begin = 0
+        self.end = 0
+        self.relations = MinMax(RELATION.NOCHANGE, RELATION.NOCHANGE)
+        self.war_weight = MinMax(0, 1000)
+
     @classmethod
-    def from_buffer(cls, buf: IBuffer):
-        e = cls()
+    def from_buffer(cls, buf: IBuffer, script: 'SCR'):
+        e = cls(script)
         e.begin = buf.read_int()
         e.end = buf.read_int()
         e.relations = MinMax(RELATION(buf.read_uint()), RELATION(buf.read_uint()))
@@ -470,9 +576,23 @@ class State(SCRObj):
     def __repr__(self) -> str:
         return f'<State: name={self.name!r} type={self.type!r} object={self.object!r} attack={self.attack!r} take_item={self.take_item!r} take_all={self.take_all!r} out_msg={self.out_msg!r} in_msg={self.in_msg!r} ether={self.ether!r} code={self.code!r}>'
 
+    def __init__(self, script):
+        self._script = script
+
+        self.name = 'StateNew'
+        self.type = MOVE_TYPE.NONE
+        self.object = ''
+        self.attack = []
+        self.take_item = ''
+        self.take_all = False
+        self.out_msg = ''
+        self.in_msg = ''
+        self.ether = ''
+        self.code = ''
+
     @classmethod
-    def from_buffer(cls, buf: IBuffer):
-        e = cls()
+    def from_buffer(cls, buf: IBuffer, script: 'SCR'):
+        e = cls(script)
         e.name = buf.read_wstr()
         e.type = MOVE_TYPE(buf.read_uint())
         if e.type not in {MOVE_TYPE.NONE, MOVE_TYPE.FREE}:
@@ -511,9 +631,15 @@ class Dialog(SCRObj):
     def __repr__(self) -> str:
         return f'<Dialog: name={self.name!r} code={self.code!r}>'
 
+    def __init__(self, script):
+        self._script = script
+
+        self.name = 'DialogNew'
+        self.code = ''
+
     @classmethod
-    def from_buffer(cls, buf: IBuffer):
-        e = cls()
+    def from_buffer(cls, buf: IBuffer, script: 'SCR'):
+        e = cls(script)
         e.name = buf.read_wstr()
         e.code = buf.read_wstr()
         return e
@@ -529,9 +655,15 @@ class DialogMsg(SCRObj):
     def __repr__(self) -> str:
         return f'<DialogMsg: command={self.command!r} code={self.code!r}>'
 
+    def __init__(self, script):
+        self._script = script
+
+        self.command = ''
+        self.code = ''
+
     @classmethod
-    def from_buffer(cls, buf: IBuffer):
-        e = cls()
+    def from_buffer(cls, buf: IBuffer, script: 'SCR'):
+        e = cls(script)
         e.command = buf.read_wstr()
         e.code = buf.read_wstr()
 
@@ -549,9 +681,16 @@ class DialogAnswer(SCRObj):
     def __repr__(self) -> str:
         return f'<DialogAnswer: command={self.command!r} answer={self.answer!r} code={self.code!r}>'
 
+    def __init__(self, script):
+        self._script = script
+
+        self.command = ''
+        self.answer = ''
+        self.code = ''
+
     @classmethod
-    def from_buffer(cls, buf: IBuffer):
-        e = cls()
+    def from_buffer(cls, buf: IBuffer, script: 'SCR'):
+        e = cls(script)
         e.command = buf.read_wstr()
         e.answer = buf.read_wstr()
         e.code = buf.read_wstr()
@@ -586,7 +725,7 @@ class SCR:
     dialog_answers: list[DialogAnswer]
 
     def __init__(self):
-        self.version: int = 0
+        self.version = 0
         self.globalvars = []
         self.globalcode = ''
         self.localvars = []
@@ -604,6 +743,18 @@ class SCR:
         self.dialog_msgs = []
         self.dialog_answers = []
 
+    def __repr__(self) -> str:
+        return (f'SCR (version {self.version}):\n'
+            f'global vars: {len(self.globalvars)}\n'
+            f'local vars: {len(self.localvars)}\n'
+            f'length of globalcode: {len(self.globalcode)}\n'
+            f'length of initcode: {len(self.initcode)}\n'
+            f'length of turncode: {len(self.turncode)}\n'
+            f'length of dialogbegincode: {len(self.dialogbegincode)}\n'
+            f'constellations: {self.constellations}\n'
+            f'...'
+        )
+
     @classmethod
     def from_buffer(cls, buf: IBuffer):
         scr = cls()
@@ -616,35 +767,35 @@ class SCR:
         buf.read_uint()
 
         for _i in range(buf.read_uint()):
-            e = Var.from_buffer(buf)
+            e = Var.from_buffer(buf, scr)
             scr.globalvars.append(e)
 
         scr.globalcode = buf.read_wstr()
 
         for _ in range(buf.read_uint()):
-            e = Var.from_buffer(buf)
+            e = Var.from_buffer(buf, scr)
             scr.localvars.append(e)
 
         scr.constellations = buf.read_int()
 
         for _ in range(buf.read_uint()):
-            e = Star.from_buffer(buf)
+            e = Star.from_buffer(buf, scr)
             scr.stars.append(e)
 
         for _ in range(buf.read_uint()):
-            e = Place.from_buffer(buf)
+            e = Place.from_buffer(buf, scr)
             scr.places.append(e)
 
         for _ in range(buf.read_uint()):
-            e = Item.from_buffer(buf)
+            e = Item.from_buffer(buf, scr)
             scr.items.append(e)
 
         for _ in range(buf.read_uint()):
-            e = Group.from_buffer(buf)
+            e = Group.from_buffer(buf, scr)
             scr.groups.append(e)
 
         for _ in range(buf.read_uint()):
-            e = GroupLink.from_buffer(buf)
+            e = GroupLink.from_buffer(buf, scr)
             scr.grouplinks.append(e)
 
         scr.initcode = buf.read_wstr()
@@ -652,19 +803,19 @@ class SCR:
         scr.dialogbegincode = buf.read_wstr()
 
         for _ in range(buf.read_uint()):
-            e = State.from_buffer(buf)
+            e = State.from_buffer(buf, scr)
             scr.states.append(e)
 
         for _ in range(buf.read_uint()):
-            e = Dialog.from_buffer(buf)
+            e = Dialog.from_buffer(buf, scr)
             scr.dialogs.append(e)
 
         for _ in range(buf.read_uint()):
-            e = DialogMsg.from_buffer(buf)
+            e = DialogMsg.from_buffer(buf, scr)
             scr.dialog_msgs.append(e)
 
         for _ in range(buf.read_uint()):
-            e = DialogAnswer.from_buffer(buf)
+            e = DialogAnswer.from_buffer(buf, scr)
             scr.dialog_answers.append(e)
 
         return scr

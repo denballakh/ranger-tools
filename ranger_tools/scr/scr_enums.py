@@ -9,6 +9,7 @@ __all__ = [
     'GOVERNMENT_FLAG',
     'WEAPON',
     'VAR_TYPE',
+    'VAR_TYPE_S',
     'FRIENDSHIP',
     'PLACE_TYPE',
     'MOVE_TYPE',
@@ -120,6 +121,14 @@ class VAR_TYPE(IntEnum):
     FLOAT = 3
     STRING = 4
     ARRAY = 9
+
+class VAR_TYPE_S(IntEnum):
+    UNKNOWN = 0
+    INTEGER = 1
+    DWORD = 2
+    STRING = 3
+    FLOAT = 4
+    ARRAY = 5
 
 class FRIENDSHIP(IntEnum):
     FREE = 0
