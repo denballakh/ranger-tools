@@ -1,24 +1,24 @@
 from enum import IntEnum, IntFlag
 
-__all__ = [
-    'RACE',
-    'RACE_FLAG',
-    'OWNER_FLAG',
-    'SHIP_TYPE_FLAG',
-    'ECONOMY_FLAG',
-    'GOVERNMENT_FLAG',
-    'WEAPON',
-    'VAR_TYPE',
-    'VAR_TYPE_S',
-    'FRIENDSHIP',
-    'PLACE_TYPE',
-    'MOVE_TYPE',
-    'OP_TYPE',
-    'RELATION',
-    'ETHER_TYPE',
-    'ITEM_TYPE',
-    'EQUIPMENT_TYPE',
-]
+# __all__ = [
+#     'RACE',
+#     'RACE_FLAG',
+#     'OWNER_FLAG',
+#     'SHIP_TYPE_FLAG',
+#     'ECONOMY_FLAG',
+#     'GOVERNMENT_FLAG',
+#     'WEAPON',
+#     'VAR_TYPE',
+#     'VAR_TYPE_S',
+#     'FRIENDSHIP',
+#     'PLACE_TYPE',
+#     'MOVE_TYPE',
+#     'OP_TYPE',
+#     'RELATION',
+#     'ETHER_TYPE',
+#     'ITEM_TYPE',
+#     'EQUIPMENT_TYPE',
+# ]
 
 class RACE(IntEnum):
     MALOC = 0
@@ -129,6 +129,24 @@ class VAR_TYPE_S(IntEnum):
     STRING = 3
     FLOAT = 4
     ARRAY = 5
+
+VAR_TYPE_DECOMPILATION = {
+    0: 0,
+    1: 1,
+    2: 2,
+    3: 4,
+    4: 3,
+    9: 5,
+}
+
+VAR_TYPE_COMPILATION = {
+    0: 0,
+    1: 1,
+    2: 2,
+    3: 4,
+    4: 3,
+    5: 9,
+}
 
 class FRIENDSHIP(IntEnum):
     FREE = 0

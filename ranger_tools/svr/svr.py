@@ -4,6 +4,17 @@ from ..scr import *
 def rgb_to_dword(r, g, b):
     return (b << 16) | (g << 8) | r
 
+def pos_gen(size, step = 20):
+    n = 0
+    while True:
+        y, x = divmod(n, size)
+        n += 1
+        yield Point(x * step, y * step)
+
+pos_gen = pos_gen(30, 20)
+
+
+
 class MinMax:
     __slots__ = ['min', 'max']
     def __repr__(self) -> str:
@@ -33,15 +44,16 @@ class Status:
         self.pirate = pirate
 
 class Rect:
-    __slots__ = "top", "left", "width", "height"
+    __slots__ = "top", "left", "right", "bottom"
     def __repr__(self):
-        return f'<Rect: top={self.top!r} left={self.left!r} width={self.width!r} height={self.height!r}>'
+        return f'<Rect: top={self.top!r} left={self.left!r} right={self.right!r} bottom={self.bottom!r}>'
 
-    def __init__(self, top, left, width, height):
+    def __init__(self, top, left, right, bottom):
         self.top = top
         self.left = left
-        self.width = width
-        self.height = height
+        self.right = right
+        self.bottom = bottom
+
 
 
 class GraphPoint:
@@ -75,8 +87,6 @@ class GraphPoint:
 
         return self
 
-
-
 class GraphLink:
     classname = "TGraphLink"
     def __repr__(self) -> str:
@@ -106,7 +116,6 @@ class GraphLink:
         self.ord_num = buf.read_uint()
         self.has_arrow = buf.read_bool()
         return self
-
 
 class GraphRect:
     classname = "TGraphRectText"
@@ -162,7 +171,6 @@ class GraphRect:
         s.write_bool(self.is_underline)
 
     def from_buffer(self, s: IBuffer):
-        self.classname = s.read_wstr()
         self.rect.top = s.read_int()
         self.rect.left = s.read_int()
         self.rect.right = s.read_int()
@@ -206,7 +214,7 @@ class Star(GraphPoint):
 
     def to_buffer(self, s):
         GraphPoint.to_buffer(self, s)
-        s.write_uint(self.constellation)
+        s.write_int(self.constellation)
         s.write_uint(self.priority)
         s.write_bool(self.is_subspace)
         s.write_bool(self.no_kling)
@@ -214,15 +222,13 @@ class Star(GraphPoint):
 
     def from_buffer(self, s: IBuffer):
         GraphPoint.from_buffer(self, s)
-        self.constellation = s.read_uint()
+        self.constellation = s.read_int()
         self.priority = s.read_uint()
         self.is_subspace = s.read_bool()
         self.no_kling = s.read_bool()
         self.no_come_kling = s.read_bool()
 
         return self
-
-
 
 class Planet(GraphPoint):
     classname = "TPlanet"
@@ -265,8 +271,6 @@ class Planet(GraphPoint):
         self.dialog = s.read_int()
 
         return self
-
-
 
 class Ship(GraphPoint):
     classname = "TStarShip"
@@ -339,8 +343,6 @@ class Ship(GraphPoint):
 
         return self
 
-
-
 class Item(GraphPoint):
     classname = "TItem"
     def __repr__(self) -> str:
@@ -381,8 +383,6 @@ class Item(GraphPoint):
 
         return self
 
-
-
 class Place(GraphPoint):
     classname = "TPlace"
 
@@ -418,8 +418,6 @@ class Place(GraphPoint):
         self.obj = s.read_int()
 
         return self
-
-
 
 class Group(GraphPoint):
     classname = "TGroup"
@@ -513,8 +511,6 @@ class Group(GraphPoint):
 
         return self
 
-
-
 class State(GraphPoint):
     classname = "TState"
 
@@ -574,7 +570,6 @@ class State(GraphPoint):
 
         return self
 
-
 class ExprOp(GraphPoint):
     classname = "Top"
 
@@ -601,8 +596,6 @@ class ExprOp(GraphPoint):
         self.type = OP_TYPE(s.read_byte())
 
         return self
-
-
 
 class ExprIf(GraphPoint):
     classname = "Tif"
@@ -631,8 +624,6 @@ class ExprIf(GraphPoint):
 
         return self
 
-
-
 class ExprWhile(GraphPoint):
     classname = "Twhile"
 
@@ -660,8 +651,6 @@ class ExprWhile(GraphPoint):
 
         return self
 
-
-
 class ExprVar(GraphPoint):
     classname = "TVar"
 
@@ -671,7 +660,7 @@ class ExprVar(GraphPoint):
 
     def __init__(self, script, pos=None, text="VarNew"):
         GraphPoint.__init__(self, script, pos, text)
-        self.type = VAR_TYPE_S.UNKNOWN  # svar
+        self.type = VAR_TYPE_S.UNKNOWN
         self.init_value = ""
         self.is_global = False
 
@@ -681,7 +670,7 @@ class ExprVar(GraphPoint):
     def to_buffer(self, s):
         GraphPoint.to_buffer(self, s)
         s.write_uint(int(self.type))
-        s.write_wstr(self.init_value)
+        s.write_wstr(str(self.init_value))
         s.write_bool(self.is_global)
 
     def from_buffer(self, s: IBuffer):
@@ -691,8 +680,6 @@ class ExprVar(GraphPoint):
         self.is_global = s.read_bool()
 
         return self
-
-
 
 class Ether(GraphPoint):
     classname = "TEther"
@@ -731,8 +718,6 @@ class Ether(GraphPoint):
 
         return self
 
-
-
 class Dialog(GraphPoint):
     classname = "TDialog"
     def __repr__(self) -> str:
@@ -751,8 +736,6 @@ class Dialog(GraphPoint):
         GraphPoint.from_buffer(self, s)
 
         return self
-
-
 
 class DialogMsg(GraphPoint):
     classname = "TDialogMsg"
@@ -775,8 +758,6 @@ class DialogMsg(GraphPoint):
         self.msg = s.read_wstr()
 
         return self
-
-
 
 class DialogAnswer(GraphPoint):
     classname = "TDialogAnswer"
@@ -801,7 +782,6 @@ class DialogAnswer(GraphPoint):
         self.msg = s.read_wstr()
 
         return self
-
 
 
 class StarLink(GraphLink):
@@ -842,8 +822,6 @@ class StarLink(GraphLink):
 
         return self
 
-
-
 class GroupLink(GraphLink):
     classname = "TGroupLink"
 
@@ -854,7 +832,7 @@ class GroupLink(GraphLink):
     def __init__(self, script, begin=None, end=None, ord_num=0,
                  has_arrow=True):
         GraphLink.__init__(self, script, begin, end, ord_num, has_arrow)
-        self.relations = [rel_.NOCHANGE, rel_.NOCHANGE]
+        self.relations = [RELATION.NOCHANGE, RELATION.NOCHANGE]
         self.war_weight = MinMax(0.0, 1000.0)
 
     def __post_init__(self):
@@ -917,31 +895,45 @@ class SVR:
         self.textfilenames = []
         self.textfilenames.append(['rus', ''])
         self.translations = []
-        self.translations_id = []
+        # self.translations_id = []
 
         self.graphpoints = []
         self.graphlinks = []
         self.graphrects = []
 
-    # def add(self, clsname, pos=None):
-    #     if not pos:
-    #         pos = random_point()
-    #     gp = classnames[clsname](self, pos)
-    #     self.graphpoints.append(gp)
-    #     return gp
+    def add(self, clsname, pos=None):
+        if not pos:
+            pos = next(pos_gen)
+        gp = classnames_points[clsname](self, pos)
+        self.graphpoints.append(gp)
+        return gp
 
-    # def link(self, begin, end):
-    #     if isinstance(begin, Star) and isinstance(end, Star):
-    #         gl = StarLink(self, begin, end)
-    #     elif isinstance(begin, Group) and isinstance(end, Group):
-    #         gl = GroupLink(self, begin, end)
-    #     elif isinstance(begin, State) and isinstance(end, State):
-    #         gl = StateLink(self, begin, end)
-    #     else:
-    #         gl = GraphLink(self, begin, end)
-    #     self.graphlinks.append(gl)
-    #     # end.pos = near_point(begin.pos)
-    #     return gl
+    def link(self, begin, end):
+        if begin is None or end is None:
+            print(begin, end)
+            return
+
+        if isinstance(begin, Star) and isinstance(end, Star):
+            gl = StarLink(self, begin, end)
+        elif isinstance(begin, Group) and isinstance(end, Group):
+            gl = GroupLink(self, begin, end)
+        elif isinstance(begin, State) and isinstance(end, State):
+            gl = StateLink(self, begin, end)
+        else:
+            gl = GraphLink(self, begin, end)
+        self.graphlinks.append(gl)
+        # end.pos = near_point(begin.pos)
+        return gl
+
+    def get(self, classname, n):
+        cnt = 0
+        for gp in self.graphpoints:
+            if gp.classname == classname:
+                if cnt == n:
+                    return gp
+                cnt += 1
+        return None
+
 
     def find(self, name):
         if name == "": return None
@@ -955,10 +947,13 @@ class SVR:
             gp = self.find(gp)
         if not gp:
             return -1
-        return self.graphpoints.index(gp)
+        try:
+            return self.graphpoints.index(gp)
+        except:
+            return -1
 
     def find_link_begin(self, gp, clsname):
-        cls = classnames[clsname]
+        cls = classnames_points[clsname]
         for gl in self.graphlinks:
             if (gl.begin is gp) and isinstance(gl.end, cls):
                 return gl
@@ -973,9 +968,21 @@ class SVR:
         s.write_wstr(self.name)
         s.write_wstr(self.filename)
 
-        # self.textfilenames.save(s)
-        # self.translations.save(s)
-        # self.translations_id.save(s)
+        s.write_byte(0)
+        s.write_uint(len(self.textfilenames))
+        for lang, filename in self.textfilenames:
+            s.write_byte(1)
+            s.write_wstr(lang)
+            s.write_wstr(filename)
+
+
+        s.write_bytes(b'\0' * 6)
+        s.write_uint(len(self.translations))
+        for tr_id, tran in self.translations:
+            s.write_byte(1)
+            s.write_wstr(tr_id)
+            s.write_wstr(tran)
+
 
         s.write_uint(len(self.graphpoints))
         for gp in self.graphpoints:
@@ -998,23 +1005,26 @@ class SVR:
             self.viewpos.y = s.read_int()
             self.name = s.read_wstr()
             self.filename = s.read_wstr()
-            s.read(6)
+
             self.textfilenames = []
-            for _ in range(1):
+            _x = s.read_byte()
+            assert _x == 0, _x
+            for _ in range(s.read_uint()):
+                _x = s.read_byte()
+                assert _x == 1, _x
                 self.textfilenames.append([s.read_wstr(), s.read_wstr()])
-            s.read(6)
+            _x = s.read(6)
+            assert _x == b'\0' * 6
 
             self.translations = []
-            self.translations_id = []
+            for _ in range(s.read_uint()):
+                _x = s.read_byte()
+                assert _x == 1, _x
+                self.translations.append([s.read_wstr(), s.read_wstr()])
 
             self.graphpoints = []
-            c = s.read_uint()
-            if c == 0:
-                c = s.read_uint()
-            else:
-                s.read(1)
-            print(c)
-            for _ in range(c):
+
+            for _ in range(s.read_uint()):
                 t = s.read_wstr()
                 g = classnames_points[t](self)
                 g.from_buffer(s)
@@ -1045,7 +1055,8 @@ class SVR:
 
         except:
             print(hex(s.pos))
-            print(vars(self))
+            # print(vars(self))
+            # return self
             1/0
 
         return self
@@ -1072,12 +1083,15 @@ class SVR:
 
 
 classnames_points = {v.classname: v for v in (
-    Star, Planet, Ship, Item, Place, Group, State, ExprOp, ExprIf, ExprWhile,
-    ExprVar, Ether, Dialog, DialogMsg, DialogAnswer
+    GraphPoint, Star, Planet, Ship, Item, Place, Group, State,
+    ExprOp, ExprIf, ExprWhile, ExprVar, Ether,
+    Dialog, DialogMsg, DialogAnswer,
 )}
+
 classnames_links = {v.classname: v for v in (
-    GraphLink, GroupLink, StateLink, StarLink
+    GraphLink, GroupLink, StateLink, StarLink,
 )}
+
 classnames_rects = {v.classname: v for v in (
     GraphRect,
 )}

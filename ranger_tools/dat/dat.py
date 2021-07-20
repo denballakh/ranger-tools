@@ -3,14 +3,12 @@ import random
 
 from ..io import IBuffer, OBuffer, AbstractIBuffer
 
-# заглушки для подписи
-# если рядом с текущим файлом есть файл dat_sign.py, то код возьмется оттуда
-def get_sign(_: bytes) -> bytes: return b''
-def check_signed(_: bytes) -> bool: return False
 try:
-    exec(open('\\'.join(__file__.split('\\')[:-1]) + '\\dat_sign.py', 'rt').read())
-except:
-    pass
+    from dat_sign import get_sign, check_signed
+except ImportError:
+    def get_sign(_: bytes) -> bytes: return b''
+    def check_signed(_: bytes) -> bool: return False
+
 
 __all__ = [
     'DAT',
@@ -18,17 +16,14 @@ __all__ = [
 ]
 
 
-# значения, с которыми поксорены зерна для генератора
 ENCRYPTION_KEYS = {
     'SR1': 0,
-    'ReloadMain': 1050086386, # '0x3e970bf2' BE970BF1
-    'ReloadCache': 1929242201, # '0x72fde659' F2FDE658
-    'HDMain': -1310144887, # '-0x4e173977' ce173976 B1E8C689 я не знаю че это за числа, я запутался
-    'HDCache': -359710921, # '-0x1570c0c9' 9570c0c8 EA8F3F37
+    'ReloadMain': 1050086386,
+    'ReloadCache': 1929242201,
+    'HDMain': -1310144887,
+    'HDCache': -359710921,
 }
 
-# не все начальные значения зерен подходят для игры, так что можно брыть зерна, которые работают
-# тут прописано только одно из возможных значений, на самом деле их намного больше
 FORMAT_DEFAULT_SEEDS = {
     'SR1': 0,
     'ReloadMain': 955121797,
@@ -156,13 +151,18 @@ def guess_file_format(filename: str) -> str:
 
 class DAT:
 
-    def __init__(self, root):
-        self.root = root
+    def __init__(self, root=None):
+        self.root = root or DATItem()
         self.fmt = None
 
     def __repr__(self):
         return self.to_str()
 
+    def copy(self):
+        dat = self.__class__()
+        dat.root = self.root.copy()
+        dat.fmt = self.fmt
+        return dat
 
 
     @classmethod
@@ -232,14 +232,22 @@ class DATItem:
     BLOCK = 2
 
     def __init__(self):
-        self.type = None
+        self.type = DATItem.BLOCK
         self.name: str = ''
         self.value: str = ''
         self.childs: list[DATItem] = []
-        self.sorted: int = None
+        self.sorted: int = True
 
     def __repr__(self) -> str:
         return self.to_str()
+
+    def copy(self):
+        item = self.__class__()
+        item.type = self.type
+        item.name = self.name
+        item.value = self.value
+        item.childs = [ch.copy() for ch in self.childs]
+        item.sorted = self.sorted
 
     @classmethod
     def from_str_buffer(cls, buf: AbstractIBuffer) -> 'DATItem':

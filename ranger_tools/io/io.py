@@ -49,6 +49,9 @@ class IBuffer:
     def read_byte(self) -> int:
         return self.read(1)[0]
 
+    def read_word(self, byteorder='little') -> int:
+        return int.from_bytes(self.read(2), byteorder=byteorder, signed=False)
+
     def read_int(self, byteorder='little') -> int:
         return int.from_bytes(self.read(4), byteorder=byteorder, signed=True)
 
@@ -168,6 +171,9 @@ class OBuffer:
 
     def write_bytes(self, data: bytes):
         self.data.extend(data)
+
+    def write_word(self, n: int, byteorder: str = 'little'):
+        self.write_bytes(n.to_bytes(2, byteorder=byteorder, signed=False))
 
     def write_int(self, n: int, byteorder: str = 'little'):
         self.write_bytes(n.to_bytes(4, byteorder=byteorder, signed=True))
@@ -301,6 +307,12 @@ class Buffer:
 
         self.pos = pos
 
+    def __iter__(self):
+        i = self.pos
+        while i < len(self.data):
+            yield self.data[i]
+            i += 1
+
     def read(self, n: Union[int, None] = None) -> bytearray:
         if n is None:
             n = len(self.data) - self.pos
@@ -312,11 +324,6 @@ class Buffer:
         self.data[self.pos : self.pos + len(data)] = data
         self.pos += len(data)
 
-    def __iter__(self):
-        i = self.pos
-        while i < len(self.data):
-            yield self.data[i]
-            i += 1
 
     def load(self, buf: 'Buffer'):
         self.write(buf.read())
@@ -327,8 +334,8 @@ class Buffer:
 
     def load_file(self, path: str):
         with open(path, 'rb') as file:
-            self.write(file.read())
+            self.load(file)
 
     def save_file(self, path: str):
         with open(path, 'wb') as file:
-            file.write(self.read())
+            self.save(file)
