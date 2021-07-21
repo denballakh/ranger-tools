@@ -2,7 +2,7 @@ import zlib
 import os
 import time
 
-from ..io import IBuffer, OBuffer
+from ..io import Buffer
 from ..common import check_dir
 
 __all__ = [
@@ -47,46 +47,46 @@ class PKGItem:
     def _compress(cls, data) -> bytes:
         assert 0 < COMPRESS_CHUNK_SIZE <= COMPRESS_CHUNK_MAX_SIZE, f'Invalid COMPRESS_CHUNK_SIZE: {COMPRESS_CHUNK_SIZE}. Should be in range from 1 to {COMPRESS_CHUNK_MAX_SIZE}'
         chunks = []
-        din = IBuffer.from_bytes(data)
-        while not din.end():
-            buf = din.read(min(COMPRESS_CHUNK_SIZE, len(din)))
+        din = Buffer(data)
+        while din:
+            buf = din.read(min(COMPRESS_CHUNK_SIZE, din.bytes_remains()))
             chunks.append(buf)
-        dout = OBuffer()
+        dout = Buffer()
         for chunk in chunks:
             comp = zlib.compress(chunk, level=9)
             dout.write_uint(len(comp) + 8)
-            dout.write_bytes(b'ZL02')
+            dout.write(b'ZL02')
             dout.write_uint(len(chunk))
-            dout.write_bytes(comp)
-        result = dout.to_bytes()
+            dout.write(comp)
+        result = bytes(dout)
         return result
 
     @classmethod
     def _decompress(cls, data) -> bytes:
-        din = IBuffer.from_bytes(data)
-        dout = OBuffer()
+        din = Buffer(data)
+        dout = Buffer()
 
-        while not din.end():
+        while din:
             bufsize = din.read_uint()
             buf = din.read(bufsize)
 
-            bufin = IBuffer.from_bytes(buf)
+            bufin = Buffer(buf)
 
             zl02 = bufin.read(4)
             assert zl02 == b'ZL02', f'Invalid ZL signature: {zl02}'
             unpacked_size = bufin.read_uint()
             unpacked = zlib.decompress(bufin.read())
             assert len(unpacked) == unpacked_size
-            dout.write_bytes(unpacked)
+            dout.write(unpacked)
 
-        result = dout.to_bytes()
+        result = bytes(dout)
         return result
 
     def decompressed_size(self):
         if self.type == PKG_DATATYPE_ZLIB:
-            din = IBuffer.from_bytes(self.data)
+            din = Buffer(self.data)
             result = 0
-            while not din.end():
+            while din:
                 bufsize = din.read_uint()
                 din.read(4)
                 result += din.read_uint()
@@ -182,24 +182,24 @@ class PKGItem:
         assert full_path in offsets, f'Unknown error while calculating offsets: {offsets}'
         offset = offsets[full_path]
 
-        result = OBuffer()
+        result = Buffer()
         result.write_uint(size)
         result.write_uint(original_size)
         result.write_str(self.name.upper(), 63)
         result.write_str(self.name, 63)
         result.write_uint(self.type)
         result.write_uint(self.type)
-        result.write_bytes(b'\0\0\0\0')
-        result.write_bytes(b'\0\0\0\0')
+        result.write(b'\0\0\0\0')
+        result.write(b'\0\0\0\0')
         result.write_uint(offset)
-        result.write_bytes(b'\0\0\0\0')
+        result.write(b'\0\0\0\0')
 
-        return result.to_bytes()
+        return bytes(result)
 
     def to_bytes(self, offsets: dict[str, int]):
-        buf = OBuffer()
+        buf = Buffer()
         self.to_buffer(buf, offsets)
-        return buf.to_bytes()
+        return bytes(buf)
 
     def check_offsets(self, offset: int, offsets: dict[str, int]):
         size = 0
@@ -213,22 +213,22 @@ class PKGItem:
             size += 4 + len(self.data)
         return size
 
-    def to_buffer(self, buf: OBuffer, offsets: dict[str, int]) -> OBuffer:
+    def to_buffer(self, buf: Buffer, offsets: dict[str, int]) -> Buffer:
         if self.type == PKG_DATATYPE_DIR:
-            buf.write_bytes(b'\xaa\0\0\0') # zero1
+            buf.write(b'\xaa\0\0\0') # zero1
             buf.write_uint(len(self.childs))
-            buf.write_bytes(b'\x9e\0\0\0') # zero2
+            buf.write(b'\x9e\0\0\0') # zero2
 
             for child in self.childs:
                 data = child.header(offsets)
-                buf.write_bytes(data)
+                buf.write(data)
 
             for child in self.childs:
                 child.to_buffer(buf, offsets)
 
         else:
             buf.write_uint(len(self.data))
-            buf.write_bytes(self.data)
+            buf.write(self.data)
         return buf
 
 
@@ -236,7 +236,7 @@ class PKGItem:
     def from_bytes(cls, data: bytes, offset: int) -> list['PKGItem']:
         result = []
 
-        din = IBuffer.from_bytes(data)
+        din = Buffer(data)
         din.pos = offset
 
         din.skip(4)
@@ -289,7 +289,7 @@ class PKG:
         if metadata is None:
             self.metadata = b'[timestamp: ' + str(int(time.time())).encode() + b']'
         else:
-            self.metadata = metadata
+            self.metadata = bytes(metadata)
 
     def __repr__(self) -> str:
         return '' + \
@@ -305,7 +305,7 @@ class PKG:
     def from_pkg(cls, filename: str):
         with open(filename, 'rb') as fp:
             data = fp.read()
-        din = IBuffer.from_bytes(data)
+        din = Buffer(data)
         offset = din.read_uint()
         metadata = din.read(offset - 4)
 
@@ -321,18 +321,17 @@ class PKG:
     def to_pkg(self, filename: str):
         root = self.root
 
-        result = OBuffer()
+        result = Buffer()
         result.write_uint(4 + len(self.metadata))
-        result.write_bytes(self.metadata)
+        result.write(self.metadata)
 
         offsets = {}
         root.check_offsets(4 + len(self.metadata), offsets)
-        data = root.to_bytes(offsets)
-        result.write_bytes(data)
+        root.to_buffer(result, offsets)
 
         check_dir(filename)
         with open(filename, 'wb') as fp:
-            fp.write(result.to_bytes())
+            fp.write(bytes(result))
 
 
     @classmethod

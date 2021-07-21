@@ -17,7 +17,7 @@ GI header - 64 байта:
 0x1c: g_bitmask
 0x20: b_bitmask
 0x24: a_bitmask
-0x28: frame_type - тип слоя (0, 1, 2, 3, 4, 5)
+0x28: frame_type - тип слоя 0..5
 0x2c: layer_count - количество слоев
 0x30: unknown1 - countUpdateRect
 0x34: unknown2 - smeUpdateRect
@@ -43,6 +43,8 @@ Frame type 1:
     Один слой:
         RGB16 оптимизированный (пустые пиксели пропущены)
 Frame type 2: 
+    size, width, height, 0x00 - 16 байт перед данными каждого слоя
+        size - длина данных слоя после этих 16 байт, на 16 меньше, чем в заголовке слоя
     Три слоя: 
         RGB16 - непрозрачные пиксели
         RGB16 - полупрозрачные пиксели

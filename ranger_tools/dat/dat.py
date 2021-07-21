@@ -1,7 +1,7 @@
 import zlib
 import random
 
-from ..io import IBuffer, OBuffer, AbstractIBuffer
+from ..io import Buffer, AbstractIBuffer
 
 try:
     from dat_sign import get_sign, check_signed
@@ -43,14 +43,14 @@ def _rand31pm(seed: int) -> int:
 
 # расшифровывает данные и сверяет хеш расшифрованных данных
 def decipher(data: bytes, key: int) -> bytes:
-    din = IBuffer.from_bytes(data)
+    din = Buffer(data)
     content_hash = din.read_uint()
     seed = din.read_int() ^ key
     rnd = _rand31pm(seed)
-    dout = OBuffer()
+    dout = Buffer()
     while not din.end():
         dout.write_byte(din.read_byte() ^  (next(rnd) & 0xff))
-    result = dout.to_bytes()
+    result = bytes(dout)
     assert zlib.crc32(result) == content_hash
     return result
 
@@ -61,13 +61,13 @@ def cipher(data: bytes, fmt: str = None) -> bytes:
     key = ENCRYPTION_KEYS[fmt]
 
     rnd = _rand31pm(seed)
-    dout = OBuffer()
+    dout = Buffer()
     dout.write_uint(zlib.crc32(data))
     dout.write_int(seed ^ key)
-    din = IBuffer.from_bytes(data)
+    din = Buffer(data)
     while not din.end():
         dout.write_byte(din.read_byte() ^  (next(rnd) & 0xff))
-    result = dout.to_bytes()
+    result = bytes(dout)
     return result
 
 # приписывает к данным подпись, если данные не подписаны, иначе возвращает исходные данные
@@ -85,7 +85,7 @@ def unsign(data: bytes):
 
 # распаковывает данные из формата ZL01
 def decompress(data: bytes) -> bytes:
-    din = IBuffer.from_bytes(data)
+    din = Buffer(data)
     zl01 = din.read(4)
     size = din.read_uint()
     buf = din.read()
@@ -98,15 +98,15 @@ def decompress(data: bytes) -> bytes:
 def compress(data: bytes) -> bytes:
     size = len(data)
     data = zlib.compress(data, level=9)
-    dout = OBuffer()
-    dout.write_bytes(b'ZL01')
+    dout = Buffer()
+    dout.write(b'ZL01')
     dout.write_uint(size)
-    dout.write_bytes(data)
-    return dout.to_bytes()
+    dout.write(data)
+    return bytes(dout)
 
 # пытается угадать формат датника, подбирая ключ шифрования
 def guess_format(data: bytes, check_hash: bool = False) -> str:
-    din = IBuffer.from_bytes(data)
+    din = Buffer(data)
     if check_signed(data):
         din.skip(8)
     content_hash = din.read(4)
@@ -114,28 +114,28 @@ def guess_format(data: bytes, check_hash: bool = False) -> str:
     zl01_ciphered = din.read(4)
 
     for keyname, key in ENCRYPTION_KEYS.items():
-        din = IBuffer.from_bytes(zl01_ciphered)
+        din = Buffer(zl01_ciphered)
         rnd = _rand31pm(seed_ciphered ^ key)
 
-        dout = OBuffer()
+        dout = Buffer()
         while not din.end():
             dout.write_byte(din.read_byte() ^  (next(rnd) & 0xff))
-        zl01 = dout.to_bytes()
+        zl01 = bytes(dout)
 
         if zl01 != b'ZL01':
             continue
         if not check_hash:
             return keyname
 
-        din = IBuffer.from_bytes(data)
+        din = Buffer(data)
         _ = din.read_uint()
         _ = din.read_int()
         rnd = _rand31pm(seed_ciphered ^ key)
 
-        dout = OBuffer()
+        dout = Buffer()
         while not din.end():
             dout.write_byte(din.read_byte() ^  (next(rnd) & 0xff))
-        result = dout.to_bytes()
+        result = bytes(dout)
 
         if zlib.crc32(result) == content_hash:
             return keyname
@@ -321,7 +321,7 @@ class DATItem:
         raise TypeError
 
     @classmethod
-    def from_buffer(cls, din: IBuffer, fmt: str) -> 'DATItem':
+    def from_buffer(cls, din: Buffer, fmt: str) -> 'DATItem':
         item = cls()
         item.type = din.read_byte()
 
@@ -363,7 +363,7 @@ class DATItem:
 
         return item
 
-    def to_buffer(self, dout: OBuffer, fmt: str):
+    def to_buffer(self, dout: Buffer, fmt: str):
         dout.write_byte(self.type)
         if self.type == self.PAR:
             dout.write_wstr(self.name)
@@ -376,7 +376,7 @@ class DATItem:
 
             for child in self.childs:
                 if fmt in {'HDMain', 'ReloadMain'} and self.sorted:
-                    dout.write_bytes(b'\0\0\0\0\1\0\0\0')
+                    dout.write(b'\0\0\0\0\1\0\0\0')
                 child.to_buffer(dout, fmt=fmt)
         else:
             raise TypeError
@@ -384,12 +384,12 @@ class DATItem:
     @classmethod
     def from_bytes(cls, data: bytes, fmt: str) -> 'DATItem':
         open('OUTPUT.txt', 'wb').write(data)
-        return cls.from_buffer(IBuffer.from_bytes(data), fmt=fmt)
+        return cls.from_buffer(Buffer(data), fmt=fmt)
 
     def to_bytes(self, fmt: str) -> bytes:
-        dout = OBuffer()
+        dout = Buffer()
         self.to_buffer(dout, fmt=fmt)
-        data = dout.to_bytes()
+        data = bytes(dout)
         return data
 
 

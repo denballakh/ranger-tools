@@ -1,5 +1,6 @@
 from ..io import IBuffer, OBuffer
 
+raise NotImplementedError()
 
 class NOT_SET_TYPE:
     _instance = None

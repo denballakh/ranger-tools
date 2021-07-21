@@ -1,4 +1,4 @@
-from ..io import IBuffer, OBuffer
+from ..io import Buffer
 from ..scr import *
 
 def rgb_to_dword(r, g, b):
@@ -71,14 +71,14 @@ class GraphPoint:
     def __post_init__(self):
         pass
 
-    def to_buffer(self, buf: OBuffer):
+    def to_buffer(self, buf: Buffer):
         buf.write_wstr(self.classname)
         buf.write_int(self.pos.x)
         buf.write_int(self.pos.y)
         buf.write_wstr(self.text)
         buf.write_int(-1)
 
-    def from_buffer(self, buf: IBuffer):
+    def from_buffer(self, buf: Buffer):
         self.pos.x = buf.read_int()
         self.pos.y = buf.read_int()
         self.text = buf.read_wstr()
@@ -110,7 +110,7 @@ class GraphLink:
         s.write_uint(self.ord_num)
         s.write_bool(self.has_arrow)
 
-    def from_buffer(self, buf: IBuffer):
+    def from_buffer(self, buf: Buffer):
         self.begin = buf.read_int()
         self.end = buf.read_int()
         self.ord_num = buf.read_uint()
@@ -147,7 +147,7 @@ class GraphRect:
     def __post_init__(self):
         pass
 
-    def to_buffer(self, s):
+    def to_buffer(self, s: Buffer):
         s.write_wstr(self.classname)
         s.write_int(self.rect.top)
         s.write_int(self.rect.left)
@@ -170,7 +170,7 @@ class GraphRect:
         s.write_bool(self.is_italic)
         s.write_bool(self.is_underline)
 
-    def from_buffer(self, s: IBuffer):
+    def from_buffer(self, s: Buffer):
         self.rect.top = s.read_int()
         self.rect.left = s.read_int()
         self.rect.right = s.read_int()
@@ -220,7 +220,7 @@ class Star(GraphPoint):
         s.write_bool(self.no_kling)
         s.write_bool(self.no_come_kling)
 
-    def from_buffer(self, s: IBuffer):
+    def from_buffer(self, s: Buffer):
         GraphPoint.from_buffer(self, s)
         self.constellation = s.read_int()
         self.priority = s.read_uint()
@@ -259,7 +259,7 @@ class Planet(GraphPoint):
         s.write_int(self.range.max)
         s.write_int(self._script.index(self.dialog))
 
-    def from_buffer(self, s: IBuffer):
+    def from_buffer(self, s: Buffer):
         GraphPoint.from_buffer(self, s)
 
         self.race = RACE_FLAG(s.read_uint())
@@ -325,7 +325,7 @@ class Ship(GraphPoint):
         s.write_float(self.strength.max)
         s.write_wstr(self.ruins)
 
-    def from_buffer(self, s: IBuffer):
+    def from_buffer(self, s: Buffer):
         GraphPoint.from_buffer(self, s)
         self.count = s.read_int()
         self.owner = OWNER_FLAG(s.read_uint())
@@ -371,7 +371,7 @@ class Item(GraphPoint):
         s.write_uint(int(self.owner))
         s.write_wstr(self.useless)
 
-    def from_buffer(self, s: IBuffer):
+    def from_buffer(self, s: Buffer):
         GraphPoint.from_buffer(self, s)
         self.kind = s.read_uint()
         self.type = s.read_uint()
@@ -409,7 +409,7 @@ class Place(GraphPoint):
         s.write_int(self.radius)
         s.write_int(self._script.index(self.obj))
 
-    def from_buffer(self, s: IBuffer):
+    def from_buffer(self, s: Buffer):
         GraphPoint.from_buffer(self, s)
         self.type = s.read_uint()
         self.angle = s.read_float()
@@ -479,7 +479,7 @@ class Group(GraphPoint):
         s.write_float(self.strength.max)
         s.write_wstr(self.ruins)
 
-    def from_buffer(self, s: IBuffer):
+    def from_buffer(self, s: Buffer):
         GraphPoint.from_buffer(self, s)
 
         self.owner = OWNER_FLAG(s.read_uint())
@@ -553,7 +553,7 @@ class State(GraphPoint):
         s.write_wstr(self.ether_uid)
         s.write_wstr(self.ether_msg)
 
-    def from_buffer(self, s: IBuffer):
+    def from_buffer(self, s: Buffer):
         GraphPoint.from_buffer(self, s)
         self.type = MOVE_TYPE(s.read_uint())
         self.obj = s.read_int()
@@ -590,7 +590,7 @@ class ExprOp(GraphPoint):
         s.write_wstr(self.expression)
         s.write_byte(int(self.type))
 
-    def from_buffer(self, s: IBuffer):
+    def from_buffer(self, s: Buffer):
         GraphPoint.from_buffer(self, s)
         self.expression = s.read_wstr()
         self.type = OP_TYPE(s.read_byte())
@@ -617,7 +617,7 @@ class ExprIf(GraphPoint):
         s.write_wstr(self.expression)
         s.write_byte(int(self.type))
 
-    def from_buffer(self, s: IBuffer):
+    def from_buffer(self, s: Buffer):
         GraphPoint.from_buffer(self, s)
         self.expression = s.read_wstr()
         self.type = OP_TYPE(s.read_byte())
@@ -644,7 +644,7 @@ class ExprWhile(GraphPoint):
         s.write_wstr(self.expression)
         s.write_byte(int(self.type))
 
-    def from_buffer(self, s: IBuffer):
+    def from_buffer(self, s: Buffer):
         GraphPoint.from_buffer(self, s)
         self.expression = s.read_wstr()
         self.type = OP_TYPE(s.read_byte())
@@ -673,7 +673,7 @@ class ExprVar(GraphPoint):
         s.write_wstr(str(self.init_value))
         s.write_bool(self.is_global)
 
-    def from_buffer(self, s: IBuffer):
+    def from_buffer(self, s: Buffer):
         GraphPoint.from_buffer(self, s)
         self.type = VAR_TYPE_S(s.read_uint())
         self.init_value = s.read_wstr()
@@ -706,7 +706,7 @@ class Ether(GraphPoint):
         for f in self.focus:
             s.write_wstr(f)
 
-    def from_buffer(self, s: IBuffer):
+    def from_buffer(self, s: Buffer):
         GraphPoint.from_buffer(self, s)
 
         self.type = ETHER_TYPE(s.read_uint())
@@ -732,7 +732,7 @@ class Dialog(GraphPoint):
     def to_buffer(self, s):
         GraphPoint.to_buffer(self, s)
 
-    def from_buffer(self, s: IBuffer):
+    def from_buffer(self, s: Buffer):
         GraphPoint.from_buffer(self, s)
 
         return self
@@ -753,7 +753,7 @@ class DialogMsg(GraphPoint):
         GraphPoint.to_buffer(self, s)
         s.write_wstr(self.msg)
 
-    def from_buffer(self, s: IBuffer):
+    def from_buffer(self, s: Buffer):
         GraphPoint.from_buffer(self, s)
         self.msg = s.read_wstr()
 
@@ -777,7 +777,7 @@ class DialogAnswer(GraphPoint):
         GraphPoint.to_buffer(self, s)
         s.write_wstr(self.msg)
 
-    def from_buffer(self, s: IBuffer):
+    def from_buffer(self, s: Buffer):
         GraphPoint.from_buffer(self, s)
         self.msg = s.read_wstr()
 
@@ -811,7 +811,7 @@ class StarLink(GraphLink):
         s.write_int(self.relation.max)
         s.write_bool(self.is_hole)
 
-    def from_buffer(self, s: IBuffer):
+    def from_buffer(self, s: Buffer):
         GraphLink.from_buffer(self, s)
         self.dist.min = s.read_int()
         self.dist.max = s.read_int()
@@ -846,7 +846,7 @@ class GroupLink(GraphLink):
         s.write_float(self.war_weight.max)
 
 
-    def from_buffer(self, s: IBuffer):
+    def from_buffer(self, s: Buffer):
         GraphLink.from_buffer(self, s)
         self.relations = [RELATION(s.read_uint()), RELATION(s.read_uint)]
         self.war_weight.min = s.read_float()
@@ -876,7 +876,7 @@ class StateLink(GraphLink):
         s.write_int(self.priority)
 
 
-    def from_buffer(self, s: IBuffer):
+    def from_buffer(self, s: Buffer):
         GraphLink.from_buffer(self, s)
         self.expression = s.read_wstr()
         self.priority = s.read_int()
@@ -961,7 +961,7 @@ class SVR:
     def to_buffer(self, s):
         # s = stream.from_io(f)
 
-        s.write_bytes(b'\x55\x44\x33\x22')
+        s.write(b'\x55\x44\x33\x22')
         s.write_uint(self.version)
         s.write_int(self.viewpos.x)
         s.write_int(self.viewpos.y)
@@ -976,7 +976,7 @@ class SVR:
             s.write_wstr(filename)
 
 
-        s.write_bytes(b'\0' * 6)
+        s.write(b'\0' * 6)
         s.write_uint(len(self.translations))
         for tr_id, tran in self.translations:
             s.write_byte(1)
@@ -996,8 +996,10 @@ class SVR:
         for gr in self.graphrects:
             gr.to_buffer(s)
 
-    def from_buffer(self, s):
+    @classmethod
+    def from_buffer(cls, s):
         try:
+            self = cls()
             _x = s.read(4)
             assert _x == b'\x55\x44\x33\x22', _x
             self.version = s.read_uint()
@@ -1063,13 +1065,13 @@ class SVR:
 
     @classmethod
     def from_bytes(cls, data: bytes):
-        buf = IBuffer.from_bytes(data)
-        return cls().from_buffer(buf)
+        buf = Buffer(data)
+        return cls.from_buffer(buf)
 
     def to_bytes(self) -> bytes:
-        buf = OBuffer()
+        buf = Buffer()
         self.to_buffer(buf)
-        return buf.to_bytes()
+        return bytes(buf)
 
     @classmethod
     def from_svr(cls, path: str):

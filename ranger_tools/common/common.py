@@ -1,5 +1,15 @@
 import os
 
+class Point:
+    __slots__ = ['x', 'y']
+    def __repr__(self) -> str:
+        return f'<Point: x={self.x!r} y={self.y!r}>'
+
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
+
+
 def bytes_to_int(b: bytes) -> int:
     return int.from_bytes(b, 'little', signed=True)
 
@@ -40,7 +50,7 @@ def check_dir(path):
             os.mkdir(res)
 
 
-def rgb16_to_rgb24(rgb16: list) -> list:
+def rgb16_to_rgb24(rgb16: bytes) -> tuple:
     b, a = rgb16
     x = a * 0x100 + b
     r = round((x >> 11 & 0b011111) * (0xff / 0x1f))
@@ -49,7 +59,7 @@ def rgb16_to_rgb24(rgb16: list) -> list:
 
     return [r, g, b]
 
-def rgb24_to_rgb16(rgb24: list) -> list:
+def rgb24_to_rgb16(rgb24: tuple) -> bytes:
     r, g, b = rgb24
     r = round(r / 0xff * 0x1f) << 11
     g = round(g / 0xff * 0x3f) << 5
@@ -60,4 +70,4 @@ def rgb24_to_rgb16(rgb24: list) -> list:
 
     a, b = divmod(r | g | b, 0x100)
 
-    return [b, a]
+    return bytes([b, a])

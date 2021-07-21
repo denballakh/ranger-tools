@@ -1,6 +1,6 @@
 from typing import Union
 
-from ..io import IBuffer, OBuffer
+from ..io import Buffer
 from . import *
 
 # __all__ = ['SCR']
@@ -29,8 +29,8 @@ class SCRObj:
     # def __init__(self, script): raise NotImplementedError
     def __repr__(self) -> str: pass
     @classmethod
-    def from_buffer(cls, buf: IBuffer, script: 'SCR'): pass
-    def to_buffer(self, buf: OBuffer): pass
+    def from_buffer(cls, buf: Buffer, script: 'SCR'): pass
+    def to_buffer(self, buf: Buffer): pass
 
 
 
@@ -50,7 +50,7 @@ class Var(SCRObj):
         self.value = None
 
     @classmethod
-    def from_buffer(cls, buf: IBuffer, script: 'SCR'):
+    def from_buffer(cls, buf: Buffer, script: 'SCR'):
         var = cls(script)
         var.name = buf.read_wstr()
         var.type = VAR_TYPE(buf.read_byte())
@@ -77,7 +77,7 @@ class Var(SCRObj):
 
         return var
 
-    def to_buffer(self, buf: OBuffer):
+    def to_buffer(self, buf: Buffer):
         buf.write_wstr(self.name)
         buf.write_byte(int(self.type))
         if self.type is VAR_TYPE.UNKNOWN:
@@ -117,14 +117,14 @@ class StarLink(SCRObj):
         self.is_hole = False
 
     @classmethod
-    def from_buffer(cls, buf: IBuffer, script: 'SCR'):
+    def from_buffer(cls, buf: Buffer, script: 'SCR'):
         sl = cls(script)
         sl.end_star = buf.read_uint()
         sl.distance = MinMax(buf.read_int(), buf.read_int())
         sl.is_hole = buf.read_bool()
         return sl
 
-    def to_buffer(self, buf: OBuffer):
+    def to_buffer(self, buf: Buffer):
         buf.write_uint(self.end_star)
         buf.write_int(self.distance.min)
         buf.write_int(self.distance.max)
@@ -154,7 +154,7 @@ class Planet(SCRObj):
         self.dialog = ''
 
     @classmethod
-    def from_buffer(cls, buf: IBuffer, script: 'SCR'):
+    def from_buffer(cls, buf: Buffer, script: 'SCR'):
         p = cls(script)
         p.name = buf.read_wstr()
         p.race = RACE_FLAG(buf.read_uint())
@@ -166,7 +166,7 @@ class Planet(SCRObj):
         return p
 
 
-    def to_buffer(self, buf: OBuffer):
+    def to_buffer(self, buf: Buffer):
         buf.write_wstr(self.name)
         buf.write_uint(int(self.race))
         buf.write_uint(int(self.owner))
@@ -208,7 +208,7 @@ class Ship(SCRObj):
         self.ruins = ''
 
     @classmethod
-    def from_buffer(cls, buf: IBuffer, script: 'SCR'):
+    def from_buffer(cls, buf: Buffer, script: 'SCR'):
         e = cls(script)
         e.count = buf.read_int()
         e.owner = OWNER_FLAG(buf.read_uint())
@@ -223,7 +223,7 @@ class Ship(SCRObj):
         e.ruins = buf.read_wstr()
         return e
 
-    def to_buffer(self, buf: OBuffer):
+    def to_buffer(self, buf: Buffer):
         buf.write_int(self.count)
         buf.write_uint(int(self.owner))
         buf.write_uint(int(self.type))
@@ -267,7 +267,7 @@ class Star(SCRObj):
         self.ships = []
 
     @classmethod
-    def from_buffer(cls, buf: IBuffer, script: 'SCR'):
+    def from_buffer(cls, buf: Buffer, script: 'SCR'):
         star = cls(script)
         star.name = buf.read_wstr()
         star.constellation = buf.read_int()
@@ -293,7 +293,7 @@ class Star(SCRObj):
         return star
 
 
-    def to_buffer(self, buf: OBuffer):
+    def to_buffer(self, buf: Buffer):
         buf.write_wstr(self.name)
         buf.write_int(self.constellation)
         buf.write_bool(self.no_kling)
@@ -336,7 +336,7 @@ class Place(SCRObj):
 
 
     @classmethod
-    def from_buffer(cls, buf: IBuffer, script: 'SCR'):
+    def from_buffer(cls, buf: Buffer, script: 'SCR'):
         e = cls(script)
         e.name = buf.read_wstr()
         e.star = buf.read_wstr()
@@ -368,7 +368,7 @@ class Place(SCRObj):
 
         return e
 
-    def to_buffer(self, buf: OBuffer):
+    def to_buffer(self, buf: Buffer):
         buf.write_wstr(self.name)
         buf.write_wstr(self.star)
         buf.write_uint(int(self.type))
@@ -412,7 +412,7 @@ class Item(SCRObj):
 
 
     @classmethod
-    def from_buffer(cls, buf: IBuffer, script: 'SCR'):
+    def from_buffer(cls, buf: Buffer, script: 'SCR'):
         e = cls(script)
         e.name = buf.read_wstr()
         e.place = buf.read_wstr()
@@ -426,7 +426,7 @@ class Item(SCRObj):
 
         return e
 
-    def to_buffer(self, buf: OBuffer):
+    def to_buffer(self, buf: Buffer):
         buf.write_wstr(self.name)
         buf.write_wstr(self.place)
         buf.write_uint(int(self.kind))
@@ -480,7 +480,7 @@ class Group(SCRObj):
         self.ruins = ''
 
     @classmethod
-    def from_buffer(cls, buf: IBuffer, script: 'SCR'):
+    def from_buffer(cls, buf: Buffer, script: 'SCR'):
         e = cls(script)
         e.name = buf.read_wstr()
         e.planet = buf.read_wstr()
@@ -501,7 +501,7 @@ class Group(SCRObj):
 
         return e
 
-    def to_buffer(self, buf: OBuffer):
+    def to_buffer(self, buf: Buffer):
         buf.write_wstr(self.name)
         buf.write_wstr(self.planet)
         buf.write_int(self.state)
@@ -545,7 +545,7 @@ class GroupLink(SCRObj):
         self.war_weight = MinMax(0, 1000)
 
     @classmethod
-    def from_buffer(cls, buf: IBuffer, script: 'SCR'):
+    def from_buffer(cls, buf: Buffer, script: 'SCR'):
         e = cls(script)
         e.begin = buf.read_int()
         e.end = buf.read_int()
@@ -553,7 +553,7 @@ class GroupLink(SCRObj):
         e.war_weight = MinMax(buf.read_float(), buf.read_float())
         return e
 
-    def to_buffer(self, buf: OBuffer):
+    def to_buffer(self, buf: Buffer):
         buf.write_int(self.begin)
         buf.write_int(self.end)
         buf.write_uint(int(self.relations.min))
@@ -591,7 +591,7 @@ class State(SCRObj):
         self.code = ''
 
     @classmethod
-    def from_buffer(cls, buf: IBuffer, script: 'SCR'):
+    def from_buffer(cls, buf: Buffer, script: 'SCR'):
         e = cls(script)
         e.name = buf.read_wstr()
         e.type = MOVE_TYPE(buf.read_uint())
@@ -609,7 +609,7 @@ class State(SCRObj):
 
         return e
 
-    def to_buffer(self, buf: OBuffer):
+    def to_buffer(self, buf: Buffer):
         buf.write_wstr(self.name)
         buf.write_uint(int(self.type))
         if self.type not in {MOVE_TYPE.NONE, MOVE_TYPE.FREE}:
@@ -638,13 +638,13 @@ class Dialog(SCRObj):
         self.code = ''
 
     @classmethod
-    def from_buffer(cls, buf: IBuffer, script: 'SCR'):
+    def from_buffer(cls, buf: Buffer, script: 'SCR'):
         e = cls(script)
         e.name = buf.read_wstr()
         e.code = buf.read_wstr()
         return e
 
-    def to_buffer(self, buf: OBuffer):
+    def to_buffer(self, buf: Buffer):
         buf.write_wstr(self.name)
         buf.write_wstr(self.code)
 
@@ -662,14 +662,14 @@ class DialogMsg(SCRObj):
         self.code = ''
 
     @classmethod
-    def from_buffer(cls, buf: IBuffer, script: 'SCR'):
+    def from_buffer(cls, buf: Buffer, script: 'SCR'):
         e = cls(script)
         e.command = buf.read_wstr()
         e.code = buf.read_wstr()
 
         return e
 
-    def to_buffer(self, buf: OBuffer):
+    def to_buffer(self, buf: Buffer):
         buf.write_wstr(self.command)
         buf.write_wstr(self.code)
 
@@ -689,7 +689,7 @@ class DialogAnswer(SCRObj):
         self.code = ''
 
     @classmethod
-    def from_buffer(cls, buf: IBuffer, script: 'SCR'):
+    def from_buffer(cls, buf: Buffer, script: 'SCR'):
         e = cls(script)
         e.command = buf.read_wstr()
         e.answer = buf.read_wstr()
@@ -697,7 +697,7 @@ class DialogAnswer(SCRObj):
 
         return e
 
-    def to_buffer(self, buf: OBuffer):
+    def to_buffer(self, buf: Buffer):
         buf.write_wstr(self.command)
         buf.write_wstr(self.answer)
         buf.write_wstr(self.code)
@@ -756,7 +756,7 @@ class SCR:
         )
 
     @classmethod
-    def from_buffer(cls, buf: IBuffer):
+    def from_buffer(cls, buf: Buffer):
         scr = cls()
 
         scr.version = buf.read_uint()
@@ -820,7 +820,7 @@ class SCR:
 
         return scr
 
-    def to_buffer(self, buf: OBuffer):
+    def to_buffer(self, buf: Buffer):
         buf.write_uint(self.version)
 
         buf.write_uint(0)
@@ -831,7 +831,9 @@ class SCR:
 
         buf.write_wstr(self.globalcode)
 
-        buf.data[4:8] = len(buf.data).to_bytes(4, 'little', signed=False)
+        pos = buf.push_pos(4)
+        buf.write_uint(pos)
+        buf.pop_pos()
 
         buf.write_uint(len(self.localvars))
         for e in self.localvars:
@@ -882,11 +884,11 @@ class SCR:
 
     @classmethod
     def from_bytes(cls, data: bytes):
-        buf = IBuffer.from_bytes(data)
+        buf = Buffer(data)
         return cls.from_buffer(buf)
 
     def to_bytes(self) -> bytes:
-        buf = OBuffer()
+        buf = Buffer()
         self.to_buffer(buf)
         return buf.to_bytes()
 

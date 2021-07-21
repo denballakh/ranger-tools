@@ -1,279 +1,10 @@
-from struct import pack, unpack
+from typing import Union, Iterable
+import struct
 
 __all__ = [
-    'IBuffer',
-    'OBuffer',
     'AbstractIBuffer',
+    'Buffer',
 ]
-
-class IBuffer:
-    data: bytes
-    pos: int
-
-    def __init__(self, data: bytes = b'', pos: int = 0):
-        self.data: bytes = data
-        self.pos: int = pos
-
-    def __repr__(self) -> str:
-        return f'IBuffer({self.data},{self.pos})'
-
-    @classmethod
-    def from_bytes(cls, data: bytes) -> 'IBuffer':
-        """синоним конструктора, надо вырезать"""
-        return cls(data)
-
-    @classmethod
-    def from_file(cls, path: str) -> 'IBuffer':
-        with open(path, 'rb') as file:
-            data = file.read()
-        return cls.from_bytes(data)
-
-    def end(self) -> bool:
-        return self.pos == len(self.data)
-
-    def __len__(self) -> int:
-        return len(self.data) - self.pos
-
-    def skip(self, n: int = 1):
-        self.pos += n
-
-    def read(self, n: int = -1) -> bytes:
-        if n == -1:
-            n = len(self.data) - self.pos
-        assert n >= 0
-        assert self.pos + n <= len(self.data), '[IBuffer.read] Invalid size'
-        result = self.data[self.pos : self.pos + n]
-        self.pos += n
-        return result
-
-    def read_byte(self) -> int:
-        return self.read(1)[0]
-
-    def read_word(self, byteorder='little') -> int:
-        return int.from_bytes(self.read(2), byteorder=byteorder, signed=False)
-
-    def read_int(self, byteorder='little') -> int:
-        return int.from_bytes(self.read(4), byteorder=byteorder, signed=True)
-
-    def read_uint(self, byteorder='little') -> int:
-        return int.from_bytes(self.read(4), byteorder=byteorder, signed=False)
-
-    def read_char(self) -> str:
-        return self.read(1).decode('utf-8')
-
-    def read_wchar(self) -> str:
-        return self.read(2).decode('utf-16le')
-
-    def read_str(self, size: int = -1) -> str:
-        result = ''
-
-        c = self.read_char()
-        while c != '\0':
-            result += c
-            c = self.read_char()
-
-        if size != -1 and size is not None:
-            self.pos += size - len(result) - 1
-
-        return result
-
-    def read_wstr(self, size: int = -1) -> str:
-        result = ''
-
-        c = self.read_wchar()
-        while c != '\0':
-            result += c
-            c = self.read_wchar()
-
-        if size != -1 and size is not None:
-            self.pos += (size - len(result) - 1) * 2
-
-        return result
-
-    def read_float(self) -> float:
-        data = self.read(4)
-        return unpack('<f', data)[0]
-
-    def read_double(self) -> float:
-        data = self.read(8)
-        return unpack('<d', data)[0]
-
-    def read_bool(self) -> bool:
-        return bool(self.read_byte())
-
-    def read_unknown(self, typename: str, param = None) -> ...:
-        if typename == 'int':
-            return self.read_int()
-
-        if typename == 'uint':
-            return self.read_uint()
-
-        if typename == 'byte':
-            return self.read_byte()
-
-        if typename == 'char':
-            return self.read_char()
-
-        if typename == 'wchar':
-            return self.read_wchar()
-
-        if typename == 'str':
-            return self.read_str(param)
-
-        if typename == 'wstr':
-            return self.read_wstr(param)
-
-        if typename == 'float':
-            return self.read_float()
-
-        if typename == 'double':
-            return self.read_double()
-
-        if typename == 'bool':
-            return self.read_bool()
-
-        if typename == 'bytes':
-            return self.read(param)
-
-        raise TypeError(f'Unknown value type: {typename!r}')
-
-
-
-class OBuffer:
-    data: bytearray
-
-    def __init__(self, data: bytes = b''):
-        if isinstance(data, OBuffer):
-            self.data = OBuffer.data
-
-        if isinstance(data, bytes):
-            self.data = bytearray(data)
-
-        if isinstance(data, bytearray):
-            self.data = data
-
-    def __repr__(self) -> str:
-        return f'OBuffer({self.data!r})'
-
-    def __len__(self) -> int:
-        return len(self.data)
-
-    def to_bytes(self) -> bytes:
-        return bytes(self.data)
-
-    def to_file(self, path: str):
-        with open(path, 'wb') as file:
-            file.write(self.to_bytes())
-
-    def write_byte(self, n: int = 0):
-        assert 0 <= n <= 255
-        self.data.append(n)
-
-    def write_bytes(self, data: bytes):
-        self.data.extend(data)
-
-    def write_word(self, n: int, byteorder: str = 'little'):
-        self.write_bytes(n.to_bytes(2, byteorder=byteorder, signed=False))
-
-    def write_int(self, n: int, byteorder: str = 'little'):
-        self.write_bytes(n.to_bytes(4, byteorder=byteorder, signed=True))
-
-    def write_uint(self, n: int, byteorder: str = 'little'):
-        assert n >= 0
-        self.write_bytes(n.to_bytes(4, byteorder=byteorder, signed=False))
-
-    def write_char(self, s: str):
-        assert len(s) == 1
-        self.write_bytes(s.encode('utf-8'))
-
-    def write_wchar(self, s: str):
-        assert len(s) == 1
-        self.write_bytes(s.encode('utf-16le'))
-
-    def write_str(self, s: str, size: int = -1):
-        if size == -1 or size is None:
-            self.write_bytes(s.encode('utf-8') + b'\0')
-        else:
-            self.write_bytes(s[:size].encode('utf-8') + (size - len(s)) * b'\0')
-
-    def write_wstr(self, s: str, size: int = -1):
-        if size == -1 or size is None:
-            self.write_bytes(s.encode('utf-16le') + b'\0\0')
-        else:
-            self.write_bytes(s[:size].encode('utf-16le') + (size - len(s)) * b'\0\0')
-
-    def write_float(self, f: float):
-        self.write_bytes(pack('<f', f))
-
-    def write_double(self, f: float):
-        self.write_bytes(pack('<d', f))
-
-    def write_bool(self, b: bool):
-        self.write_byte(int(b))
-
-    def write_unknown(self, typename: str, value: object, param = None):
-        if typename == 'int':
-            assert isinstance(value, int)
-            self.write_int(value)
-            return
-
-        if typename == 'uint':
-            assert isinstance(value, int)
-            assert value >= 0
-            self.write_uint(value)
-            return
-
-        if typename == 'byte':
-            assert isinstance(value, int)
-            assert 0 <= value < 256
-            self.write_byte(value)
-            return
-
-        if typename == 'char':
-            assert isinstance(value, str)
-            assert len(value) == 1
-            self.write_char(value)
-            return
-
-        if typename == 'wchar':
-            assert isinstance(value, str)
-            assert len(value) == 1
-            self.write_wchar(value)
-            return
-
-        if typename == 'str':
-            assert isinstance(value, str)
-            self.write_str(value, param)
-            return
-
-        if typename == 'wstr':
-            assert isinstance(value, str)
-            self.write_wstr(value, param)
-            return
-
-        if typename == 'float':
-            assert isinstance(value, float), (value, self)
-            self.write_float(value)
-            return
-
-        if typename == 'double':
-            assert isinstance(value, float)
-            self.write_double(value)
-            return
-
-        if typename == 'bool':
-            assert isinstance(value, bool)
-            self.write_bool(value)
-            return
-
-        if typename == 'bytes':
-            assert isinstance(value, bytes)
-            self.write_bytes(value)
-            return
-
-        raise TypeError(f'Unknown value type: {typename!r}')
-
-
 
 class AbstractIBuffer:
     def __init__(self, data: list):
@@ -289,41 +20,92 @@ class AbstractIBuffer:
     def end(self) -> bool:
         return 0 <= self.pos < len(self.data)
 
-from typing import Union
 
 class Buffer:
     data: bytearray
     pos: int
+    _position_stack: list[int]
 
-    def __init__(self, obj: Union[bytes, bytearray, 'Buffer', 'Iterable'] = b'', *, pos: int = 0):
+    def __init__(self, obj: Union['Buffer', Iterable[int]] = b'', *, pos: int = 0):
         if isinstance(obj, bytearray):
             self.data = obj
-
         elif isinstance(obj, Buffer):
             self.data = obj.data
-
         else:
             self.data = bytearray(obj)
 
         self.pos = pos
+        self._position_stack = []
 
     def __iter__(self):
-        i = self.pos
+        i = 0
         while i < len(self.data):
             yield self.data[i]
             i += 1
+
+    def __str__(self) -> str:
+        offset = 16
+        return (
+            f'Buffer('
+            f'before={bytes(self.data[max(0, self.pos - offset): self.pos])!r}, '
+            f'current={bytes(self.data[self.pos : self.pos + 1])!r} ({self.data[self.pos]}),'
+            f'after={bytes(self.data[self.pos + 1 : min(self.pos + offset, len(self.data))])!r}), '
+            f'len={len(self.data)}'
+        )
+
+    def __repr__(self) -> str:
+        return f'Buffer({self.data!r}, pos={self.pos})'
+
+    def __bool__(self) -> bool:
+        return not self.is_end()
+
+    def __len__(self) -> int:
+        return len(self.data)
+
+    def is_end(self) -> bool:
+        return self.pos >= len(self.data)
+
+    def bytes_remains(self) -> int:
+        return len(self.data) - self.pos
+
+    def pop_pos(self) -> int:
+        result = self.pos
+        self.pos = self._position_stack.pop()
+        return result
+
+    def push_pos(self, pos: int) -> int:
+        assert 0 <= pos <= len(self.data), f'Invalid buffer position: {self.pos}, len={len(self.data)}'
+        result = self.pos
+        self._position_stack.append(self.pos)
+        self.pos = pos
+        return result
+
 
     def read(self, n: Union[int, None] = None) -> bytearray:
         if n is None:
             n = len(self.data) - self.pos
         elif n < 0:
             n = len(self.data) - self.pos + n
-        return self.data[self.pos : self.pos + n]
+        assert 0 <= self.pos <= len(self.data) - n, f'Invalid buffer position: {self.pos}, len={len(self.data)}'
 
-    def write(self, data: Union[bytes, bytearray]):
+        result = bytes(self.data[self.pos : self.pos + n])
+        self.pos += n
+        return result
+
+    def write(self, data: Iterable[int]):
+        assert 0 <= self.pos <= len(self.data), f'Invalid buffer position: {self.pos}, len={len(self.data)}'
         self.data[self.pos : self.pos + len(data)] = data
         self.pos += len(data)
 
+    def seek(self, pos: int):
+        self.pos = pos
+        assert 0 <= self.pos <= len(self.data)
+
+    def reset(self):
+        self.pos = 0
+
+    def skip(self, n):
+        self.pos += n
 
     def load(self, buf: 'Buffer'):
         self.write(buf.read())
@@ -339,3 +121,96 @@ class Buffer:
     def save_file(self, path: str):
         with open(path, 'wb') as file:
             self.save(file)
+
+    @classmethod
+    def from_file(cls, path: str) -> 'Buffer':
+        buf = cls()
+        buf.load_file(path)
+        return buf
+
+
+    def write_format(self, fmt: str, *values: list['Any']):
+        self.write(struct.pack(fmt, *values))
+
+    def read_format(self, fmt: str) -> list['Any']:
+        return struct.unpack(fmt, self.read(struct.calcsize(fmt)))
+
+
+    def read_byte(self) -> int: return self.read_format('B')[0]
+    def write_byte(self, value: int): return self.write_format('B', value)
+
+    def read_bool(self) -> bool: return self.read_format('?')[0]
+    def write_bool(self, value: bool): return self.write_format('?', value)
+
+    def read_char(self) -> int: return self.read_format('b')[0]
+    def write_char(self, value: int): return self.write_format('b', value)
+
+    def read_uchar(self) -> int: return self.read_format('B')[0]
+    def write_uchar(self, value: int): return self.write_format('B', value)
+
+    def read_short(self) -> int: return self.read_format('<h')[0]
+    def write_short(self, value: int): return self.write_format('<h', value)
+
+    def read_ushort(self) -> int: return self.read_format('<H')[0]
+    def write_ushort(self, value: int): return self.write_format('<H', value)
+
+    def read_int(self) -> int: return self.read_format('<i')[0]
+    def write_int(self, value: int): return self.write_format('<i', value)
+
+    def read_uint(self) -> int: return self.read_format('<I')[0]
+    def write_uint(self, value: int): return self.write_format('<I', value)
+
+    def read_long(self) -> int: return self.read_format('<q')[0]
+    def write_long(self, value: int): return self.write_format('<q', value)
+
+    def read_ulong(self) -> int: return self.read_format('<Q')[0]
+    def write_ulong(self, value: int): return self.write_format('<Q', value)
+
+    def read_float(self) -> float: return self.read_format('<f')[0]
+    def write_float(self, value: float): return self.write_format('<f', value)
+
+    def read_double(self) -> float: return self.read_format('<d')[0]
+    def write_double(self, value: float): return self.write_format('<d', value)
+
+    def read_str(self, length: int = -1) -> str:
+        if length == -1:
+            result = ''
+            x = self.read(1).decode('utf-8')
+            while x != '\0':
+                result += x
+                x = self.read(1).decode('utf-8')
+        else:
+            data = self.read(length)
+            result = data.decode('utf-8')
+            result = result.rstrip('\0')
+        return result
+    def write_str(self, value: str, length: int = -1):
+        if length == -1:
+            value += '\0'
+        else:
+            value = value[ : length - 1]
+            value += (length - len(value)) * '\0'
+        self.write(value.encode('utf-8'))
+
+    def read_wstr(self, length: int = -1) -> str:
+        if length == -1:
+            result = ''
+            x = self.read(2).decode('utf-16le')
+            while x != '\0':
+                result += x
+                x = self.read(2).decode('utf-16le')
+        else:
+            data = self.read(length * 2)
+            result = data.decode('utf-16le')
+            result = result.rstrip('\0')
+        return result
+    def write_wstr(self, value: str, length: int = -1):
+        if length == -1:
+            value += '\0'
+        else:
+            value = value[ : length - 1]
+            value += (length - len(value)) * '\0'
+        self.write(value.encode('utf-16le'))
+
+
+
