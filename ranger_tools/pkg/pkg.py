@@ -17,6 +17,7 @@ MIN_SIZE_TO_COMPRESS = 32
 COMPRESS_PNG = False
 COMPRESS_CHUNK_SIZE = 2 ** 16
 COMPRESS_CHUNK_MAX_SIZE = 2 ** 16 # 64 KB
+DEFAULT_COMPRESSION_LEVEL = 9
 
 PKG_DATATYPE_RAW = 1
 PKG_DATATYPE_ZLIB = 2
@@ -44,7 +45,7 @@ class PKGItem:
         return s
 
     @classmethod
-    def _compress(cls, data) -> bytes:
+    def _compress(cls, data, compression_level=DEFAULT_COMPRESSION_LEVEL) -> bytes:
         assert 0 < COMPRESS_CHUNK_SIZE <= COMPRESS_CHUNK_MAX_SIZE, f'Invalid COMPRESS_CHUNK_SIZE: {COMPRESS_CHUNK_SIZE}. Should be in range from 1 to {COMPRESS_CHUNK_MAX_SIZE}'
         chunks = []
         din = Buffer(data)
@@ -53,7 +54,7 @@ class PKGItem:
             chunks.append(buf)
         dout = Buffer()
         for chunk in chunks:
-            comp = zlib.compress(chunk, level=9)
+            comp = zlib.compress(chunk, level=compression_level)
             dout.write_uint(len(comp) + 8)
             dout.write(b'ZL02')
             dout.write_uint(len(chunk))
@@ -101,16 +102,16 @@ class PKGItem:
 
         raise TypeError(f'Unknown item type: {self.type}')
 
-    def compress(self):
+    def compress(self, compression_level=DEFAULT_COMPRESSION_LEVEL):
         if self.type == PKG_DATATYPE_RAW:
             if not COMPRESS_PNG and self.name.endswith('.png'): return
             if len(self.data) < MIN_SIZE_TO_COMPRESS: return
-            self.data = self._compress(self.data)
+            self.data = self._compress(self.data, compression_level=compression_level)
             self.type = PKG_DATATYPE_ZLIB
 
         elif self.type == PKG_DATATYPE_DIR:
             for child in self.childs:
-                child.compress()
+                child.compress(compression_level=compression_level)
 
     def decompress(self):
         if self.type == PKG_DATATYPE_ZLIB:
@@ -335,7 +336,7 @@ class PKG:
 
 
     @classmethod
-    def from_dir(cls, path: str, f: (lambda str: bool) = lambda path: True):
+    def from_dir(cls, path: str, f: (lambda str: bool) = lambda _: True):
         '''
         f - лямбда для исключения файлов из включения в пакет
             для каждого файла вызывается f(file) [file -  имя файла, без пути]
@@ -398,7 +399,7 @@ class PKG:
     def decompressed_size(self): return sum(item.decompressed_size() for item in self.items_list())
     def count(self): return self.root.count()
 
-    def compress(self): self.root.compress()
+    def compress(self, compression_level=DEFAULT_COMPRESSION_LEVEL): self.root.compress(compression_level=compression_level)
     def decompress(self): self.root.decompress()
     def copy(self): return self.root.copy()
     def items_list(self): return self.root.items_list()

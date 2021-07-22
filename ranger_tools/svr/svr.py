@@ -895,6 +895,7 @@ class SVR:
         self.textfilenames = []
         self.textfilenames.append(['rus', ''])
         self.translations = []
+        # self.translations_id = []
 
         self.graphpoints = []
         self.graphlinks = []
@@ -976,6 +977,13 @@ class SVR:
             buf.write_wstr(tr_id)
             buf.write_wstr(tran)
 
+        # buf.write(b'\0' * 6)
+        # buf.write_uint(len(self.translations_id))
+        # for tr_id, tran in self.translations_id:
+        #     buf.write_byte(1)
+        #     buf.write_wstr(tr_id)
+        #     buf.write_wstr(tran)
+
 
         buf.write_uint(len(self.graphpoints))
         for gp in self.graphpoints:
@@ -1015,6 +1023,12 @@ class SVR:
             _x = buf.read_byte()
             assert _x == 1, _x
             self.translations.append([buf.read_wstr(), buf.read_wstr()])
+
+        # self.translations_id = []
+        # for _ in range(buf.read_uint()):
+        #     _x = buf.read_byte()
+        #     assert _x == 1, _x
+        #     self.translations_id.append([buf.read_wstr(), buf.read_wstr()])
 
         self.graphpoints = []
 
