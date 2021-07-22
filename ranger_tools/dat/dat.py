@@ -48,7 +48,7 @@ def decipher(data: bytes, key: int) -> bytes:
     seed = din.read_int() ^ key
     rnd = _rand31pm(seed)
     dout = Buffer()
-    while not din.end():
+    while din:
         dout.write_byte(din.read_byte() ^  (next(rnd) & 0xff))
     result = bytes(dout)
     assert zlib.crc32(result) == content_hash
@@ -65,7 +65,7 @@ def cipher(data: bytes, fmt: str = None) -> bytes:
     dout.write_uint(zlib.crc32(data))
     dout.write_int(seed ^ key)
     din = Buffer(data)
-    while not din.end():
+    while din:
         dout.write_byte(din.read_byte() ^  (next(rnd) & 0xff))
     result = bytes(dout)
     return result
@@ -164,6 +164,8 @@ class DAT:
         dat.fmt = self.fmt
         return dat
 
+    def merge(self, other: 'DAT'):
+        self.root.merge(other.root)
 
     @classmethod
     def from_bytes(cls, data: bytes, fmt: str = None) -> 'DAT':
@@ -248,6 +250,10 @@ class DATItem:
         item.value = self.value
         item.childs = [ch.copy() for ch in self.childs]
         item.sorted = self.sorted
+
+    def merge(self, other: 'DATItem'):
+        print(f'merging {self} with {other}')
+        raise NotImplementedError
 
     @classmethod
     def from_str_buffer(cls, buf: AbstractIBuffer) -> 'DATItem':
