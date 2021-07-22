@@ -335,7 +335,12 @@ class PKG:
 
 
     @classmethod
-    def from_dir(cls, path: str):
+    def from_dir(cls, path: str, f: (lambda str: bool) = lambda path: True):
+        '''
+        f - лямбда для исключения файлов из включения в пакет
+            для каждого файла вызывается f(file) [file -  имя файла, без пути]
+            если значение истинно, то файл включается в пакет, иначе - нет
+        '''
         root = PKGItem()
         root.type = PKG_DATATYPE_DIR
 
@@ -345,6 +350,8 @@ class PKG:
         dirs = [f for f in os.listdir(path) if not os.path.isfile(os.path.join(path, f))]
 
         for file in files:
+            if not f(file): continue
+
             filename = os.path.join(path, file)
             with open(filename, 'rb') as fp:
                 data = fp.read()
@@ -360,7 +367,7 @@ class PKG:
         for directory in dirs:
             dirname = os.path.join(path, directory)
 
-            sub_item = cls.from_dir(dirname).root
+            sub_item = cls.from_dir(dirname, f).root
 
             item = PKGItem()
             item.data = b''
