@@ -1,3 +1,13 @@
+__all__ = [
+    'common',
+    'io',
+    'pkg',
+    'dat',
+    'graphics',
+    'rscript',
+    'modding',
+]
+
 from . import common
 from . import io
 

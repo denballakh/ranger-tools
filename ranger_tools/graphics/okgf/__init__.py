@@ -1,1 +1,1 @@
-from .okgf import *
+from .okgf64 import *

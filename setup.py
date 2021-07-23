@@ -4,13 +4,17 @@ import setuptools
 #     long_description = fh.read()
 
 setuptools.setup(
-    name="rangers-tools",
+    name="ranger-tools",
     version="0.1",
     author="Denis Ballakh",
-    description="Space Rangers HD game file format tools",
+    description="Space Rangers HD game modding tools",
     # long_description=long_description,
     # long_description_content_type="text/markdown",
     url="https://github.com/denballakh/rangers-tools",
     packages=setuptools.find_packages(),
     python_requires='>=3.9',
+    install_requires=[
+        'pillow',
+        'msl-loadlib',
+    ]
 )

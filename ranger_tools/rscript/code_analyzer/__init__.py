@@ -1,1 +1,1 @@
-from . import code_analyzer
+from .code_analyzer import *
