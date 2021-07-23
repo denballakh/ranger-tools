@@ -1,5 +1,5 @@
-from ..io import Buffer
-from ..scr import *
+from ...io import Buffer
+from ..enums import *
 
 def rgb_to_dword(r, g, b):
     return (b << 16) | (g << 8) | r

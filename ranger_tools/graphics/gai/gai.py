@@ -1,7 +1,7 @@
 from PIL import Image
 
-from ..common import bytes_to_uint, uint_to_bytes
 from ..gi import GI
+from ...io import Buffer
 
 __all__ = ['GAI']
 

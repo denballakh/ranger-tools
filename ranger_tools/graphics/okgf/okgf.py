@@ -10,9 +10,9 @@ class OKGF:
     def __init__(self):
         self.lib = ctypes.cdll.LoadLibrary('.\\okgf.dll')
 
-okgf = OKGF()
-print(okgf.lib)
-print(okgf.lib.OKGR_TransBuf_BuildFromRGBA_16)
+# okgf = OKGF()
+# print(okgf.lib)
+# print(okgf.lib.OKGR_TransBuf_BuildFromRGBA_16)
 
 # def TGraphBuf_BuildGI_Alpha(bd: TBufEC, autosize: bool):
 #     len: int

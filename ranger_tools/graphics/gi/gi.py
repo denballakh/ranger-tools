@@ -1,8 +1,8 @@
 from PIL import Image
 import time
 
-from ..io import Buffer
-from ..common import rgb16_to_rgb24, rgb24_to_rgb16, Point
+from ...io import Buffer
+from ...common import rgb16_to_rgb24, rgb24_to_rgb16, Point
 
 __all__ = [
     'GI',

@@ -4,10 +4,11 @@ import argparse
 
 from ..dat import DAT
 from ..pkg import PKG
-from ..gi import GI
-from ..gai import GAI
-from ..scr import SCR
-from ..svr import SVR
+from ..graphics.gi import GI
+from ..graphics.gai import GAI
+from ..graphics.hai import HAI
+from ..rscript.scr import SCR
+from ..rscript.svr import SVR
 
 
 __all__ = [
