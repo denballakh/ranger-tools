@@ -1,5 +1,6 @@
 import os
 import time
+import argparse
 
 from ..dat import DAT
 from ..pkg import PKG
@@ -12,7 +13,7 @@ from ..svr import SVR
 __all__ = [
     'ModBuilder',
     'Logger',
-    'DEBUG', 'VERBOSE', 'INFO', 'WARNING', 'ERROR',
+    'DEBUG', 'VERBOSE', 'INFO', 'WARNING', 'ERROR', 'NONE',
 ]
 
 DEBUG =     (-1, "DEBUG")   # дебаговый вывод разного мусора
@@ -26,10 +27,14 @@ class Logger:
     def __init__(self, priority, file='########.log'):
         self.priority = priority
         self.file = file
-        if file: open(file, 'wb').close() # очищаем файл
+        if file:
+            open(file, 'wb').close() # очищаем файл
+            with open(self.file, mode='wt+') as f:
+                print(f'New logger instance. Time: {time.asctime(time.gmtime())}. Local time: {time.ctime()}', file=f)
+
 
     def log(self, priority, *args, **kwargs):
-        if priority[0] >= self.priority:
+        if priority[0] >= self.priority[0]:
             print(f'[{priority[1]}] ', *args, **kwargs)
 
             if self.file:
@@ -51,26 +56,29 @@ class ModBuilder:
     def __init__(self, *,
             build_path='build/',
             in_game_path='Mods/UNKNOWNPATH/',
-            verbosity=INFO,
+            verbosity_level=INFO,
             log_file='########.log'
         ):
         '''
         build_path - путь, по которому будут создаваться все файлы
         in_game_path - путь, по которому будет лежать мод в игре
             нужен для подстановки в текстовые значения
-        verbosity - уровень подробности вывода
+        verbosity_level - уровень подробности вывода
         log_file - файл для логгирования
         '''
         self.build_path = build_path + '/'
         self.in_game_path = in_game_path + '/'
-        self.logger = Logger(verbosity, file=log_file)
+        self.logger = Logger(verbosity_level, file=log_file)
 
+    #####
     # вспомогательные функции
+    #####
+    # используются пути относительно скрипта или абсолютные пути
 
     def log(self, priority, *args, **kwargs):
         self.logger.log(priority, *args, **kwargs)
 
-    def check_dir(self, file): # пути абсолютные
+    def check_dir(self, file):
         '''
         Создаст папку, если такой не существует
         Создаст любой необходимый уровень вложенности
@@ -96,7 +104,7 @@ class ModBuilder:
                     self.log(ERROR, f'Directory already exists O_o: {res}. '
                         'Maybe a lot of scripts are running at the same time and trying to make this directory')
 
-    def copy_file(self, input, output): # пути абсолютные
+    def copy_file(self, input, output):
         '''
         Копирует файл из одного места в другое
 
@@ -108,14 +116,14 @@ class ModBuilder:
             with open(output, 'wb') as _out:
                 _out.write(_in.read())
 
-    def del_file(self, file): # пути абсолютные
+    def del_file(self, file):
         '''
         Удаляет файл
         '''
         self.log(INFO, f'Deleting file {file}')
         os.remove(file)
 
-    def del_dir(self, folder): # пути абсолютные
+    def del_dir(self, folder):
         '''
         Удаляет папку
         '''
@@ -126,7 +134,7 @@ class ModBuilder:
             for name in dirs:
                 os.rmdir(os.path.join(root, name))
 
-    def copy_dir(self, input_dir, output_dir): # пути абсолютные
+    def copy_dir(self, input_dir, output_dir):
         '''
         Копирует папку из одного места в другое
         Сохраняет структуру папки, работает с любым уровнем вложенности
@@ -137,8 +145,12 @@ class ModBuilder:
         '''
         raise NotImplementedError
 
-
-    # функции, связанные с модом
+    #####
+    # функции для работы с модом
+    #####
+    # используются пути относительно скрипта или абсолютные пути для входных файлов
+    # для выходных файлов используются пути относительно пути build_path
+    #     (который может быть абсолютным или относительно скрипта)
 
     # работа с файлами
     def clean_build(self):
@@ -262,7 +274,7 @@ class ModBuilder:
         self.convert_dats(inputs, 'CFG/CacheData.dat', fmt='HDCache', sign=sign)
 
     # текстовики
-    def write_moduleinfo(self, data, *, filename='ModuleInfo.txt'):
+    def write_moduleinfo(self, data=None, *, filename='ModuleInfo.txt'):
         '''
         Создает файл информации о моде
 
@@ -317,7 +329,8 @@ class ModBuilder:
         }
 
         moduleinfo_data = default
-        moduleinfo_data.update(data)
+        if data is not None:
+            moduleinfo_data.update(data)
 
         content = ''
         for key, value in moduleinfo_data.items():
@@ -353,7 +366,7 @@ class ModBuilder:
             return
 
         if filename is None:
-            if lang is not None and lang != '' and lang != 'COMMON:
+            if lang is not None and lang != '' and lang != 'COMMON':
                 lang = '_' + lang
             else:
                 lang = ''
@@ -399,7 +412,7 @@ class ModBuilder:
             out_file = '.'.join(file.split('.')[:-1]) + '.gi'
             self.convert_img(input_dir + file, output_dir + out_file, **kwargs)
 
-
+    # бинарники
     def build_script(self, input, output, *, text=None, add_to_dats=False, add_text_to_lang=False):
         '''
         Собирает скрипт из исходников
@@ -452,3 +465,47 @@ class ModBuilder:
 
     def automatic_build(self, *args, **kwargs):
         raise NotImplementedError
+
+    def autoconvert_dir(self, *args, **kwargs):
+        raise NotImplementedError
+
+
+
+
+def build_sub_mods():
+    '''
+    Функция для рекурсивного билда целых сборок
+
+    В корне каждой сборки нужно создать файл с этими строками:
+
+    from ranger_tools.modding import build_sub_mods
+    build_sub_mods()
+
+    Автоматически распознаются только батники и py-скрипты с именами:
+        %%_build
+        build_%%
+        %%
+        build
+    где %% - имя папки
+    Приоритет батников выше, чем у py-скриптов. Порядок перебора имен написан выше
+    '''
+    for mod in os.listdir('./'):
+        for bat_file in (
+                f'{mod}/{mod}_build.bat',
+                f'{mod}/build_{mod}.bat',
+                f'{mod}/{mod}.bat',
+                f'{mod}/build.bat'
+            ):
+            if os.path.isfile(bat_file):
+                os.system(bat_file)
+                continue
+
+        for python_file in (
+                f'{mod}/{mod}_build.py',
+                f'{mod}/build_{mod}.py',
+                f'{mod}/{mod}.py',
+                f'{mod}/build.py'
+            ):
+            if os.path.isfile(python_file):
+                os.system(f'python {python_file}')
+                continue

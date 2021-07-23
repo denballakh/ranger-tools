@@ -6,3 +6,5 @@ from . import scr
 
 from . import io
 from . import common
+
+from . import modding
