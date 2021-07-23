@@ -73,7 +73,8 @@ class Buffer:
         self.pos = self._position_stack.pop()
         return result
 
-    def push_pos(self, pos: int) -> int:
+    def push_pos(self, pos: int = None) -> int:
+        if pos is None: pos = self.pos
         assert 0 <= pos <= len(self.data), f'Invalid buffer position: {self.pos}, len={len(self.data)}'
         result = self.pos
         self._position_stack.append(self.pos)
