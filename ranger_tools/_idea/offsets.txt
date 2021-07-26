@@ -1,0 +1,111 @@
+TGalaxy:
+18?
+40 [dword] = -1
+44 [dword*] - список (используется часто), список объектов?
+48 [dword*] - список
+52 [dword*] - список
+56 [dword*] - список
+60 [dword*] - список
+64 [dword] - 
+68 [dword] - 
+72 [dword] - 
+76 [byte[8]] - сложности?
+84 [dword] = rnd() - сид?
+88 [dword] = rnd() - сид? инициализируется тем же значением, что и +84
+92 [dword] = 3000 - капитал, указатель на капитал, ...
+96 [dword] = 3000
+100 [single] = 1065353216
+104 [single] = 1065353216
+116 [dword[3]]
+176 [dword]
+180 [dword*] - список
+184 [dword]
+188 [dword]
+192 [single] - 
+196 - <single,dword>[3]
+220 [single] - при создании пишется значение 1008981770
+224 [byte*] - указатель на массив исследований?
+228 [dword] - 
+232 [dword] - 
+236 [dword] - 
+240 [dword] - 
+248 [dword] - 
+252 [dword] - 
+256 [dword] - 
+260 [dword] - 
+264 [dword] - 
+268 [dword] - 
+272 [byte]
+273 [byte]
+
+276 [dword*] - список
+280 [dword*] - список
+284 [dword*] - список
+292 [dword]
+296 [dword*] - список (используется часто)
+304 [dword*] - список
+    *(_DWORD *)(*(_DWORD *)(galaxy + 304) + 96 * v133) = TBufEC_ReadDWORD(buf);
+    *(double *)(*(_DWORD *)(galaxy + 304) + 96 * v133 + 8) = TBufEC_ReadSingle(buf);
+    *(double *)(*(_DWORD *)(galaxy + 304) + 96 * v133 + 16) = TBufEC_ReadSingle(buf);
+    *(double *)(*(_DWORD *)(galaxy + 304) + 96 * v133 + 24) = TBufEC_ReadSingle(buf);
+    *(double *)(*(_DWORD *)(galaxy + 304) + 96 * v133 + 32) = TBufEC_ReadSingle(buf);
+    *(double *)(*(_DWORD *)(galaxy + 304) + 96 * v133 + 40) = TBufEC_ReadSingle(buf);
+    *(double *)(*(_DWORD *)(galaxy + 304) + 96 * v133 + 48) = TBufEC_ReadSingle(buf);
+    *(double *)(*(_DWORD *)(galaxy + 304) + 96 * v133 + 56) = TBufEC_ReadSingle(buf);
+    *(double *)(*(_DWORD *)(galaxy + 304) + 96 * v133 + 64) = TBufEC_ReadSingle(buf);
+    *(double *)(*(_DWORD *)(galaxy + 304) + 96 * v133 + 72) = TBufEC_ReadSingle(buf);
+    *(double *)(*(_DWORD *)(galaxy + 304) + 96 * v133 + 80) = TBufEC_ReadSingle(buf);
+    *(_DWORD *)(*(_DWORD *)(galaxy + 304) + 96 * v133++ + 88) = TBufEC_ReadDWORD(buf);
+308 [byte] - 
+309 [byte] - 
+312 [dword]
+316 [dword] - 
+320 [dword] - 
+324 [dword] - 
+328 [dword] - 
+332 [dword] - 
+336 [dword] - 
+340 [dword] - 
+344 [dword] - 
+352
+356 [byte]
+360 [dword]
+363 [dword]
+368 [dword]
+372 [dword]
+376 [dword]
+
+
+TBuf:
+4 - текущий размер
+8 - выделенный размер (при создании/перевыделении памяти на 256 больше, чем размер полезных данных буфера)
+12 - смещение чтения (т.е. при чтении/записи действия будут происходить по этому индексу)
+16 - указатель на данные
+
+
+
+
+TBlockPar:
+
+
+
+
+TFile:
+
+
+
+
+TData:
+
+
+
+
+TGroup:
+
+
+
+
+TShip:
+
+
+

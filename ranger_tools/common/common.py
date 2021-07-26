@@ -57,7 +57,7 @@ def rgb16_to_rgb24(rgb16: bytes) -> tuple:
     g = round((x >> 5  & 0b111111) * (0xff / 0x3f))
     b = round((x       & 0b011111) * (0xff / 0x1f))
 
-    return [r, g, b]
+    return (r, g, b)
 
 def rgb24_to_rgb16(rgb24: tuple) -> bytes:
     r, g, b = rgb24
