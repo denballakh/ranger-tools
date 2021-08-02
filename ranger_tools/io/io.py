@@ -38,10 +38,11 @@ class Buffer:
         self._position_stack = []
 
     def __iter__(self):
-        i = 0
-        while i < len(self.data):
-            yield self.data[i]
-            i += 1
+        return iter(self.data)
+        # i = 0
+        # while i < len(self.data):
+        #     yield self.data[i]
+        #     i += 1
 
     def __str__(self) -> str:
         offset = 16
@@ -61,6 +62,9 @@ class Buffer:
 
     def __len__(self) -> int:
         return len(self.data)
+
+    def to_bytes(self) -> bytes:
+        return bytes(self.data)
 
     def is_end(self) -> bool:
         return self.pos >= len(self.data)
