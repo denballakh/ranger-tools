@@ -8,7 +8,7 @@ struct TBufEC {
 
 struct TFileEC {
     __cls* cls;
-    int field_4;
+    int file_handler;
     int is_opened;
     int filename;
 };
@@ -20,17 +20,36 @@ struct THashEC {
 struct TBlockParEC {
     __cls* cls;
 
-    int _field_04;
-    int _field_08;
-    int _field_0C;
-    int _field_10;
-    int _field_14;
-    int _field_18;
-    int _field_1C;
-    int _field_20;
+    TBlockParElEC* first;
+    TBlockParElEC* last;
+    int cnt;
+    int cnt_par;
+    int cnt_block;
+    bool sort;
+    byte __gap_0;
+    byte __gap_1;
+    byte __gap_2;
+    TBlockParElEC* array;
+    int array_cnt;
 };
 
 struct TBlockParElEC {
+    __cls* cls;
+
+    TBlockParElEC* prev;
+    TBlockParElEC* next;
+    TBlockParElEC* parent;
+    int tip;
+    byte* name;
+    byte* zn;
+    byte* com;
+    TBlockParEC* block;
+    int fast_first;
+    int fast_cnt;
+};
+
+
+struct TDataEC {
     __cls* cls;
 
     int _field_04;
@@ -43,11 +62,6 @@ struct TBlockParElEC {
     int _field_20;
     int _field_24;
     int _field_28;
-};
-
-
-struct TDataEC {
-    __cls* cls;
 };
 
 struct TPackFileEC {
@@ -84,46 +98,47 @@ enum TVarEC_type {
 
 struct TVarEC {
     __cls* cls;
-    void* name;
+    byte* name;
     TVarEC_type type;
     int val_int;
     unsigned int val_dword;
-    byte gap14[4];
     double val_float;
-    int val_str;
+    byte* val_str;
     void* val_externfun;
-    byte gap28[4];
-    void* val_fun;
-    void* val_class;
-    void* val_array;
+    DWORD* val_libraryfun;
+    TCodeEC* val_fun;
+    TCodeEC* val_class;
+    TVarArrayEC* val_array;
     TVarEC* val_ref;
 };
 
+struct TCodeEC {};
+
 struct TVarArrayEC {
     __cls* cls;
-    int field_4;
-    int field_8;
-    int field_C;
-    int field_10;
-    int field_14;
-    int field_18;
-    int field_1C;
-    int field_20;
-    int field_24;
-    int field_28;
-    int field_2C;
+    int count;
+    void* item;
+    void* index;
 };
 
 struct TCodeAnalyzerEC {
     __cls* cls;
-    TCodeAnalyzerEC* field_4;
-    TCodeAnalyzerEC* field_8;
-    int field_C;
-    int field_10;
-    int field_14;
-    int field_18;
-    int field_1C;
-    int field_20;
+    TCodeAnalyzerUnitEC* first_free;
+    TCodeAnalyzerUnitEC* last_free;
+    TCodeAnalyzerUnitEC* first;
+    TCodeAnalyzerUnitEC* last;
+};
+
+struct TCodeAnalyzerUnitEC {
+    __cls* cls;
+
+    TCodeAnalyzerUnitEC* prev;
+    TCodeAnalyzerUnitEC* next;
+
+    int type;
+    int sme;
+    int len;
+    byte* str;
 };
 
 struct TExpressionEC {
