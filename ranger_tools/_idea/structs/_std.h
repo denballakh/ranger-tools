@@ -10,6 +10,8 @@ struct TStack {
   TList* list;
 };
 
-struct TObjectList {};
+struct TObjectList {
+  __cls* cls;
+};
 
 

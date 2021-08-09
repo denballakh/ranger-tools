@@ -10,11 +10,10 @@ except ImportError as e:
     def check_signed(_: bytes) -> bool: return False
 
 
-__all__ = [
-    'DAT',
-    'DATItem',
-]
-
+# __all__ = [
+#     'DAT',
+#     'DATItem',
+# ]
 
 ENCRYPTION_KEYS = {
     'SR1': 0,
@@ -118,11 +117,12 @@ def guess_format(data: bytes, check_hash: bool = False) -> str:
         rnd = _rand31pm(seed_ciphered ^ key)
 
         dout = Buffer()
-        while not din.end():
+        while not din.is_end():
             dout.write_byte(din.read_byte() ^  (next(rnd) & 0xff))
         zl01 = bytes(dout)
 
         if zl01 != b'ZL01':
+            print(zl01)
             continue
         if not check_hash:
             return keyname
@@ -389,7 +389,6 @@ class DATItem:
 
     @classmethod
     def from_bytes(cls, data: bytes, fmt: str) -> 'DATItem':
-        open('OUTPUT.txt', 'wb').write(data)
         return cls.from_buffer(Buffer(data), fmt=fmt)
 
     def to_bytes(self, fmt: str) -> bytes:
