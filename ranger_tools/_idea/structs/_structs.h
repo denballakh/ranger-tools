@@ -40,6 +40,8 @@ struct TQuestParameter {};
 struct TArrayRectGR {};
 
 /*
+TEther - 18
+TEtherUnit - 14
 
 TSputnik - 10
 
@@ -71,34 +73,6 @@ TabObject - b0
 TabSpace - 6c
 
 
-TScript - 60
-TEther - 18
-TEtherUnit - 14
-
-TSpaceSE - 6c
-TProcessSE - 50
-TObjectSE - 4c
-    TStarSE - 78
-    TMeteoriteSE - 64
-    TAngelSE - bc
-    TCometSE - 120
-    TBGObjSE - 58
-    TAnimSE - 68
-    TLaserSE - 78
-    TStarFieldSE - 58
-    TShip2SE - 1ac
-    TShip2AnimSE - 1c
-    TPlanetSE - 138
-    TContainerSE - 5c
-    THoleSE - 68
-    TSputnikSE - b4
-    TAsteroidSE - 60
-    TRuinsSE - d4
-    TWeaponSE - d8
-    TGAIEffectSESE - 70
-    TMissileSE - 5c
-    TGateEffectSE - 5c
-    TGateSE - 74
 
 
 TObjectGI - 11c
@@ -122,9 +96,6 @@ TObjectGI - 11c
         TPSEyesGI - 15c
         TPSWindGI - 16c
         TPSPhaserGI - 168
-
-
-
 
 
 */

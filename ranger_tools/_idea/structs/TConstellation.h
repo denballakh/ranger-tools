@@ -1,5 +1,6 @@
 struct TConstellation {
-    __cls _;
+    __cls* cls;
+
     _gap _04;
     _gap _05;
     _gap _06;

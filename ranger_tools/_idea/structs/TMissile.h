@@ -1,5 +1,6 @@
 struct TMissile {
     __cls* cls;
+
     PTR graph;
     int index;
     byte kind; // 50 - rocket, 61 - torpedo
@@ -87,7 +88,8 @@ struct TMissile {
 };
 
 struct TCustomMissile {
-    TMissile _;
+    TMissile;
+
     _gap _74;
     _gap _75;
     _gap _76;

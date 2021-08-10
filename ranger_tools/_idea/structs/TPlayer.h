@@ -1,5 +1,5 @@
 struct TPlayer {
-    TRanger _;
+    TRanger;
 
     _gap _560;
     _gap _561;
@@ -993,7 +993,7 @@ struct TPlayer {
     int FExpPointsForPirateKills;
     int FExpPointsForGoodShipKills;
     int FExpPointsForTrade;
-    _gap _970;
+    _gap _970; // in bridge?
     _gap _971;
     _gap _972;
     _gap _973;

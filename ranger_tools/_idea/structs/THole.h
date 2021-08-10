@@ -1,4 +1,3 @@
-
 struct THole {
     __cls* cls;
 
@@ -24,4 +23,3 @@ struct THole {
     _gap _32;
     _gap _33;
 }; // 34
-

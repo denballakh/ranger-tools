@@ -291,4 +291,3 @@ struct TPlanet {
     _gap _16A;
     _gap _16B;
 }; // 16C
-

@@ -1,5 +1,6 @@
 struct TBufEC {
     __cls* cls;
+
     int count;        // количество записанных байт
     int capacity;     // размер выделенной памяти
     int index;        // указатель доступа
@@ -8,14 +9,11 @@ struct TBufEC {
 
 struct TFileEC {
     __cls* cls;
+
     int file_handler;
     int is_opened;
     int filename;
 };
-
-struct THashEC {
-    __cls* cls;
-}; // d01c
 
 struct TBlockParEC {
     __cls* cls;
@@ -80,10 +78,13 @@ struct TDataEC {
 
 struct TPackFileEC {
     __cls* cls;
-};
+
+    //...
+};//210
 
 struct TPackCollectionEC {
     __cls* cls;
+
     TPackCollectionEC* field_4;
     TPackCollectionEC* field_8;
     THashEC* field_C;
@@ -91,7 +92,7 @@ struct TPackCollectionEC {
     int field_14;
     int field_18;
     int field_1C;
-};
+};//214
 
 // struct TThreadEC {
 //     __cls* cls;
@@ -120,51 +121,53 @@ TThreadEC - 2c
 
 struct TThreadEC {
     __cls* cls;
-    _gap _004;
-    _gap _005;
-    _gap _006;
-    _gap _007;
-    _gap _008;
-    _gap _009;
-    _gap _00A;
-    _gap _00B;
-    _gap _00C;
-    _gap _00D;
-    _gap _00E;
-    _gap _00F;
-    _gap _010;
-    _gap _011;
-    _gap _012;
-    _gap _013;
-    _gap _014;
-    _gap _015;
-    _gap _016;
-    _gap _017;
-    _gap _018;
-    _gap _019;
-    _gap _01A;
-    _gap _01B;
-    _gap _01C;
-    _gap _01D;
-    _gap _01E;
-    _gap _01F;
-    _gap _020;
-    _gap _021;
-    _gap _022;
-    _gap _023;
-    _gap _024;
-    _gap _025;
-    _gap _026;
-    _gap _027;
-    _gap _028;
-    _gap _029;
-    _gap _02A;
-    _gap _02B;
+
+    _gap _04;
+    _gap _05;
+    _gap _06;
+    _gap _07;
+    _gap _08;
+    _gap _09;
+    _gap _0A;
+    _gap _0B;
+    _gap _0C;
+    _gap _0D;
+    _gap _0E;
+    _gap _0F;
+    _gap _10;
+    _gap _11;
+    _gap _12;
+    _gap _13;
+    _gap _14;
+    _gap _15;
+    _gap _16;
+    _gap _17;
+    _gap _18;
+    _gap _19;
+    _gap _1A;
+    _gap _1B;
+    _gap _1C;
+    _gap _1D;
+    _gap _1E;
+    _gap _1F;
+    _gap _20;
+    _gap _21;
+    _gap _22;
+    _gap _23;
+    _gap _24;
+    _gap _25;
+    _gap _26;
+    _gap _27;
+    _gap _28;
+    _gap _29;
+    _gap _2A;
+    _gap _2B;
 };
 
 
 struct TBlockMemUnitEC {
     __cls* cls;
+
     TBlockMemUnitEC* prev;
     TBlockMemUnitEC* next;
     TBufEC* buf;
@@ -174,6 +177,7 @@ struct TBlockMemUnitEC {
 
 struct TBlockMemEC {
     __cls* cls;
+
     TBlockMemUnitEC* first;
     TBlockMemUnitEC* last;
     int block_size_default;
@@ -184,6 +188,7 @@ struct TBlockMemEC {
 
 struct TStringsElEC {
     __cls* cls;
+
     TStringsElEC* prev;
     TStringsElEC* next;
     WSTR str;
@@ -191,6 +196,7 @@ struct TStringsElEC {
 
 struct TStringsEC {
     __cls* cls;
+
     TStringsElEC* first;
     TStringsElEC* last;
     TStringsElEC* ptr;
@@ -213,6 +219,7 @@ enum TVarEC_type {
 
 struct TVarEC {
     __cls*          cls;
+
     byte*           name;
     TVarEC_type     type;
     int             val_int;
@@ -229,6 +236,7 @@ struct TVarEC {
 
 struct TVarArrayEC {
     __cls* cls;
+
     int count;
     TVarEC* item;
     void* index;
@@ -239,7 +247,6 @@ struct TCodeAnalyzerUnitEC {
 
     TCodeAnalyzerUnitEC* prev;
     TCodeAnalyzerUnitEC* next;
-
     int type;
     int sme;
     int len;
@@ -248,6 +255,7 @@ struct TCodeAnalyzerUnitEC {
 
 struct TCodeAnalyzerEC {
     __cls* cls;
+
     TCodeAnalyzerUnitEC* first_free;
     TCodeAnalyzerUnitEC* last_free;
     TCodeAnalyzerUnitEC* first;
@@ -257,6 +265,7 @@ struct TCodeAnalyzerEC {
 
 struct TExpressionEC {
     __cls* cls;
+
     int var_count;
     PTR var;
     int instr_count;
@@ -268,6 +277,7 @@ struct TExpressionEC {
 
 struct TExpressionInstrEC {
     __cls* cls;
+
     int type;
     int count;
     int* index;
@@ -275,9 +285,16 @@ struct TExpressionInstrEC {
 
 struct TExpressionVarEC {
     __cls* cls;
+
     int type;
     byte* str;
     byte** path;
     TVarEC* var;
 };
 
+
+
+
+// struct THashEC {
+//     __cls* cls;
+// }; // d01c

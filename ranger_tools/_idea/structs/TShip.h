@@ -1,4 +1,3 @@
-
 struct TShip {
     __cls* cls;
 
@@ -210,10 +209,7 @@ struct TShip {
     _gap _0ED;
     _gap _0EE;
     _gap _0EF;
-    _gap _0F0;
-    _gap _0F1;
-    _gap _0F2;
-    _gap _0F3;
+    int money;
     _gap _0F4;
     _gap _0F5;
     _gap _0F6;
@@ -1031,10 +1027,7 @@ struct TShip {
     _gap _44E;
     _gap _44F;
     PTR graph_ship;
-    _gap _454;
-    _gap _455;
-    _gap _456;
-    _gap _457;
+    PTR skin; // или строка шкурки, или объект SE
     _gap _458;
     byte in_hyper_space;
     _gap _45A;
@@ -1091,10 +1084,7 @@ struct TShip {
     _gap _48D;
     _gap _48E;
     _gap _48F;
-    _gap _490;
-    _gap _491;
-    _gap _492;
-    _gap _493;
+    int money_xored; // money ^ 0xA4A576AD
     _gap _494;
     _gap _495;
     _gap _496;
@@ -1158,7 +1148,7 @@ struct TShip {
 }; // 4D0
 
 struct TRuins {
-    TShip _;
+    TShip;
 
     TList* equipment_shop;
     _gap _4D4;
@@ -1309,7 +1299,7 @@ struct TRuins {
 }; // 568
 
 struct TTranclucator {
-    TShip _;
+    TShip;
 
     _gap _4D0;
     _gap _4D1;
@@ -1342,7 +1332,7 @@ struct TTranclucator {
 }; // 4ec
 
 struct TKling {
-    TShip _;
+    TShip;
 
     byte sub_type;
     _gap _4D1;
@@ -1359,7 +1349,7 @@ struct TKling {
 }; // 4DB
 
 struct TNormalShip {
-    TShip _;
+    TShip;
 
     _gap _4D0;
     _gap _4D1;
@@ -1428,7 +1418,7 @@ struct TNormalShip {
 }; // 510
 
 struct TPirate {
-    TNormalShip _;
+    TNormalShip;
 
     byte in_prison;
     _gap _511;
@@ -1445,7 +1435,7 @@ struct TPirate {
 }; // 51C
 
 struct TWarrior {
-    TNormalShip _;
+    TNormalShip;
 
     byte sub_type;
     _gap _511;
@@ -1454,7 +1444,7 @@ struct TWarrior {
 }; // 514
 
 struct TTransport {
-    TNormalShip _;
+    TNormalShip;
 
     byte sub_type;
     _gap _511;
@@ -1463,7 +1453,7 @@ struct TTransport {
 }; // 514
 
 struct TRanger {
-    TNormalShip _;
+    TNormalShip;
 
     _gap _510;
     _gap _511;

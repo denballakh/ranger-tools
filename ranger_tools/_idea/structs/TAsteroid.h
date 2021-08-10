@@ -1,5 +1,6 @@
 struct TAsteroid {
     __cls* cls;
+
     int index;
     TStar* star;
     _pair_float pos;
@@ -9,6 +10,6 @@ struct TAsteroid {
     UNK _28;
     UNK _2C;
     int minerals;
-    PTR _34;
-    UNK _38; // graph?
+    TObjectSE* graph;
+    UNK _38;
 };
