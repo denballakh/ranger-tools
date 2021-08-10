@@ -1,6 +1,8 @@
 *.dat
 **/dat_sign.py
 _test
+sav
+score
 
 .idea
 

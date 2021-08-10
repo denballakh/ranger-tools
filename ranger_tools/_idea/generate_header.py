@@ -2,22 +2,24 @@ import sys
 sys.ps1 = ''
 sys.ps2 = ''
 
+GAP = '_gap', 1
+GAP_32 = '_gap_32', 4
 BYTE = 'byte', 1
 WORD = 'word', 2
 DWORD = 'dword', 4
 
 
-field_type = BYTE
+field_type = GAP
 
 
-init_offset = 0x560
-size_in_bytes = 0x990
+init_offset = 0x4
+size_in_bytes = 0x2c
 
 
-name = '___'
+name = '__struct_name__'
 offset_length = 3
-first_field = 'T___ _;'
-name_prefix = '_field_'
+first_field = '__cls* cls;'
+name_prefix = '_'
 indent = 4
 
 
