@@ -25,7 +25,7 @@ struct TCCInterface_El {
     _gap_32 _0C; // RandInt(0, 2000000000)
     _gap_32 _gap_10; // мусор?
     _gap_32 _14;
-    _gap_32 _18; // val * 1000000 * {0,1,2}
+    _gap_32 _18; // val + 1000000 * {0,1,2}
     _gap_32 _1C; // мусор? = 0xFFFFFFFF
     _gap_32 _20; // мусор? = 0xFFFFFFFF
     _gap_32 _24; // мусор? = 0xFFFFFFFF

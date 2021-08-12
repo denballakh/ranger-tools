@@ -34,10 +34,7 @@ struct TShip {
 
     TShipGoodsItem goods[8];
 
-    _gap _050;
-    _gap _051;
-    _gap _052;
-    _gap _053;
+    int capital;
     _gap _054;
     _gap _055;
     _gap _056;
@@ -127,7 +124,7 @@ struct TShip {
     _gap _0AD;
     _gap _0AE;
     _gap _0AF;
-    int capital;
+    _gap_32 _B0;
     TWeapon* weapons[6];
     byte weapon_cnt;
     _gap _0CD;
@@ -1206,22 +1203,12 @@ struct TNormalShip {
     _gap _4ED;
     _gap _4EE;
     _gap _4EF;
-    _gap _4F0;
-    _gap _4F1;
-    _gap _4F2;
-    _gap _4F3;
-    _gap _4F4;
-    _gap _4F5;
-    _gap _4F6;
-    _gap _4F7;
-    _gap _4F8;
-    _gap _4F9;
-    _gap _4FA;
-    _gap _4FB;
-    _gap _4FC;
-    _gap _4FD;
-    _gap _4FE;
-    _gap _4FF;
+    word _4F0;
+    word _4F2;
+    word _4F4;
+    word _4F6;
+    int _4F8;
+    int _4FC;
     _gap _500;
     _gap _501;
     _gap _502;

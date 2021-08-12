@@ -1,14 +1,6 @@
 struct TDomResearchProgress {
-    int progress;
-    int speed;
-    /*
-        speed:
-        0 - 200
-        1 - 100
-        2 - 70
-        3 - 30
-        4 - 0
-    */
+    float progress;
+    int material;
 };
 
 struct TGalaxy {
@@ -36,10 +28,10 @@ struct TGalaxy {
     byte diff_levels[8];
     _gap_32 _058; // rnd_date_based? связано с защитой? кол-во чит очков?
     int rnd_seed;
-    _gap_32 _060;
-    _gap_32 _064;
-    _gap_32 _068;
-    _gap_32 _06C;
+    int _060;
+    int _064;
+    int _068;
+    int _06C;
     _gap_32 _070;
     _gap_32 _074;
     _gap_32 _078;
@@ -63,15 +55,17 @@ struct TGalaxy {
     TList* planet_news;
     int _0D0;
     TStar* keller_attack_star;
+    _gap_32 _0C0;
+    _gap_32 _0C4;
     TDomResearchProgress dom_researches[3];
-    // float _0EC; // 0.01
+    float _0EC; // 0.01
     byte GTL;
     _gap _0F1;
     _gap _0F2;
     _gap _0F3;
-    int _0F4;
     int _0F8;
     int _0FC;
+    int _0FD;
 
     int _100;
     int _104;

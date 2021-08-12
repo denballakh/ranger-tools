@@ -28,14 +28,15 @@ struct TList {
 };
 
 
+struct TObjectList {
+    TList _;
+    PTR _10; // указатель на VMT класса итемов?
+};
+
 
 
 // используется лишь в паре мест:
 
-// struct TObjectList {
-//     TList _;
-//     UNK _10; // указатель на VMT класса итемов?
-// };
 
 // struct TOrderedList {
 //     __cls* cls;
