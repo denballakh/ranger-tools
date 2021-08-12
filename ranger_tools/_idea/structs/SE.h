@@ -20,7 +20,7 @@ TObjectSE - 4c
     TAsteroidSE - 60
     TRuinsSE - d4
     TWeaponSE - d8
-    TGAIEffectSESE - 70
+    TGAIEffectSE - 70
     TMissileSE - 5c
     TGateEffectSE - 5c
     TGateSE - 74

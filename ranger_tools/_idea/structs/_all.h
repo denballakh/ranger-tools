@@ -4,8 +4,10 @@
 
 #include "_std.h"
 #include "EC.h"
+#include "TCCInterface.h"
 
 #include "_structs.h"
+#include "TThreadEC.h"
 
 #include "TBonus.h"
 #include "TScript.h"

@@ -72,7 +72,7 @@ struct TEquipment {
     int bonus;
     int special;
     int* weapon_info;
-    byte series;
+    _gap _64;
     _gap _65;
     _gap _66;
     _gap _67;
@@ -86,31 +86,19 @@ struct THull {
     TEquipment;
 
     int hitpoints;
-    _gap _70;
+    byte tech_level;
     byte hit_protect;
     byte hull_type;
     _gap _73;
-    byte series;
-    _gap _75;
-    _gap _76;
-    _gap _77;
+    int series;
     TShip* ship;
     _gap _7C;
     _gap _7D;
     _gap _7E;
     _gap _7F;
-    _gap _80;
-    _gap _81;
-    _gap _82;
-    _gap _83;
-    _gap _84;
-    _gap _85;
-    _gap _86;
-    _gap _87;
-    _gap _88;
-    _gap _89;
-    _gap _8A;
-    _gap _8B;
+    _gap_32 _80;
+    _gap_32 _84;
+    _gap_32 _88;
     _gap _8C;
     _gap _8D;
     _gap _8E;
@@ -124,7 +112,7 @@ struct THull {
 struct TFuelTanks {
     TEquipment;
 
-    _gap _6C;
+    byte tech_level;
     _gap _6D;
     _gap _6E;
     _gap _6F;
@@ -142,7 +130,7 @@ struct TFuelTanks {
 struct TEngine {
     TEquipment;
 
-    _gap _6C;
+    byte tech_level;
     _gap _6D;
     _gap _6E;
     _gap _6F;
@@ -160,7 +148,7 @@ struct TEngine {
 struct TRadar {
     TEquipment;
 
-    _gap _6C;
+    byte tech_level;
     _gap _6D;
     _gap _6E;
     _gap _6F;
@@ -174,11 +162,11 @@ struct TRadar {
 struct TScaner {
     TEquipment;
 
-    _gap _6C;
+    byte tech_level;
     byte scan_protect;
     _gap _6E;
     _gap _6F;
-    byte level;
+    _gap _70;
     _gap _71;
     _gap _72;
     _gap _73;
@@ -187,11 +175,11 @@ struct TScaner {
 struct TRepairRobot {
     TEquipment;
 
-    _gap _6C;
+    byte tech_level;
     byte recover_hit_points;
     _gap _6E;
     _gap _6F;
-    byte level;
+    _gap _70;
     _gap _71;
     _gap _72;
     _gap _73;
@@ -200,7 +188,7 @@ struct TRepairRobot {
 struct TCargoHook {
     TEquipment;
 
-    _gap _6C;
+    byte tech_level;
     _gap _6D;
     _gap _6E;
     _gap _6F;
@@ -217,7 +205,7 @@ struct TCargoHook {
 struct TDefGenerator {
     TEquipment;
 
-    _gap _6C;
+    byte tech_level;
     _gap _6D;
     _gap _6E;
     _gap _6F;
@@ -231,29 +219,20 @@ struct TDefGenerator {
 struct TWeapon {
     TEquipment;
 
-    _gap _6C;
+    byte tech_level;
     _gap _6D;
     _gap _6E;
     _gap _6F;
     int radius;
     int min_dmg;
     int max_dmg;
-    _gap _7C;
-    _gap _7D;
-    _gap _7E;
-    _gap _7F;
+    _gap_32 _7C;
     _gap _80;
     _gap _81;
     _gap _82;
     _gap _83;
-    _gap _84;
-    _gap _85;
-    _gap _86;
-    _gap _87;
-    _gap _88;
-    _gap _89;
-    _gap _8A;
-    _gap _8B;
+    _gap_32 _84;
+    _gap_32 _88;
     _gap _8C;
     _gap _8D;
     _gap _8E;

@@ -38,7 +38,10 @@ struct TQuestGameContent {};
 struct TTextField {};
 struct TQuestParameter {};
 struct TArrayRectGR {};
-
+struct TShopSlot {};
+struct TStoredItem {};
+struct TPlayerHoldUnit {};
+struct TJournalRecord {}; // 0x0c
 /*
 TEther - 18
 TEtherUnit - 14

@@ -1,5 +1,5 @@
 struct __cls {
-    PTR   _00;
+    FUNC* methods_p;
     int   _04;
     int   _08;
     int   _0C;
@@ -8,17 +8,17 @@ struct __cls {
     int   _18;
     int   _1C;
     STR   type_name;
-    int   type_size;
-    void* parent_class;
-    void* safe_call_exception;
-    void* after_construction;
-    void* before_destruction;
-    void* dispatch;
-    void* default_handler;
-    void* new_instance;
-    void* free_instance;
-    void* destroy;
-    void* methods[100];
+    unsigned int   type_size;
+    FUNC  parent_class;
+    FUNC  safe_call_exception;
+    FUNC  after_construction;
+    FUNC  before_destruction;
+    FUNC  dispatch;
+    FUNC  default_handler;
+    FUNC  new_instance;
+    FUNC  free_instance;
+    FUNC  destroy;
+    FUNC  methods;
 };
 
 
@@ -60,4 +60,24 @@ struct VMT_TArtefact {
     void (__fastcall *sub_7D4D88)(TArtefact *, int, int);
     void (__fastcall *sub_7D2588)(TArtefact *, int, int);
     void (__fastcall *sub_7EA1A4)(TArtefact *, int, int);
+};
+
+
+
+struct VMT_TThreadEC {
+    void (__fastcall * methods_p)(TThreadEC *);
+    int   _04;
+    int zeros[7];
+    STR   type_name;
+    unsigned int   type_size;
+    FUNC  parent_class;
+    FUNC  safe_call_exception;
+    FUNC  after_construction;
+    FUNC  before_destruction;
+    FUNC  dispatch;
+    FUNC  default_handler;
+    FUNC  new_instance;
+    FUNC  free_instance;
+    FUNC  destroy;
+    FUNC  process;
 };

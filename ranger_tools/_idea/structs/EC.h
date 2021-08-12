@@ -103,67 +103,6 @@ struct TPackCollectionEC {
 //     bool end_destroy;
 // };
 
-/*
-TThreadEC - 2c
-    TFileStreamEC - 58
-    TGAIFileThreadGI - 30
-    TSaver - 44
-    TScriptThread - 2c
-    TThreadGameLoad - 30
-    TCacheLoader - 38
-    TfFilmLoader - 2c
-    TThreadCalc - 30
-    TThreadCreateNewGame - 4c
-    TMusicUnit - 54
-    TMusicControl - 44
-    TSteamCallbacksThread - 2c
-*/
-
-struct TThreadEC {
-    __cls* cls;
-
-    _gap _04;
-    _gap _05;
-    _gap _06;
-    _gap _07;
-    _gap _08;
-    _gap _09;
-    _gap _0A;
-    _gap _0B;
-    _gap _0C;
-    _gap _0D;
-    _gap _0E;
-    _gap _0F;
-    _gap _10;
-    _gap _11;
-    _gap _12;
-    _gap _13;
-    _gap _14;
-    _gap _15;
-    _gap _16;
-    _gap _17;
-    _gap _18;
-    _gap _19;
-    _gap _1A;
-    _gap _1B;
-    _gap _1C;
-    _gap _1D;
-    _gap _1E;
-    _gap _1F;
-    _gap _20;
-    _gap _21;
-    _gap _22;
-    _gap _23;
-    _gap _24;
-    _gap _25;
-    _gap _26;
-    _gap _27;
-    _gap _28;
-    _gap _29;
-    _gap _2A;
-    _gap _2B;
-};
-
 
 struct TBlockMemUnitEC {
     __cls* cls;

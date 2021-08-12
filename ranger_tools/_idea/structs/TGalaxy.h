@@ -21,7 +21,7 @@ struct TGalaxy {
   _gap_32 _048; // num transports?
   int turn;
   byte diff_levels[8];
-  _gap_32 _058; // rnd_date_based?
+  _gap_32 _058; // rnd_date_based? связано с защитой? кол-во чит очков?
   int rnd_seed;
   _gap_32 _060;
   _gap_32 _064;
@@ -60,9 +60,9 @@ struct TGalaxy {
   _gap_32 _0E8;
   _gap_32 _0EC;
   byte GTL;
-  byte _field_0F1;
-  byte _field_0F2;
-  byte _field_0F3;
+  _gap _0F1;
+  _gap _0F2;
+  _gap _0F3;
   _gap_32 _0F4;
   _gap_32 _0F8;
   _gap_32 _0FC;
@@ -98,8 +98,11 @@ struct TGalaxy {
   _gap_32 _170;
   _gap_32 _174;
   _gap_32 _178;
-  _gap_32 _17C;
-  _gap_32 _180;
+  _gap_32 _17C; // сет читов
+  _gap _180;
+  _gap _181;
+  bool zawarudo;
+  _gap _183;
   _gap_32 _184;
   _gap_32 _188;
   _gap_32 _18C;
@@ -111,7 +114,7 @@ struct TGalaxy {
   _gap_32 _1A4;
   _gap_32 _1A8;
   _gap_32 _1AC;
-  _gap_32 _1B0;
+  TList* events;
   _gap_32 _1B4;
   _gap_32 _1B8;
   _gap_32 _1BC;

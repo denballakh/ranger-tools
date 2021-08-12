@@ -17,3 +17,5 @@
 #define _gap_32 dword
 #define _gap _gap_8
 #define GAP(name, n) _gap name[n]
+
+#define FUNC(name) void* name

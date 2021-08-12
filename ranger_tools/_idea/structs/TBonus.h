@@ -174,14 +174,8 @@ struct TBonusSpecial {
     _gap _35;
     _gap _36;
     _gap _37;
-    _gap _38;
-    _gap _39;
-    _gap _3A;
-    _gap _3B;
-    _gap _3C;
-    _gap _3D;
-    _gap _3E;
-    _gap _3F;
+    int _38; // size_mod
+    int _3C; // cost_mod
     _gap _40;
     _gap _41;
     _gap _42;
