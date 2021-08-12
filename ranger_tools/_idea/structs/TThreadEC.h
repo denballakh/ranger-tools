@@ -28,10 +28,7 @@ struct TThreadEC {
     bool terminated;
     _gap _12;
     _gap _13;
-    _gap _14;
-    _gap _15;
-    _gap _16;
-    _gap _17;
+    HANDLE _14;
     byte _18;
     _gap _19;
     _gap _1A;

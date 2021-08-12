@@ -42,6 +42,32 @@ struct TShopSlot {};
 struct TStoredItem {};
 struct TPlayerHoldUnit {};
 struct TJournalRecord {}; // 0x0c
+
+struct TempStruct_0 {
+    int _00;
+    int _04;
+    int _08;
+    int _0C;
+    int _10;
+    int _14;
+    int _18;
+    int _1C;
+    int _20;
+    int _24;
+    int _28;
+    int _2C;
+};
+
+struct TPlanetNews {
+    int _00;
+    int date;
+    byte type;
+    _gap _09;
+    _gap _0A;
+    _gap _0B;
+    STR text;
+};
+
 /*
 TEther - 18
 TEtherUnit - 14

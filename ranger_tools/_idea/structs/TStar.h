@@ -1,3 +1,8 @@
+struct TStarDist {
+    int dist;
+    TStar* star;
+};
+
 struct TStar {
     __cls* cls;
 
@@ -13,13 +18,9 @@ struct TStar {
     _gap _00D;
     _gap _00E;
     _gap _00F;
-    _gap _010;
-    _gap _011;
-    _gap _012;
-    _gap _013;
+    STR name;
     _pair_float pos;
-    _gap _01C;
-    _gap _01D;
+    word _01C;
     _gap _01E;
     _gap _01F;
     _gap _020;
@@ -31,10 +32,7 @@ struct TStar {
     TList* ships;
     TList* items_in_space;
     TList* drop_list;
-    _gap _038;
-    _gap _039;
-    _gap _03A;
-    _gap _03B;
+    TList* missiles;
     _gap _03C;
     _gap _03D;
     _gap _03E;
@@ -67,26 +65,14 @@ struct TStar {
     _gap _059;
     _gap _05A;
     _gap _05B;
-    _gap _05C;
-    _gap _05D;
-    _gap _05E;
-    _gap _05F;
-    _gap _060;
-    _gap _061;
-    _gap _062;
-    _gap _063;
+    float safe_radius;
+    float damage_radius;
     _gap _064;
     _gap _065;
     _gap _066;
     _gap _067;
-    _gap _068;
-    _gap _069;
-    _gap _06A;
-    _gap _06B;
-    _gap _06C;
-    _gap _06D;
-    _gap _06E;
-    _gap _06F;
+    int radius;
+    TObjectSE* graph_object;
     _gap _070;
     _gap _071;
     _gap _072;
@@ -99,10 +85,7 @@ struct TStar {
     _gap _079;
     _gap _07A;
     _gap _07B;
-    _gap _07C;
-    _gap _07D;
-    _gap _07E;
-    _gap _07F;
+    int fon_image;
     _gap _080;
     _gap _081;
     _gap _082;
@@ -123,10 +106,7 @@ struct TStar {
     _gap _091;
     _gap _092;
     _gap _093;
-    _gap _094;
-    _gap _095;
-    _gap _096;
-    _gap _097;
+    TStarDist* stars;
     _gap _098;
     _gap _099;
     _gap _09A;
@@ -183,10 +163,7 @@ struct TStar {
     _gap _0CD;
     _gap _0CE;
     _gap _0CF;
-    _gap _0D0;
-    _gap _0D1;
-    _gap _0D2;
-    _gap _0D3;
+    TConstellation* con;
     _gap _0D4;
     _gap _0D5;
     _gap _0D6;

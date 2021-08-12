@@ -1,24 +1,24 @@
 struct __cls {
-    FUNC* methods_p;
-    int   _04;
-    int   _08;
-    int   _0C;
-    int   _10;
-    int   _14;
-    int   _18;
-    int   _1C;
-    STR   type_name;
-    unsigned int   type_size;
-    FUNC  parent_class;
-    FUNC  safe_call_exception;
-    FUNC  after_construction;
-    FUNC  before_destruction;
-    FUNC  dispatch;
-    FUNC  default_handler;
-    FUNC  new_instance;
-    FUNC  free_instance;
-    FUNC  destroy;
-    FUNC  methods;
+    FUNC*   methods_p;
+    int     _04;
+    int     _08;
+    int     _0C;
+    int     _10;
+    int     _14;
+    int     _18;
+    int     _1C;
+    STR     type_name;
+    int     type_size;
+    __cls*  parent_class;
+    FUNC    safe_call_exception;
+    FUNC    after_construction;
+    FUNC    before_destruction;
+    FUNC    dispatch;
+    FUNC    default_handler;
+    FUNC    new_instance;
+    FUNC    free_instance;
+    FUNC    destroy;
+    FUNC    methods;
 };
 
 
