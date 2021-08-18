@@ -695,10 +695,7 @@ struct TShip {
     _gap _32D;
     _gap _32E;
     _gap _32F;
-    _gap _330;
-    _gap _331;
-    _gap _332;
-    _gap _333;
+    TList* custom_ship_infos;
     _gap _334;
     _gap _335;
     _gap _336;
@@ -951,11 +948,9 @@ struct TShip {
     _gap _4CD;
     _gap _4CE;
     _gap _4CF;
-}; // 4D0
+};
 
-struct TRuins {
-    TShip;
-
+struct TRuins: public TShip {
     TList* equipment_shop;
     _gap _4D4;
     _gap _4D5;
@@ -1102,11 +1097,9 @@ struct TRuins {
     _gap _565;
     _gap _566;
     _gap _567;
-}; // 568
+};
 
-struct TTranclucator {
-    TShip;
-
+struct TTranclucator: public TShip {
     _gap _4D0;
     _gap _4D1;
     _gap _4D2;
@@ -1132,11 +1125,9 @@ struct TTranclucator {
     _gap _4E9;
     _gap _4EA;
     _gap _4EB;
-}; // 4ec
+};
 
-struct TKling {
-    TShip;
-
+struct TKling: public TShip {
     byte sub_type;
     _gap _4D1;
     _gap _4D2;
@@ -1149,11 +1140,9 @@ struct TKling {
     _gap _4D9;
     _gap _4DA;
     _gap _4DB;
-}; // 4DB
+};
 
-struct TNormalShip {
-    TShip;
-
+struct TNormalShip: public TShip {
     _gap _4D0;
     _gap _4D1;
     _gap _4D2;
@@ -1208,11 +1197,9 @@ struct TNormalShip {
     _gap _50D;
     _gap _50E;
     _gap _50F;
-}; // 510
+};
 
-struct TPirate {
-    TNormalShip;
-
+struct TPirate: public TNormalShip {
     byte in_prison;
     _gap _511;
     _gap _512;
@@ -1225,29 +1212,23 @@ struct TPirate {
     _gap _519;
     _gap _51A;
     _gap _51B;
-}; // 51C
+};
 
-struct TWarrior {
-    TNormalShip;
-
+struct TWarrior: public TNormalShip {
     byte sub_type;
     _gap _511;
     _gap _512;
     _gap _513;
-}; // 514
+};
 
-struct TTransport {
-    TNormalShip;
-
+struct TTransport: public TNormalShip {
     byte sub_type;
     _gap _511;
     _gap _512;
     _gap _513;
-}; // 514
+};
 
-struct TRanger {
-    TNormalShip;
-
+struct TRanger: public TNormalShip {
     _gap _510;
     _gap _511;
     _gap _512;
@@ -1276,5 +1257,5 @@ struct TRanger {
     _gap _52B;
     int base_nod_cur;
     int programs[12];
-}; // 560
+};
 

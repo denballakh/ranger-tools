@@ -1,6 +1,4 @@
-struct TPlayer {
-    TRanger;
-
+struct TPlayer: public TRanger {
     _gap _560;
     _gap _561;
     _gap _562;
@@ -1019,5 +1017,5 @@ struct TPlayer {
     _gap _98D;
     _gap _98E;
     _gap _98F;
-}; // 990
+};
 

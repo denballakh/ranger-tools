@@ -95,6 +95,12 @@ struct TPackFileEC {
     //...
 };//210
 
+
+struct THashEC {
+    __cls* cls;
+}; // d01c
+
+
 struct TPackCollectionEC {
     __cls* cls;
 
@@ -169,7 +175,7 @@ struct TVarEC {
     double          val_float;
     byte*           val_str;
     void*           val_externfun;
-    DWORD*          val_libraryfun;
+    void*           val_libraryfun;
     TCodeEC*        val_fun;
     TCodeEC*        val_class;
     TVarArrayEC*    val_array;
@@ -234,7 +240,3 @@ struct TExpressionVarEC {
 };
 
 
-
-// struct THashEC {
-//     __cls* cls;
-// }; // d01c

@@ -87,9 +87,7 @@ struct TMissile {
     _gap _73;
 };
 
-struct TCustomMissile {
-    TMissile;
-
+struct TCustomMissile: public TMissile {
     _gap _74;
     _gap _75;
     _gap _76;

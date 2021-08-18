@@ -29,11 +29,9 @@ struct TItem {
     _gap _35;
     _gap _36;
     _gap _37;
-}; // 38
+};
 
-struct TGoods {
-    TItem;
-
+struct TGoods: public TItem {
     _gap _38;
     _gap _39;
     _gap _3A;
@@ -42,11 +40,9 @@ struct TGoods {
     _gap _3D;
     _gap _3E;
     _gap _3F;
-}; // 40
+};
 
-struct TEquipment {
-    TItem;
-
+struct TEquipment: public TItem {
     _gap _38;
     _gap _39;
     _gap _3A;
@@ -80,11 +76,9 @@ struct TEquipment {
     _gap _69;
     _gap _6A;
     _gap _6B;
-}; // 6C
+};
 
-struct THull {
-    TEquipment;
-
+struct THull: public TEquipment {
     int hitpoints;
     byte tech_level;
     byte hit_protect;
@@ -107,11 +101,9 @@ struct THull {
     _gap _91;
     _gap _92;
     _gap _93;
-}; // 94
+};
 
-struct TFuelTanks {
-    TEquipment;
-
+struct TFuelTanks: public TEquipment {
     byte tech_level;
     _gap _6D;
     _gap _6E;
@@ -125,11 +117,9 @@ struct TFuelTanks {
     _gap _79;
     _gap _7A;
     _gap _7B;
-}; // 7C
+};
 
-struct TEngine {
-    TEquipment;
-
+struct TEngine: public TEquipment {
     byte tech_level;
     _gap _6D;
     _gap _6E;
@@ -143,11 +133,9 @@ struct TEngine {
     _gap _79;
     _gap _7A;
     _gap _7B;
-}; // 7C
+};
 
-struct TRadar {
-    TEquipment;
-
+struct TRadar: public TEquipment {
     byte tech_level;
     _gap _6D;
     _gap _6E;
@@ -157,11 +145,9 @@ struct TRadar {
     _gap _75;
     _gap _76;
     _gap _77;
-}; // 78
+};
 
-struct TScaner {
-    TEquipment;
-
+struct TScaner: public TEquipment {
     byte tech_level;
     byte scan_protect;
     _gap _6E;
@@ -170,11 +156,9 @@ struct TScaner {
     _gap _71;
     _gap _72;
     _gap _73;
-}; // 74
+};
 
-struct TRepairRobot {
-    TEquipment;
-
+struct TRepairRobot: public TEquipment {
     byte tech_level;
     byte recover_hit_points;
     _gap _6E;
@@ -183,11 +167,9 @@ struct TRepairRobot {
     _gap _71;
     _gap _72;
     _gap _73;
-}; // 74
+};
 
-struct TCargoHook {
-    TEquipment;
-
+struct TCargoHook: public TEquipment {
     byte tech_level;
     _gap _6D;
     _gap _6E;
@@ -200,11 +182,9 @@ struct TCargoHook {
     _gap _7B;
     float speed_min;
     float speed_max;
-}; // 84
+};
 
-struct TDefGenerator {
-    TEquipment;
-
+struct TDefGenerator: public TEquipment {
     byte tech_level;
     _gap _6D;
     _gap _6E;
@@ -214,11 +194,9 @@ struct TDefGenerator {
     _gap _75;
     _gap _76;
     _gap _77;
-}; // 78
+};
 
-struct TWeapon {
-    TEquipment;
-
+struct TWeapon: public TEquipment {
     byte tech_level;
     _gap _6D;
     _gap _6E;
@@ -237,11 +215,9 @@ struct TWeapon {
     _gap _8D;
     _gap _8E;
     _gap _8F;
-}; // 90
+};
 
-struct TCountableItem {
-    TEquipment;
-
+struct TCountableItem: public TEquipment {
     _gap _6C;
     _gap _6D;
     _gap _6E;
@@ -254,11 +230,9 @@ struct TCountableItem {
     _gap _75;
     _gap _76;
     _gap _77;
-}; // 78
+};
 
-struct TEquipmentWithActCode {
-    TEquipment;
-
+struct TEquipmentWithActCode: public TEquipment {
     _gap _6C;
     _gap _6D;
     _gap _6E;
@@ -268,22 +242,18 @@ struct TEquipmentWithActCode {
     _gap _72;
     _gap _73;
     int data_1;
-}; // 78
+};
 
-struct TCistern {
-    TEquipment;
-
+struct TCistern: public TEquipment {
     int capacity;
     int fuel;
     _gap _74;
     _gap _75;
     _gap _76;
     _gap _77;
-}; // 78
+};
 
-struct TSatellite {
-    TEquipment;
-
+struct TSatellite: public TEquipment {
     _gap _6C;
     _gap _6D;
     _gap _6E;
@@ -305,11 +275,9 @@ struct TSatellite {
     _gap _81;
     _gap _82;
     _gap _83;
-}; // 84
+};
 
-struct TTreasureMap {
-    TEquipment;
-
+struct TTreasureMap: public TEquipment {
     _gap _6C;
     _gap _6D;
     _gap _6E;
@@ -330,50 +298,36 @@ struct TTreasureMap {
     _gap _7D;
     _gap _7E;
     _gap _7F;
-}; // 80
+};
 
-struct TMicromodule {
-    TEquipment;
-
+struct TMicromodule: public TEquipment {
     _gap _6C;
     _gap _6D;
     _gap _6E;
     _gap _6F;
-}; // 70
+};
 
-struct TArtefact {
-    TEquipmentWithActCode;
-}; // 78
+struct TArtefact: public TEquipmentWithActCode {};
 
-struct TUselessItem {
-    TEquipmentWithActCode;
-
+struct TUselessItem: public TEquipmentWithActCode {
     WSTR custom_text;
     int data[3];
-}; // 88
+};
 
-struct TProtoplasm {
-    TCountableItem;
-}; // 78
+struct TProtoplasm: public TCountableItem {};
 
-struct TArtefactTransmitter {
-    TArtefact;
-
+struct TArtefactTransmitter: public TArtefact {
     int power;
-}; // 7C
+};
 
-struct TArtefactTranclucator {
-    TArtefact;
-
+struct TArtefactTranclucator: public TArtefact {
     _gap _78;
     _gap _79;
     _gap _7A;
     _gap _7B;
-}; // 7C
+};
 
-struct TArtefactCustom {
-    TArtefact;
-
+struct TArtefactCustom: public TArtefact {
     int data_2;
     int data_3;
     STR text_data_1;
@@ -387,15 +341,13 @@ struct TArtefactCustom {
     _gap _91;
     _gap _92;
     _gap _93;
-}; // 94
+};
 
-struct TCustomWeapon {
-    TWeapon;
-
+struct TCustomWeapon: public TWeapon {
     _gap _90;
     _gap _91;
     _gap _92;
     _gap _93;
-}; // 94
+};
 
 

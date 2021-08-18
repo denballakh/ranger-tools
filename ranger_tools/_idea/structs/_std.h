@@ -28,26 +28,7 @@ struct TList {
 };
 
 
-struct TObjectList {
-    TList;
+struct TObjectList: public TList {
     PTR _10; // указатель на VMT класса итемов?
 };
-
-
-
-// используется лишь в паре мест:
-
-
-// struct TOrderedList {
-//     __cls* cls;
-//     TList* list;
-// };
-
-// struct TStack {
-//     TOrderedList _;
-// };
-
-// struct TMenuItemStack {
-//     TStack _;
-// };
 

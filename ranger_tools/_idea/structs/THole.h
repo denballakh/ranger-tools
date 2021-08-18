@@ -22,4 +22,4 @@ struct THole {
     _gap _31;
     _gap _32;
     _gap _33;
-}; // 34
+};

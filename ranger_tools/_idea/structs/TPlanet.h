@@ -1,4 +1,4 @@
-struct TPlanet {
+struct TPlanet { // 4 лишних байта
     __cls* cls;
 
     _gap _004;
@@ -113,7 +113,6 @@ struct TPlanet {
     int hill_complate;
     int orbit_cnt;
     TList* gone_items;
-    TList* _144;
     TObjectSE* graph_object;
     STR graph_planet;
     WSTR graph_name;
@@ -123,20 +122,12 @@ struct TPlanet {
     _gap _15A;
     _gap _15B;
     _gap_32 _15C;
+    _gap_32 _15C_;
     _gap_32 _160;// UNK size;
     _gap_32 _164;// PTR graph;
     byte no_landing;
     byte no_shopupdate;
     _gap _16A;
     _gap _16B;
-}; // 16C
-
-struct TPlanetTempl {
-    __cls* cls;
-    int type;
-    STR mask_0;
-    STR light_0;
-    STR mask_1;
-    STR light_1;
-    int _14;
 };
+

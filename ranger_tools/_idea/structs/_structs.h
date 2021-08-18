@@ -4,6 +4,17 @@ struct TStarDist {
 };
 
 
+struct TPlanetTempl {
+    __cls* cls;
+    int type;
+    STR mask_0;
+    STR light_0;
+    STR mask_1;
+    STR light_1;
+    int _14;
+};
+
+
 struct TShipGoodsItem {
     int count;
     int _4;
@@ -74,10 +85,10 @@ struct TMessagePlayer {
 };
 
 
-struct TDemo {
-    __cls* cls;
-    TBufEC* buf_p;
-};
+// struct TDemo {
+//     __cls* cls;
+//     TBufEC* buf_p;
+// };
 
 
 struct TStorageUnit {

@@ -149,4 +149,4 @@ struct TGalaxy {
     _gap _1D1;
     _gap _1D2;
     _gap _1D3;
-}; // 1D4
+};

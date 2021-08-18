@@ -18,7 +18,7 @@ TThreadEC - 2c
 struct TThreadEC {
     VMT_TThreadEC* cls;
 
-    int (__fastcall *** _04)(_DWORD);
+    int (__fastcall *** _04)(dword);
     HANDLE thread;
     _gap _0C;
     _gap _0D;
@@ -40,8 +40,7 @@ struct TThreadEC {
 };
 
 
-struct TSaver {
-    TThreadEC;
+struct TSaver: public TThreadEC {
     _gap_32 _2C;
     TBufEC* _30;
     TBufEC* _34;
