@@ -1,3 +1,58 @@
+struct TStarDist {
+    int dist;
+    TStar* star;
+};
+
+
+struct TShipGoodsItem {
+    int count;
+    int _4;
+    int _8;
+    int _C;
+};
+
+
+struct TGoodsShopItem {
+    int count;
+    float e_price;
+    int sell_price;
+    int buy_price;
+};
+
+
+struct TGoneItem {
+    _pair_byte pos;
+    byte terrain_type;
+    _gap _3;
+    int terrain_needed;
+    _gap_32 _8;
+    TItem* item;
+};
+
+
+struct TDomResearchProgress {
+    float progress;
+    int material;
+};
+
+
+struct TGalaxyEvent {
+    __cls* cls;
+
+    int type;
+    int turn;
+    TList* data_list;
+    TList* text_list;
+};
+
+
+struct TSetItem {
+    int a;
+    int b;
+    word c;
+};
+
+
 struct TMessagePlayer {
     __cls* cls;
 
@@ -18,10 +73,12 @@ struct TMessagePlayer {
     _gap_32 _03C;
 };
 
+
 struct TDemo {
     __cls* cls;
     TBufEC* buf_p;
 };
+
 
 struct TStorageUnit {
     PTR place;
@@ -34,6 +91,7 @@ struct TStorageUnit {
     _gap_32 _01C;
 };
 
+
 struct TQuestGameContent {};
 struct TTextField {};
 struct TQuestParameter {};
@@ -43,20 +101,6 @@ struct TStoredItem {};
 struct TPlayerHoldUnit {};
 struct TJournalRecord {}; // 0x0c
 
-struct TempStruct_0 {
-    int _00;
-    int _04;
-    int _08;
-    int _0C;
-    int _10;
-    int _14;
-    int _18;
-    int _1C;
-    int _20;
-    int _24;
-    int _28;
-    int _2C;
-};
 
 struct TPlanetNews {
     int _00;
@@ -68,7 +112,9 @@ struct TPlanetNews {
     STR text;
 };
 
+
 /*
+
 TEther - 18
 TEtherUnit - 14
 
@@ -102,8 +148,6 @@ TabObject - b0
 TabSpace - 6c
 
 
-
-
 TObjectGI - 11c
     TPSWeaponGI - 130
         TPSWeapon01GI - 14c
@@ -125,6 +169,5 @@ TObjectGI - 11c
         TPSEyesGI - 15c
         TPSWindGI - 16c
         TPSPhaserGI - 168
-
 
 */

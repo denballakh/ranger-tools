@@ -1,8 +1,3 @@
-struct TStarDist {
-    int dist;
-    TStar* star;
-};
-
 struct TStar {
     __cls* cls;
 

@@ -362,7 +362,7 @@ struct TArtefactTransmitter {
     int power;
 }; // 7C
 
-struct TArtefactTranctucator {
+struct TArtefactTranclucator {
     TArtefact;
 
     _gap _78;

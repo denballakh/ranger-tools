@@ -2,12 +2,12 @@ struct TScript {
     __cls* cls;
 
     _gap_32 _04;
-    _gap_32 _08;
+    STR script_name;
     _gap_32 _0C;
     _gap_32 _10;
     _gap_32 _14;
     _gap_32 _18;
-    _gap_32 _1C;
+    TList* groups;
     TList* ships;
     _gap_32 _30;
     _gap_32 _34;
@@ -27,7 +27,7 @@ struct TScript {
 struct TScriptShip {
     __cls* cls;
 
-    _gap_32 _04;
+    TScript* script;
     int group;
     TShip* ship;
     _gap_32 _10;
@@ -35,7 +35,7 @@ struct TScriptShip {
     _gap_32 _18;
     _gap_32 _1C;
     _gap_32 _20;
-    _gap_32 _24;
+    WSTR custom_faction;
     _gap_32 _28;
 };
 
@@ -103,7 +103,7 @@ struct TScriptState {
 struct TScriptGroup {
     __cls* cls;
 
-    _gap_32 _04;
+    STR name;
     _gap_32 _08;
     _gap_32 _0C;
     _gap_32 _10;

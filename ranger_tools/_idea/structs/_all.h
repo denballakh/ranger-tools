@@ -1,14 +1,12 @@
 #include "_defines.h"
 
 #include "VMT.h"
-
 #include "_std.h"
 #include "EC.h"
-#include "TCCInterface.h"
-
 #include "_structs.h"
-#include "TThreadEC.h"
 
+#include "TCCInterface.h"
+#include "TThreadEC.h"
 #include "TBonus.h"
 #include "TScript.h"
 #include "SE.h"
@@ -22,4 +20,3 @@
 #include "TPlanet.h"
 #include "THole.h"
 #include "TConstellation.h"
-

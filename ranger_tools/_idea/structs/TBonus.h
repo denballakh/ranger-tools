@@ -1,9 +1,3 @@
-struct TSetItem {
-    int a;
-    int b;
-    word c;
-};
-
 struct TBonus {
     byte is_special;
     byte block_mm;

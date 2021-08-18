@@ -18,7 +18,7 @@ struct __cls {
     FUNC    new_instance;
     FUNC    free_instance;
     FUNC    destroy;
-    FUNC    methods;
+    FUNC    methods[100];
 };
 
 

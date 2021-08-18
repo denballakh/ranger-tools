@@ -1,19 +1,3 @@
-struct TGoodsShopItem {
-    int count;
-    float e_price;
-    int sell_price;
-    int buy_price;
-};
-
-struct TGoneItem {
-    _pair_byte pos;
-    byte terrain_type;
-    _gap _3;
-    int terrain_needed;
-    _gap_32 _8;
-    TItem* item;
-};
-
 struct TPlanet {
     __cls* cls;
 

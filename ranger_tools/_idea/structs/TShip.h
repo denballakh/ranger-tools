@@ -1,22 +1,8 @@
-struct TShipGoodsItem {
-    int count;
-    int _4;
-    int _8;
-    int _C;
-};
-
-
 struct TShip {
     __cls* cls;
 
-    _gap _004;
-    _gap _005;
-    _gap _006;
-    _gap _007;
-    _gap _008;
-    _gap _009;
-    _gap _00A;
-    _gap _00B;
+    int id;
+    STR name;
     WSTR custom_type_name;
     byte type; // 1 - TRanger, 3 - TPirate
     byte owner;
@@ -751,7 +737,7 @@ struct TShip {
     _gap _3C9;
     _gap _3CA;
     _gap _3CB;
-    WSTR custom_faction;
+    TScriptShip* script_ship;
     _gap _3D0;
     _gap _3D1;
     _gap _3D2;

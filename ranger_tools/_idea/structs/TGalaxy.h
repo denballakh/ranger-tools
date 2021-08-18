@@ -1,17 +1,3 @@
-struct TDomResearchProgress {
-    float progress;
-    int material;
-};
-
-struct TGalaxyEvent {
-    __cls* cls;
-
-    int type;
-    int turn;
-    TList* data_list;
-    TList* text_list;
-};
-
 struct TGalaxy {
     __cls* cls;
 

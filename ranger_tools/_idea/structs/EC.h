@@ -1,3 +1,17 @@
+struct TCodeEC {
+    __cls* cls;
+
+    _gap_32 _04;
+    _gap_32 _08;
+    _gap_32 _0C;
+    _gap_32 _10;
+    _gap_32 _14;
+    TVarArrayEC* local_var;
+    _gap_32 _1C;
+    _gap_32 _20;
+    int script_fun_linked;
+};
+
 struct TBufEC {
     __cls* cls;
 
@@ -45,7 +59,6 @@ struct TBlockParElEC {
     int fast_first;
     int fast_cnt;
 };
-
 
 struct TDataElEC {
     __cls* cls;
@@ -96,7 +109,6 @@ struct TPackCollectionEC {
     //...
 };//214
 
-
 struct TBlockMemUnitEC {
     __cls* cls;
 
@@ -117,7 +129,6 @@ struct TBlockMemEC {
     byte __gap[3];
 };
 
-
 struct TStringsElEC {
     __cls* cls;
 
@@ -133,7 +144,6 @@ struct TStringsEC {
     TStringsElEC* last;
     TStringsElEC* ptr;
 };
-
 
 enum TVarEC_type {
     TVarEC_type_unknown     = 0x0,
@@ -194,7 +204,6 @@ struct TCodeAnalyzerEC {
     TCodeAnalyzerUnitEC* last;
 };
 
-
 struct TExpressionEC {
     __cls* cls;
 
@@ -223,7 +232,6 @@ struct TExpressionVarEC {
     byte** path;
     TVarEC* var;
 };
-
 
 
 
