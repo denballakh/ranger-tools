@@ -13,7 +13,7 @@ field_type = GAP_32
 
 
 init_offset = 0x4
-size_in_bytes = 0x44
+size_in_bytes = 0x28
 
 
 name = '__struct_name__'

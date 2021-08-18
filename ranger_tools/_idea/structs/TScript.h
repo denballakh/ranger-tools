@@ -8,10 +8,7 @@ struct TScript {
     _gap_32 _14;
     _gap_32 _18;
     _gap_32 _1C;
-    _gap_32 _20;
-    _gap_32 _24;
-    _gap_32 _28;
-    _gap_32 _2C;
+    TList* ships;
     _gap_32 _30;
     _gap_32 _34;
     _gap_32 _38;
@@ -31,8 +28,8 @@ struct TScriptShip {
     __cls* cls;
 
     _gap_32 _04;
-    _gap_32 _08;
-    _gap_32 _0C;
+    int group;
+    TShip* ship;
     _gap_32 _10;
     _gap_32 _14;
     _gap_32 _18;

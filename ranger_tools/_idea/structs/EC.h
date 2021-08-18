@@ -92,16 +92,9 @@ struct TPackCollectionEC {
     int field_14;
     int field_18;
     int field_1C;
-};//214
 
-// struct TThreadEC {
-//     __cls* cls;
-//     UNK handle;
-//     int thread_id;
-//     int priority;
-//     bool terminate;
-//     bool end_destroy;
-// };
+    //...
+};//214
 
 
 struct TBlockMemUnitEC {

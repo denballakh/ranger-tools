@@ -1129,10 +1129,7 @@ struct TTranclucator {
     _gap _4D5;
     _gap _4D6;
     _gap _4D7;
-    _gap _4D8;
-    _gap _4D9;
-    _gap _4DA;
-    _gap _4DB;
+    TShip* proprietor;
     _gap _4DC;
     _gap _4DD;
     _gap _4DE;

@@ -3,6 +3,15 @@ struct TDomResearchProgress {
     int material;
 };
 
+struct TGalaxyEvent {
+    __cls* cls;
+
+    int type;
+    int turn;
+    TList* data_list;
+    TList* text_list;
+};
+
 struct TGalaxy {
     __cls* cls;
 
@@ -12,13 +21,13 @@ struct TGalaxy {
     _gap_32 _010;
     _gap_32 _014;
     _gap_32 _018;
-    _gap_32 _01C;
+    int id_ship;
     _gap_32 _020;
     _gap_32 _024;
     _gap_32 _028;
     TList* stars;
     TList* holes;
-    _gap_32 _034;
+    TList* _034;
     TList* planets;
     TList* rangers;
     TList* RC_list;
@@ -26,17 +35,15 @@ struct TGalaxy {
     int _048;
     int turn;
     byte diff_levels[8];
-    _gap_32 _058; // rnd_date_based? связано с защитой? кол-во чит очков?
+    int rnd;
     int rnd_seed;
-    int _060;
+    int rangers_average_capital;
     int _064;
-    int _068;
+    float rangers_average_strength;
     int _06C;
     _gap_32 _070;
     _gap_32 _074;
-    _gap_32 _078;
-    _gap_32 _07C;
-    _gap_32 _080;
+    int eminent_rangers[3];
     _gap_32 _084;
     _gap_32 _088;
     _gap_32 _08C;
@@ -53,7 +60,7 @@ struct TGalaxy {
     _gap_32 _0B8;
     _gap_32 _0BC;
     TList* planet_news;
-    int _0D0;
+    TList* custom_weapon_infos;
     TStar* keller_attack_star;
     _gap_32 _0C0;
     _gap_32 _0C4;
@@ -72,8 +79,8 @@ struct TGalaxy {
     int _108;
     int _10C;
     int _110;
-    _gap_32 _114;
-    _gap_32 _118;
+    int terron_weapon_lock_turn;
+    int terron_grow_lock_turn;
     int terron_landing_lock_turn;
     int terron_to_star;
     int keller_leave;
@@ -87,7 +94,7 @@ struct TGalaxy {
     int pirate_win_type;
     int coalition_defeated_turn;
     _gap_32 _14C;
-    _gap_32 _150;
+    TList* scripts;
     _gap_32 _154;
     _gap_32 _158;
     _gap_32 _15C;
@@ -145,11 +152,11 @@ struct TGalaxy {
 
     _gap_32 _1AC;
     TList* events;
-    _gap_32 _1B4;
-    _gap_32 _1B8;
-    _gap_32 _1BC;
-    _gap_32 _1C0;
-    _gap_32 _1C4;
+    TList* interface_state_overrides;
+    TList* interface_text_overrides;
+    TList* interface_image_overrides;
+    TList* interface_pos_overrides;
+    TList* interface_size_overrides;
     _gap_32 _1C8;
     _gap_32 _1CC; // CRC
     byte _1D0;

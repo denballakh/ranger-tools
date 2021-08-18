@@ -22,14 +22,14 @@ struct _pair_double {
 struct TList {
     __cls* cls;
 
-    PTR* items;      // указатель на массив
-    int count;        // количество элементов
-    int capacity;     // размер выделенной памяти (в элементах)
+    PTR* items;     // указатель на массив
+    int count;      // количество элементов
+    int capacity;   // размер выделенной памяти (в элементах)
 };
 
 
 struct TObjectList {
-    TList _;
+    TList;
     PTR _10; // указатель на VMT класса итемов?
 };
 

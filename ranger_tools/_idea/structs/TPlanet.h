@@ -54,7 +54,7 @@ struct TPlanet {
     _gap _04B;
     _gap _04C;
     _gap _04D;
-    _gap _04E;
+    _gap _04E; // тут пропущен байт???
     int relation_to_player;
     _gap _053;
     _gap _054;
@@ -101,8 +101,8 @@ struct TPlanet {
     _gap _105;
     _gap _106;
     _gap _107;
-    _gap_32 _114;
     TList* relation_to_rangers;
+    _gap_32 _114;
     TList* warriors;
     TList* prison_ships;
     _gap _118;
@@ -146,3 +146,13 @@ struct TPlanet {
     _gap _16A;
     _gap _16B;
 }; // 16C
+
+struct TPlanetTempl {
+    __cls* cls;
+    int type;
+    STR mask_0;
+    STR light_0;
+    STR mask_1;
+    STR light_1;
+    int _14;
+};
