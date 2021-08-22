@@ -54,6 +54,9 @@ class Buffer:
             f'len={len(self.data)}'
         )
 
+    def __eq__(self, other):
+        return self.data == other.data
+
     def __repr__(self) -> str:
         return f'Buffer({self.data!r}, pos={self.pos})'
 
@@ -216,6 +219,3 @@ class Buffer:
             value = value[ : length - 1]
             value += (length - len(value)) * '\0'
         self.write(value.encode('utf-16le'))
-
-
-

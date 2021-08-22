@@ -1,4 +1,4 @@
-// 32
+// bit=32
 #include <string>
 #include <iostream>
 
@@ -13,8 +13,8 @@ using namespace std;
 #define LOG(expr) cout<<#expr<<" = "<<(expr)<<endl;
 #define ASSERT_TRUE(expr) if(!(expr)) {cout<<"Assert true error:\n\t"<<#expr<<" = "<<(expr)<<endl;}
 #define ASSERT_FALSE(expr) if((expr)) {cout<<"Assert false error:\n\t"<<#expr<<" = "<<(expr)<<endl;}
-#define ASSERT_EQ(expr,val) if((expr)!=(val)) {cout<<"Assert equal error:\n\t"<<#expr<<" = "<<(expr)<<" != "<<(val)<<endl;}
-#define ASSERT_NOT_EQ(expr,val) if((expr)==(val)) {cout<<"Assert not equal error:\n\t"<<#expr<<" = "<<(expr)<<" == "<<(val)<<endl;}
+#define ASSERT_EQ(expr,val) if((expr)!=(val)) {cout<<"Assert equal error:\n\t"<<#expr<<" === "<<(expr)<<" != "<<(val)<<" === " <<#val<<endl;}
+#define ASSERT_NOT_EQ(expr,val) if((expr)==(val)) {cout<<"Assert not equal error:\n\t"<<#expr<<" === "<<(expr)<<" == "<<(val)<<" === " <<#val<<endl;}
 
 int main() {
     ASSERT_EQ(sizeof(byte),    1);
@@ -22,15 +22,15 @@ int main() {
     ASSERT_EQ(sizeof(dword),   4);
 
     ASSERT_EQ(sizeof(PTR),     4);
-    ASSERT_EQ(sizeof(UNK),     4);
-    ASSERT_EQ(sizeof(STR),     4);
-    ASSERT_EQ(sizeof(WSTR),    4);
-    ASSERT_EQ(sizeof(FUNC),    4);
+    ASSERT_EQ(sizeof(UNK),     sizeof(PTR));
+    ASSERT_EQ(sizeof(STR),     sizeof(PTR));
+    ASSERT_EQ(sizeof(WSTR),    sizeof(PTR));
+    ASSERT_EQ(sizeof(FUNC),    sizeof(PTR));
 
-    ASSERT_EQ(sizeof(_gap_8),  1);
-    ASSERT_EQ(sizeof(_gap_16), 2);
-    ASSERT_EQ(sizeof(_gap_32), 4);
-    ASSERT_EQ(sizeof(_gap),    1);
+    ASSERT_EQ(sizeof(_gap_8),  sizeof(byte));
+    ASSERT_EQ(sizeof(_gap_16), sizeof(word));
+    ASSERT_EQ(sizeof(_gap_32), sizeof(dword));
+    ASSERT_EQ(sizeof(_gap),    sizeof(_gap_8));
 
 
     ASSERT_EQ(sizeof(TShip),            0x4D0);

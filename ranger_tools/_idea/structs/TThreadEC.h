@@ -20,10 +20,7 @@ struct TThreadEC {
 
     int (__fastcall *** _04)(dword);
     HANDLE thread;
-    _gap _0C;
-    _gap _0D;
-    _gap _0E;
-    _gap _0F;
+    _gap_32 _0C;
     byte priority;
     bool terminated;
     _gap _12;

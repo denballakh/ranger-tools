@@ -1,4 +1,4 @@
-struct TPlanet { // 4 лишних байта
+struct TPlanet {
     __cls* cls;
 
     _gap _004;

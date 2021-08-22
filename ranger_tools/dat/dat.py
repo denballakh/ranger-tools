@@ -396,7 +396,3 @@ class DATItem:
         self.to_buffer(dout, fmt=fmt)
         data = bytes(dout)
         return data
-
-
-
-

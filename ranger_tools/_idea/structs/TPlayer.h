@@ -3,14 +3,8 @@ struct TPlayer: public TRanger {
     _gap _561;
     _gap _562;
     _gap _563;
-    _gap _564;
-    _gap _565;
-    _gap _566;
-    _gap _567;
-    _gap _568;
-    _gap _569;
-    _gap _56A;
-    _gap _56B;
+    int _564;
+    int _568;
     _gap _56C;
     _gap _56D;
     _gap _56E;
@@ -983,10 +977,7 @@ struct TPlayer: public TRanger {
     _gap _959;
     bool FPirateClanReal;
     _gap _95B;
-    _gap _95C;
-    _gap _95D;
-    _gap _95E;
-    _gap _95F;
+    int _95C;
     int FExpPointsForDominatorKills;
     int FExpPointsForPirateKills;
     int FExpPointsForGoodShipKills;

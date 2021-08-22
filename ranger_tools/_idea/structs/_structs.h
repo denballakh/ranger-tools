@@ -16,8 +16,8 @@ struct TPlanetTempl {
 
 
 struct TShipGoodsItem {
-    int count;
-    int _4;
+    int cnt;
+    int cost;
     int _8;
     int _C;
 };

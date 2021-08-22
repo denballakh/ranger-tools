@@ -5,10 +5,7 @@ struct TStar {
     _gap _005;
     _gap _006;
     _gap _007;
-    _gap _008;
-    _gap _009;
-    _gap _00A;
-    _gap _00B;
+    int rnd_seed;
     _gap _00C;
     _gap _00D;
     _gap _00E;

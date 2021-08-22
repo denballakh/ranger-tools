@@ -61,10 +61,7 @@ struct TShip {
     _gap _079;
     _gap _07A;
     _gap _07B;
-    _gap _07C;
-    _gap _07D;
-    _gap _07E;
-    _gap _07F;
+    int _07C;
     _gap _080;
     _gap _081;
     _gap _082;
@@ -747,10 +744,7 @@ struct TShip {
     _gap _3D9;
     _gap _3DA;
     _gap _3DB;
-    _gap _3DC;
-    _gap _3DD;
-    _gap _3DE;
-    _gap _3DF;
+    TList* recently_dropped_items;
     _gap _3E0;
     _gap _3E1;
     _gap _3E2;
@@ -1181,7 +1175,7 @@ struct TNormalShip: public TShip {
     word _4F6;
     int _4F8;
     int _4FC;
-    _gap _500;
+    _gap _500; // rank?
     _gap _501;
     _gap _502;
     _gap _503;

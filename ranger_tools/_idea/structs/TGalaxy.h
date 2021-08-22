@@ -22,7 +22,7 @@ struct TGalaxy {
     int turn;
     byte diff_levels[8];
     int rnd;
-    int rnd_seed;
+    int rnd_out;
     int rangers_average_capital;
     int _064;
     float rangers_average_strength;

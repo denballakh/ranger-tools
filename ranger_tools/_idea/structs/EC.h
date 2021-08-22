@@ -1,16 +1,35 @@
+struct TCodeUnitEC {
+    __cls* cls;
+
+    TCodeUnitEC* prev;
+    TCodeUnitEC* next;
+    int type;
+    TExpressionEC* expr;
+    TCodeUnitEC* jump;
+    TVarEC* var;
+    int sme, len, unit;
+    bool BP;
+    _gap _[3];
+};
+
+
 struct TCodeEC {
     __cls* cls;
 
-    _gap_32 _04;
-    _gap_32 _08;
-    _gap_32 _0C;
-    _gap_32 _10;
-    _gap_32 _14;
+    TCodeEC* parent;
+    bool is_class;
+    _gap _09;
+    _gap _0A;
+    _gap _0B;
+    STR class_name;
+    TCodeUnitEC* first;
+    TCodeUnitEC* last;
     TVarArrayEC* local_var;
     _gap_32 _1C;
     _gap_32 _20;
     int script_fun_linked;
 };
+
 
 struct TBufEC {
     __cls* cls;
