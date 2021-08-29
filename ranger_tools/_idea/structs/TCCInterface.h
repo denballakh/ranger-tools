@@ -6,19 +6,6 @@ struct TCCInterface {
     PTR critical_section;
 };
 
-struct TCBufEC {
-    __cls* cls;
-
-    _gap_32 _004;
-    _gap_32 _008;
-    _gap_32 _00C;
-    _gap_32 _010;
-    _gap_32 _014;
-    _gap_32 _018;
-    _gap_32 _01C;
-    _gap_32 _020;
-}; // 0x24
-
 struct TCBufControlEC {
     __cls* cls;
 

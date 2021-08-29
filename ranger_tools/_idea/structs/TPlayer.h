@@ -982,14 +982,11 @@ struct TPlayer: public TRanger {
     int FExpPointsForPirateKills;
     int FExpPointsForGoodShipKills;
     int FExpPointsForTrade;
-    _gap _970; // in bridge?
+    _gap _970;  // in bridge?
     _gap _971;
     _gap _972;
     _gap _973;
-    _gap _974;
-    _gap _975;
-    _gap _976;
-    _gap _977;
+    TRuins* _974;
     TShip* FBridgeCurShip;
     TPlanet* FBridgeCurPlanet;
     _gap _980;

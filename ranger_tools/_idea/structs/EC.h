@@ -40,6 +40,22 @@ struct TBufEC {
     byte* data_p;     // указатель на данные
 };
 
+struct TCacheDataEC {
+    __cls* cls;
+
+    _gap_32 _04;
+    _gap_32 _08;
+    _gap_32 _0C;
+    _gap_32 _10;
+    _gap_32 _14;
+    _gap_32 _18;
+    _gap_32 _1C;
+};
+
+struct TCBufEC: TCacheDataEC {
+    TBufEC* buf;
+};
+
 struct TFileEC {
     __cls* cls;
 

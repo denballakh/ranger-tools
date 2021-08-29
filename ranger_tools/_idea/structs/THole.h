@@ -18,8 +18,5 @@ struct THole {
     _gap _2D;
     _gap _2E;
     _gap _2F;
-    _gap _30;
-    _gap _31;
-    _gap _32;
-    _gap _33;
+    STR _30;
 };

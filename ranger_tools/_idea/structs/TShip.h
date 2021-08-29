@@ -4,18 +4,15 @@ struct TShip {
     int id;
     STR name;
     WSTR custom_type_name;
-    byte type; // 1 - TRanger, 3 - TPirate
+    byte type;  // 1 - TRanger, 3 - TPirate
     byte owner;
     _gap _012;
     _gap _013;
     _pair_float pos;
     TPlanet* cur_planet;
-    TShip* cur_ship;
+    TRuins* cur_ship;
     TStar* cur_star;
-    _gap _028;
-    _gap _029;
-    _gap _02A;
-    _gap _02B;
+    TStar* _028;  // home_star ?
     TPlanet* home_planet;
 
     TShipGoodsItem goods[8];
@@ -53,7 +50,7 @@ struct TShip {
     _gap _071;
     _gap _072;
     _gap _073;
-    _gap _074;
+    byte _074;
     _gap _075;
     _gap _076;
     _gap _077;
@@ -723,14 +720,8 @@ struct TShip {
     TList* equipments;
     TList* artefacts;
     TList* drop_items;
-    _gap _3C4;
-    _gap _3C5;
-    _gap _3C6;
-    _gap _3C7;
-    _gap _3C8;
-    _gap _3C9;
-    _gap _3CA;
-    _gap _3CB;
+    TList* _3C4;
+    TList* _3C8;
     TScriptShip* script_ship;
     _gap _3D0;
     _gap _3D1;
@@ -740,27 +731,18 @@ struct TShip {
     _gap _3D5;
     _gap _3D6;
     _gap _3D7;
-    _gap _3D8;
-    _gap _3D9;
-    _gap _3DA;
-    _gap _3DB;
+    TList* _3D8;
     TList* recently_dropped_items;
     _gap _3E0;
     _gap _3E1;
     _gap _3E2;
     _gap _3E3;
-    _gap _3E4;
-    _gap _3E5;
-    _gap _3E6;
-    _gap _3E7;
+    TList* _3E4;
     TList* rewards;
     int _3EC;
     TList* relation_to_rangers;
     TShip* ship_bad;
-    _gap _3F8;
-    _gap _3F9;
-    _gap _3FA;
-    _gap _3FB;
+    TShip* _3F8;
     TShip* partner;
     int contract_days;
     STR face;
@@ -800,10 +782,10 @@ struct TShip {
     _gap _429;
     _gap _42A;
     _gap _42B;
-    _gap_32 _42C; // связано с приказом
-    PTR dest_obj;
+    _gap_32 _42C;  // связано с приказом
+    TStar* dest_obj;
     _pair_float dest_pos;
-    _gap _43C; // связано с приказом
+    _gap _43C;  // связано с приказом
     _gap _43D;
     _gap _43E;
     _gap _43F;
@@ -824,7 +806,7 @@ struct TShip {
     _gap _44E;
     _gap _44F;
     PTR graph_ship;
-    PTR skin; // или строка шкурки, или объект SE
+    STR skin;  // или строка шкурки, или объект SE
     _gap _458;
     byte in_hyper_space;
     _gap _45A;
@@ -833,7 +815,7 @@ struct TShip {
     _gap _45D;
     _gap _45E;
     _gap _45F;
-    _gap _460; // destroy=true
+    _gap _460;  // destroy=true
     _gap _461;
     _gap _462;
     _gap _463;
@@ -881,7 +863,7 @@ struct TShip {
     _gap _48D;
     _gap _48E;
     _gap _48F;
-    int money_xored; // money ^ 0xA4A576AD
+    int money_xored;  // money ^ 0xA4A576AD
     _gap _494;
     _gap _495;
     _gap _496;
@@ -898,10 +880,7 @@ struct TShip {
     _gap _4A1;
     _gap _4A2;
     _gap _4A3;
-    _gap _4A4;
-    _gap _4A5;
-    _gap _4A6;
-    _gap _4A7;
+    TShip* _4A4;
     _gap _4A8;
     _gap _4A9;
     _gap _4AA;
@@ -910,38 +889,13 @@ struct TShip {
     _gap _4AD;
     _gap _4AE;
     _gap _4AF;
+
     byte cur_standing;
     _gap _4B1;
     _gap _4B2;
     _gap _4B3;
-    _gap _4B4;
-    _gap _4B5;
-    _gap _4B6;
-    _gap _4B7;
-    _gap _4B8;
-    _gap _4B9;
-    _gap _4BA;
-    _gap _4BB;
-    _gap _4BC;
-    _gap _4BD;
-    _gap _4BE;
-    _gap _4BF;
-    _gap _4C0;
-    _gap _4C1;
-    _gap _4C2;
-    _gap _4C3;
-    _gap _4C4;
-    _gap _4C5;
-    _gap _4C6;
-    _gap _4C7;
-    _gap _4C8;
-    _gap _4C9;
-    _gap _4CA;
-    _gap _4CB;
-    _gap _4CC;
-    _gap _4CD;
-    _gap _4CE;
-    _gap _4CF;
+
+    float _4B4[7];
 };
 
 struct TRuins: public TShip {
@@ -1074,34 +1028,22 @@ struct TRuins: public TShip {
     _gap _551;
     _gap _552;
     _gap _553;
-    _gap _554;
-    _gap _555;
-    _gap _556;
-    _gap _557;
+    float _554;
     TStar* dest_star;
     _gap _55C;
     _gap _55D;
     _gap _55E;
     _gap _55F;
-    _gap _560;
-    _gap _561;
-    _gap _562;
-    _gap _563;
-    _gap _564;
-    _gap _565;
-    _gap _566;
-    _gap _567;
+    TSatellite* _560;
+    byte _564;
+    byte _565;
+    byte _566;
+    byte _567;
 };
 
 struct TTranclucator: public TShip {
-    _gap _4D0;
-    _gap _4D1;
-    _gap _4D2;
-    _gap _4D3;
-    _gap _4D4;
-    _gap _4D5;
-    _gap _4D6;
-    _gap _4D7;
+    float _4D0;
+    STR _4D4;
     TShip* proprietor;
     _gap _4DC;
     _gap _4DD;
@@ -1123,74 +1065,38 @@ struct TTranclucator: public TShip {
 
 struct TKling: public TShip {
     byte sub_type;
-    _gap _4D1;
+    byte _4D1;
     _gap _4D2;
     _gap _4D3;
-    _gap _4D4;
-    _gap _4D5;
-    _gap _4D6;
-    _gap _4D7;
-    _gap _4D8;
-    _gap _4D9;
+    int _4D4;
+    byte _4D8;
+    byte _4D9;
     _gap _4DA;
     _gap _4DB;
 };
 
 struct TNormalShip: public TShip {
-    _gap _4D0;
-    _gap _4D1;
-    _gap _4D2;
-    _gap _4D3;
-    _gap _4D4;
-    _gap _4D5;
-    _gap _4D6;
-    _gap _4D7;
-    _gap _4D8;
-    _gap _4D9;
-    _gap _4DA;
-    _gap _4DB;
-    _gap _4DC;
-    _gap _4DD;
-    _gap _4DE;
-    _gap _4DF;
-    _gap _4E0;
-    _gap _4E1;
-    _gap _4E2;
-    _gap _4E3;
-    _gap _4E4;
-    _gap _4E5;
-    _gap _4E6;
-    _gap _4E7;
-    _gap _4E8;
-    _gap _4E9;
-    _gap _4EA;
-    _gap _4EB;
-    _gap _4EC;
-    _gap _4ED;
-    _gap _4EE;
-    _gap _4EF;
+    TPlanet* _4D0;
+    _gap_32 _4D4;
+    _gap_32 _4D8;
+    _gap_32 _4DC;
+    _gap_32 _4E0;
+    _gap_32 _4E4;
+    _gap_32 _4E8;
+    _gap_32 _4EC;
     word _4F0;
     word _4F2;
     word _4F4;
     word _4F6;
-    int _4F8;
-    int _4FC;
-    _gap _500; // rank?
+    TPlanet* _4F8;
+    float _4FC;
+    _gap _500;  // rank?
     _gap _501;
     _gap _502;
     _gap _503;
-    _gap _504;
-    _gap _505;
-    _gap _506;
-    _gap _507;
-    _gap _508;
-    _gap _509;
-    _gap _50A;
-    _gap _50B;
-    _gap _50C;
-    _gap _50D;
-    _gap _50E;
-    _gap _50F;
+    _gap_32 _504;
+    _gap_32 _508;
+    _gap_32 _50C;
 };
 
 struct TPirate: public TNormalShip {
@@ -1202,10 +1108,7 @@ struct TPirate: public TNormalShip {
     _gap _515;
     _gap _516;
     _gap _517;
-    _gap _518;
-    _gap _519;
-    _gap _51A;
-    _gap _51B;
+    _gap_32 _518;
 };
 
 struct TWarrior: public TNormalShip {
@@ -1223,8 +1126,7 @@ struct TTransport: public TNormalShip {
 };
 
 struct TRanger: public TNormalShip {
-    _gap _510;
-    _gap _511;
+    _gap_16 _510;
     _gap _512;
     byte status[3];
     _gap _516;
@@ -1237,18 +1139,12 @@ struct TRanger: public TNormalShip {
     _gap _51D;
     _gap _51E;
     _gap _51F;
-    _gap _520;
-    _gap _521;
-    _gap _522;
-    _gap _523;
+    TList* _520;
     byte in_prison;
     _gap _525;
     _gap _526;
     _gap _527;
-    _gap _528;
-    _gap _529;
-    _gap _52A;
-    _gap _52B;
+    TShip* _528;
     int base_nod_cur;
     int programs[12];
 };

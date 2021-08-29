@@ -131,32 +131,7 @@ TEtherUnit - 14
 
 TSputnik - 10
 
-TabObject - b0
-    TabHit - d0
-        TabShip - 2e0
-            TabShipAI - 388
-    TabWall - e0
 
-    TabItem - c4
-    TabW01 - ec
-    TabW02 - c4
-    TabW03 - bc
-    TabW04 - c8
-    TabW05 - e4
-    TabW06 - c4
-    TabW07 - cc
-    TabW08 - c4
-    TabW09 - c0
-    TabW10 - e4
-    TabW11 - e4
-    TabW12 - cc
-    TabW13 - c4
-    TabW14 - c0
-    TabW15 - c8
-    TabW16 - c4
-    TabW17 - c4
-    TabW18 - cc
-TabSpace - 6c
 
 
 TObjectGI - 11c

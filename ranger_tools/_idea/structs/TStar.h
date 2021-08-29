@@ -25,11 +25,8 @@ struct TStar {
     TList* items_in_space;
     TList* drop_list;
     TList* missiles;
-    _gap _03C;
-    _gap _03D;
-    _gap _03E;
-    _gap _03F;
-    _gap _040;
+    STR _03C;
+    _gap _040;  // TStarStatus ?
     _gap _041;
     byte owner;
     _gap _043;
@@ -172,10 +169,7 @@ struct TStar {
     _gap _0E1;
     _gap _0E2;
     _gap _0E3;
-    _gap _0E4;
-    _gap _0E5;
-    _gap _0E6;
-    _gap _0E7;
+    TList* _0E4;
     _gap _0E8;
     _gap _0E9;
     _gap _0EA;

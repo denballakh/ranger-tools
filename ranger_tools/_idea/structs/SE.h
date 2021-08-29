@@ -40,10 +40,10 @@ struct TObjectSE {
     _gap_32 _20;
     _gap_32 _24;
     _gap_32 _28;
-    _gap_32 _2C;
-    _gap_32 _30;
+    STR _2C;
+    STR _30;
     _gap_32 _34;
-    _gap_32 _38;
+    PTR _38;  // TSoundBufferControl
     _gap_32 _3C;
     _gap_32 _40;
     _gap_32 _44;

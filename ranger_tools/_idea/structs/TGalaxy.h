@@ -48,10 +48,10 @@ struct TGalaxy {
     TList* planet_news;
     TList* custom_weapon_infos;
     TStar* keller_attack_star;
-    _gap_32 _0C0;
-    _gap_32 _0C4;
+    TList* _0C0;
+    TList* _0C4;
     TDomResearchProgress dom_researches[3];
-    float _0EC; // 0.01
+    float _0EC;  // 0.01
     byte GTL;
     _gap _0F1;
     _gap _0F2;
@@ -81,17 +81,17 @@ struct TGalaxy {
     int coalition_defeated_turn;
     _gap_32 _14C;
     TList* scripts;
-    _gap_32 _154;
-    _gap_32 _158;
-    _gap_32 _15C;
+    TList* _154;
+    TList* _158;
+    TList* _15C;
     _gap_32 _160;
     TList* constellations;
     _gap_32 _168;
-    _gap_32 _16C;
+    _gap_32 _16C;  // указатель на массив элементов размером 0x60
     _gap_32 _170;
     _gap_32 _174;
     _gap_32 _178;
-    _gap_32 _17C; // сет читов
+    _gap_32 _17C;  // сет читов?
     _gap _180;
     _gap _181;
     bool zawarudo;
@@ -110,7 +110,7 @@ struct TGalaxy {
     byte AA_190_extra_inventions;
     byte AA_191_akrin_mod;
     byte AA_192_node_drop_mod;
-    byte AA_193_AB_drop_value_drop_mod;
+    byte AA_193_AB_drop_value_mod;
     byte AA_194_drop_value_mod;
     byte AA_195_ag_planets;
     byte AA_196_mi_planets;
@@ -136,6 +136,50 @@ struct TGalaxy {
     byte AA_1AA_duplicate_arts;
     byte AA_1AB_hull_growth;
 
+    // FCustomRules: boolean;
+
+    // FCustomKlingStr: byte;
+    // FCustomKlingAggro: byte;
+    // FCustomKlingSpawn: byte;
+    // FCustomPirateAggro:byte;
+    // FCustomCoalAggro: byte;
+    // FCustomAsteroidMod:byte;
+    // FCustomSunDamageMod:byte;
+    // FCustomExtraInventions: byte;
+    // FCustomAkrinMod: byte;
+
+    // FCustomNodeDropMod: byte;
+    // FCustomABDropValueMod: byte;
+    // FCustomDropValueMod: byte;
+    // FCustomAgPlanets: byte;
+    // FCustomMiPlanets: byte;
+    // FCustomInPlanets: byte;
+    // FCustomExtraRangers: byte;
+    // FCustomABHitpointsMod: byte;
+    // FCustomABDamageMod: byte;
+    // FCustomAITolerateJunk: byte;
+
+    // FCustomRuleRnd: boolean;
+    // FCustomRuleTechKnowledge: boolean;
+    // FCustomRuleRuinsPos: boolean;
+    // FCustomRuleRuinsTargetting: boolean;
+    // FCustomRuleSpecilShips:boolean;
+
+    // FCustomRuleZeroExp: boolean;
+    // FCustomRuleABattleRoyale: boolean;
+    // FCustomRuleKlingRacialWeapons: boolean;
+    // FCustomRuleStartCenter: boolean;
+    // FCustomRuleMaxRangeMissiles: boolean;
+
+    // FCustomRuleOldHyper: boolean;
+    // FCustomRulePirateNodes: boolean;
+
+    // FCustomRuleAIBuysEqFromShops: boolean;
+    // FCustomRuleRuinsUsingShop: boolean;
+    // FCustomRuleDuplicateArtsAllowed:boolean;
+
+    // FCustomRuleHullGrowth:byte;
+
     _gap_32 _1AC;
     TList* events;
     TList* interface_state_overrides;
@@ -144,7 +188,7 @@ struct TGalaxy {
     TList* interface_pos_overrides;
     TList* interface_size_overrides;
     _gap_32 _1C8;
-    _gap_32 _1CC; // CRC
+    _gap_32 _1CC;  // CRC
     byte _1D0;
     _gap _1D1;
     _gap _1D2;

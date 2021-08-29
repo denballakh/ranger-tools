@@ -1,26 +1,29 @@
 struct TScript {
     __cls* cls;
 
-    _gap_32 _04;
-    STR script_name;
-    _gap_32 _0C;
-    _gap_32 _10;
-    _gap_32 _14;
-    _gap_32 _18;
+    int class_;  // число в мейне 1,Script...
+    STR name;
+    TList* _0C;
+    TList* _10;
+    TList* _14;
+    TList* _18;
     TList* groups;
-    TList* ships;
-    _gap_32 _30;
-    _gap_32 _34;
-    _gap_32 _38;
-    _gap_32 _3C;
-    _gap_32 _40;
+    TList* ships; // TScriptShip
+    TList* states;
+    TList* _28; // списки диалоговых объектов
+    TList* _2C; // списки диалоговых объектов
+    TList* _30; // списки диалоговых объектов
+    TCodeEC* code_init;
+    TCodeEC* code_next_turn;
+    TCodeEC* code_dialog_begin;
+    TList* _40;
     _gap_32 _44;
     _gap_32 _48;
     _gap_32 _4C;
     _gap_32 _50;
     _gap_32 _54;
     _gap_32 _58;
-    _gap_32 _5C;
+    TStringsEC* _5C;
 };
 
 
@@ -30,13 +33,13 @@ struct TScriptShip {
     TScript* script;
     int group;
     TShip* ship;
-    _gap_32 _10;
-    _gap_32 _14;
-    _gap_32 _18;
-    _gap_32 _1C;
-    _gap_32 _20;
+    dword data[4];
+    TScriptState* state;
     WSTR custom_faction;
-    _gap_32 _28;
+    byte end_order;
+    byte hit;
+    byte hit_player;
+    _gap _0;
 };
 
 struct TScriptPlace {
@@ -83,17 +86,20 @@ struct TScriptItem {
 struct TScriptState {
     __cls* cls;
 
-    _gap_32 _04;
+    WSTR name;
     _gap_32 _08;
     _gap_32 _0C;
+
     _gap_32 _10;
     _gap_32 _14;
     _gap_32 _18;
     _gap_32 _1C;
+
     _gap_32 _20;
     _gap_32 _24;
     _gap_32 _28;
     _gap_32 _2C;
+
     _gap_32 _30;
     _gap_32 _34;
     _gap_32 _38;
@@ -106,7 +112,7 @@ struct TScriptGroup {
     STR name;
     _gap_32 _08;
     _gap_32 _0C;
-    _gap_32 _10;
+    int group;  // номер стейта?
     _gap_32 _14;
     _gap_32 _18;
     _gap_32 _1C;
