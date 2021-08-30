@@ -7,6 +7,7 @@ struct _pair_byte;
 struct _pair_int;
 struct _pair_float;
 struct _pair_double;
+
 struct TList;
 struct TObjectList;
 

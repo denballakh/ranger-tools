@@ -18,10 +18,27 @@ struct _pair_double {
     double y;
 };
 
-struct TList {
-    __cls* cls;
+// #ifdef NOT_IDA
+// template <class T = uint32_t>
+// struct TList<T> {
+//     __cls* cls;
 
-    void** items;     // указатель на массив
+//     T* items;       // указатель на массив
+//     int count;      // количество элементов
+//     int capacity;   // размер выделенной памяти (в элементах)
+// };
+
+// template <class T = uint32_t>
+// struct TObjectList<T>: public TList<T> {
+//     PTR _10;  // указатель на VMT класса итемов?
+// };
+
+// #else
+
+struct TList {
+    VMT_TList* cls;
+
+    void** items;   // указатель на массив
     int count;      // количество элементов
     int capacity;   // размер выделенной памяти (в элементах)
 };
@@ -31,3 +48,4 @@ struct TObjectList: public TList {
     PTR _10;  // указатель на VMT класса итемов?
 };
 
+// #endif

@@ -8,15 +8,15 @@ struct TScript {
     TList* _14;
     TList* _18;
     TList* groups;
-    TList* ships; // TScriptShip
+    TList* ships;  // TScriptShip
     TList* states;
-    TList* _28; // списки диалоговых объектов
-    TList* _2C; // списки диалоговых объектов
-    TList* _30; // списки диалоговых объектов
+    TList* _28;  // списки диалоговых объектов
+    TList* _2C;  // списки диалоговых объектов
+    TList* _30;  // списки диалоговых объектов
     TCodeEC* code_init;
     TCodeEC* code_next_turn;
     TCodeEC* code_dialog_begin;
-    TList* _40;
+    TEther* ether;
     _gap_32 _44;
     _gap_32 _48;
     _gap_32 _4C;
@@ -112,7 +112,7 @@ struct TScriptGroup {
     STR name;
     _gap_32 _08;
     _gap_32 _0C;
-    int group;  // номер стейта?
+    int state;  // дефолтный стейт
     _gap_32 _14;
     _gap_32 _18;
     _gap_32 _1C;

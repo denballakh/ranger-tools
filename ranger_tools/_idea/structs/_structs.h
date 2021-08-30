@@ -123,6 +123,15 @@ struct TPlanetNews {
     STR text;
 };
 
+struct TEther {
+    __cls* cls;
+
+    _gap_32 _004;
+    _gap_32 _008;
+    _gap_32 _00C;
+    _gap_32 _010;
+    _gap_32 _014;
+};
 
 /*
 
