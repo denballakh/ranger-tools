@@ -10,7 +10,7 @@ struct TGalaxy {
     int id_ship;
     _gap_32 _020;
     _gap_32 _024;
-    _gap_32 _028;
+    int player_index;  // номер игрока в списке рейнджеров
     TList* stars;
     TList* holes;
     TList* _034;
@@ -87,7 +87,7 @@ struct TGalaxy {
     _gap_32 _160;
     TList* constellations;
     _gap_32 _168;
-    _gap_32 _16C;  // указатель на массив элементов размером 0x60
+    PTR _16C;  // указатель на массив элементов размером 0x60
     _gap_32 _170;
     _gap_32 _174;
     _gap_32 _178;
@@ -99,42 +99,42 @@ struct TGalaxy {
     STR _184;
 
     // Тонкие настройки:
-    bool AA_188_enabled;
-    byte AA_189_kling_strength;
-    byte AA_18A_kling_aggro;
-    byte AA_18B_kling_spawn;
-    byte AA_18C_pirate_aggro;
-    byte AA_18D_coal_aggro;
-    byte AA_18E_asteroid_mod;
-    byte AA_18F_sun_damage_mod;
-    byte AA_190_extra_inventions;
-    byte AA_191_akrin_mod;
-    byte AA_192_node_drop_mod;
-    byte AA_193_AB_drop_value_mod;
-    byte AA_194_drop_value_mod;
-    byte AA_195_ag_planets;
-    byte AA_196_mi_planets;
-    byte AA_197_in_planets;
-    byte AA_198_extra_rangers;
-    byte AA_199_AB_hitpoints_mod;
-    byte AA_19A_AB_damage_mod;
-    byte AA_19B_AI_tolerate_junk;
-    byte AA_19C_rnd_chaotic;
-    byte AA_19D_eq_knowledge_restricted;
-    byte AA_19E_ruins_near_stars;
-    byte AA_19F_ruins_targetting_full;
-    byte AA_1A0_special_ships_in_game;
-    byte AA_1A1_zero_start_exp;
-    byte AA_1A2_AB_battle_royale;
-    byte AA_1A3_kling_racial_weapons;
-    byte AA_1A4_start_center;
-    byte AA_1A5_max_range_missiles;
-    byte AA_1A6_old_hyper;
-    byte AA_1A7_pirate_nodes;
-    byte AA_1A8_AI_use_shops;
-    byte AA_1A9_ruins_use_shops;
-    byte AA_1AA_duplicate_arts;
-    byte AA_1AB_hull_growth;
+    bool AA_enabled;
+    byte AA_kling_strength;
+    byte AA_kling_aggro;
+    byte AA_kling_spawn;
+    byte AA_pirate_aggro;
+    byte AA_coal_aggro;
+    byte AA_asteroid_mod;
+    byte AA_sun_damage_mod;
+    byte AA_extra_inventions;
+    byte AA_akrin_mod;
+    byte AA_node_drop_mod;
+    byte AA_AB_drop_value_mod;
+    byte AA_drop_value_mod;
+    byte AA_ag_planets;
+    byte AA_mi_planets;
+    byte AA_in_planets;
+    byte AA_extra_rangers;
+    byte AA_AB_hitpoints_mod;
+    byte AA_AB_damage_mod;
+    byte AA_AI_tolerate_junk;
+    byte AA_rnd_chaotic;
+    byte AA_eq_knowledge_restricted;
+    byte AA_ruins_near_stars;
+    byte AA_ruins_targetting_full;
+    byte AA_special_ships_in_game;
+    byte AA_zero_start_exp;
+    byte AA_AB_battle_royale;
+    byte AA_kling_racial_weapons;
+    byte AA_start_center;
+    byte AA_max_range_missiles;
+    byte AA_old_hyper;
+    byte AA_pirate_nodes;
+    byte AA_AI_use_shops;
+    byte AA_ruins_use_shops;
+    byte AA_duplicate_arts;
+    byte AA_hull_growth;
 
     // FCustomRules: boolean;
 

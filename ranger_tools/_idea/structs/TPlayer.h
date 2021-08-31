@@ -975,20 +975,20 @@ struct TPlayer: public TRanger {
     _gap _957;
     _gap _958;
     _gap _959;
-    bool FPirateClanReal;
+    bool pirate_clan_real;
     _gap _95B;
     int _95C;
-    int FExpPointsForDominatorKills;
-    int FExpPointsForPirateKills;
-    int FExpPointsForGoodShipKills;
-    int FExpPointsForTrade;
-    _gap _970;  // in bridge?
+    int exp_points_for_dominator_kills;
+    int exp_points_for_pirate_kills;
+    int exp_points_for_good_ship_kills;
+    int exp_points_for_trade;
+    byte bridge_num;  // 0 if not on bridge
     _gap _971;
     _gap _972;
     _gap _973;
     TRuins* _974;
-    TShip* FBridgeCurShip;
-    TPlanet* FBridgeCurPlanet;
+    TShip* bridge_cur_ship;
+    TPlanet* bridge_cur_planet;
     _gap _980;
     _gap _981;
     _gap _982;

@@ -12,12 +12,12 @@ DWORD = 'dword', 4
 field_type = GAP_32
 
 
-init_offset = 0x4
-size_in_bytes = 0x7c
+init_offset = 0x2e0
+size_in_bytes = 0x388
 
 
 name = '__struct_name__'
-offset_length = 2
+offset_length = 3
 first_field = '__cls* cls;'
 name_prefix = '_'
 indent = 4

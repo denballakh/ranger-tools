@@ -1,6 +1,6 @@
 struct __cls {
     FUNC*     methods_p;              // указатель на указатель на первый метод в списке методов ( == &methods)
-    uint32_t  _04;                    // служебные числа, обычно равны нулю, не знаю за что отвечают
+    uint32_t  _04;                    // служебные поля, обычно равны нулю, не знаю за что отвечают
     uint32_t  _08;
     uint32_t  _0C;
     uint32_t  _10;
@@ -17,6 +17,7 @@ struct __cls {
     FUNC      default_handler;        // ?
     FUNC      new_instance;           // ?
     FUNC      free_instance;          // ?
+
     FUNC      destroy;                // деструктор
     FUNC      methods[100];           // список методов, у разных классов разное количество методов
 };
@@ -24,6 +25,7 @@ struct __cls {
 struct VMT_TList {
     FUNC*     methods;
     uint32_t  _04[7];
+    // [0] = void (__fastcall *)(TList *, int, _DWORD
     STR       type_name;
     uint32_t  type_size;
     __cls*    parent_class;
@@ -34,6 +36,7 @@ struct VMT_TList {
     FUNC      default_handler;
     FUNC      new_instance;
     FUNC      free_instance;
+
     FUNC      destroy;
     void      (__fastcall *grow)(TList*);
     void      (__fastcall *notify)();
