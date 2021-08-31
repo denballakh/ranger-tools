@@ -1,5 +1,6 @@
 *.exe
 dat_sign.py
+doxygen/doc/
 _test/
 _dats/
 sav
