@@ -1,3 +1,4 @@
+/** @file */
 struct _pair_byte {
     byte x;
     byte y;
@@ -34,6 +35,10 @@ struct _pair_double {
 // };
 
 // #else
+
+struct TObject {
+    __cls* cls;
+};
 
 struct TList {
     VMT_TList* cls;

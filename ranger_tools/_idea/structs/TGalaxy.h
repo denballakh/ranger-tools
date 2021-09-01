@@ -1,3 +1,4 @@
+/** @file */
 struct TGalaxy {
     __cls* cls;
 
@@ -7,29 +8,29 @@ struct TGalaxy {
     _gap_32 _010;
     _gap_32 _014;
     _gap_32 _018;
-    int id_ship;
+    int id_ship;                        ///< ID последнего созданного корабля
     _gap_32 _020;
     _gap_32 _024;
-    int player_index;  // номер игрока в списке рейнджеров
-    TList* stars;
-    TList* holes;
-    TList* _034;
-    TList* planets;
-    TList* rangers;
-    TList* RC_list;
+    int player_index;                   ///< номер игрока в списке рейнджеров
+    TList* stars;                       ///< список звезд
+    TList* holes;                       ///< список черных дыр
+    TList* _034;                        ///< список ?
+    TList* planets;                     ///< список планет
+    TList* rangers;                     ///< список рейнджеров
+    TList* RC_list;                     ///< список ЦР
     _gap_32 _044;
     int _048;
-    int turn;
-    byte diff_levels[8];
-    int rnd;
-    int rnd_out;
-    int rangers_average_capital;
+    int turn;                           ///< текущий ход
+    byte diff_levels[8];                ///< сложности партии
+    int rnd;                            ///< сид рандома
+    int rnd_out;                        ///< сид генерации галактики
+    int rangers_average_capital;        ///< средний капитал рейнджеров
     int _064;
-    float rangers_average_strength;
+    float rangers_average_strength;     ///< средняя сила рейнджеров
     int _06C;
     _gap_32 _070;
     _gap_32 _074;
-    int eminent_rangers[3];
+    int eminent_rangers[3];             ///< три самых лучших рейнджера?
     _gap_32 _084;
     _gap_32 _088;
     _gap_32 _08C;
@@ -45,14 +46,14 @@ struct TGalaxy {
     _gap_32 _0B4;
     _gap_32 _0B8;
     _gap_32 _0BC;
-    TList* planet_news;
+    TList* planet_news;                 ///< список новостей
     TList* custom_weapon_infos;
-    TStar* keller_attack_star;
+    TStar* keller_attack_star;          ///< цель атаки Келлера
     TList* _0C0;
     TList* _0C4;
-    TDomResearchProgress dom_researches[3];
+    TDomResearchProgress dom_researches[3]; ///< прогресс исследований доминаторских программ
     float _0EC;  // 0.01
-    byte GTL;
+    byte GTL;                           ///< ГТУ
     _gap _0F1;
     _gap _0F2;
     _gap _0F3;
@@ -65,27 +66,27 @@ struct TGalaxy {
     int _108;
     int _10C;
     int _110;
-    int terron_weapon_lock_turn;
-    int terron_grow_lock_turn;
-    int terron_landing_lock_turn;
-    int terron_to_star;
-    int keller_leave;
-    int keller_new_research;
-    int blazer_landing;
-    int blazer_self_destruction;
-    int terron_turn_win;
-    int keller_turn_win;
-    int blazer_turn_win;
-    int pirate_win_turn;
-    int pirate_win_type;
-    int coalition_defeated_turn;
+    int terron_weapon_lock_turn;        ///< ход
+    int terron_grow_lock_turn;          ///< ход
+    int terron_landing_lock_turn;       ///< ход
+    int terron_to_star;                 ///< ход
+    int keller_leave;                   ///< ход
+    int keller_new_research;            ///< ход
+    int blazer_landing;                 ///< ход
+    int blazer_self_destruction;        ///< ход
+    int terron_turn_win;                ///< ход
+    int keller_turn_win;                ///< ход
+    int blazer_turn_win;                ///< ход
+    int pirate_win_turn;                ///< ход
+    int pirate_win_type;                ///< ход
+    int coalition_defeated_turn;        ///< ход
     _gap_32 _14C;
-    TList* scripts;
+    TList* scripts;                     ///< список всех скриптов (в том числе и неактивных?)
     TList* _154;
     TList* _158;
     TList* _15C;
     _gap_32 _160;
-    TList* constellations;
+    TList* constellations;              ///< список секторов
     _gap_32 _168;
     PTR _16C;  // указатель на массив элементов размером 0x60
     _gap_32 _170;
@@ -94,12 +95,12 @@ struct TGalaxy {
     _gap_32 _17C;  // сет читов?
     _gap _180;
     _gap _181;
-    bool zawarudo;
+    bool zawarudo;                      ///< флаг от чита ZAWARUDO
     byte _183;
     STR _184;
 
     // Тонкие настройки:
-    bool AA_enabled;
+    bool AA_enabled;                    ///< флаг тонких настроек
     byte AA_kling_strength;
     byte AA_kling_aggro;
     byte AA_kling_spawn;
@@ -181,12 +182,12 @@ struct TGalaxy {
     // FCustomRuleHullGrowth:byte;
 
     _gap_32 _1AC;
-    TList* events;
-    TList* interface_state_overrides;
-    TList* interface_text_overrides;
-    TList* interface_image_overrides;
-    TList* interface_pos_overrides;
-    TList* interface_size_overrides;
+    TList* events;                      ///< список галактических событий
+    TList* interface_state_overrides;   ///< список оверрайдов состояния
+    TList* interface_text_overrides;    ///< список оверрайдов текста
+    TList* interface_image_overrides;   ///< список оверрайдов изображения
+    TList* interface_pos_overrides;     ///< список оверрайдов позиции
+    TList* interface_size_overrides;    ///< список оверрайдов размера
     _gap_32 _1C8;
     _gap_32 _1CC;  // CRC
     byte _1D0;

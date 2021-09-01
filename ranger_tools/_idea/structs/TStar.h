@@ -1,3 +1,4 @@
+/** @file */
 struct TStar {
     __cls* cls;
 

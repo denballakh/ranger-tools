@@ -1,3 +1,4 @@
+/** @file */
 struct TCodeUnitEC {
     __cls* cls;
 

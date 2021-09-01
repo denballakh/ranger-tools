@@ -1,3 +1,4 @@
+/** @file */
 struct TMessageLoopGI {
     __cls* cls;
 

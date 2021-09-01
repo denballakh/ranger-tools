@@ -1,3 +1,4 @@
+/** @file */
 struct TPlayer: public TRanger {
     _gap _560;
     _gap _561;

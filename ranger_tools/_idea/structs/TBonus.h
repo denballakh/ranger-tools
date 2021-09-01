@@ -1,3 +1,4 @@
+/** @file */
 struct TBonus {
     byte is_special;
     byte block_mm;

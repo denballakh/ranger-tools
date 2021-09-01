@@ -1,3 +1,4 @@
+/** @file */
 struct TConstellation {
     __cls* cls;
 

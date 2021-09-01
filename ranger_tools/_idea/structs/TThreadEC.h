@@ -1,3 +1,4 @@
+/** @file */
 /*
 TThreadEC - 2c
     TFileStreamEC - 58
@@ -19,20 +20,20 @@ struct TThreadEC {
     VMT_TThreadEC* cls;
 
     int (__fastcall *** _04)(dword);
-    HANDLE thread;
+    HANDLE_ thread;
     _gap_32 _0C;
     byte priority;
     bool terminated;
     _gap _12;
     _gap _13;
-    HANDLE _14;
+    HANDLE_ _14;
     byte _18;
     _gap _19;
     _gap _1A;
     _gap _1B;
-    HANDLE _1C;
-    HANDLE _20;
-    HANDLE _24;
+    HANDLE_ _1C;
+    HANDLE_ _20;
+    HANDLE_ _24;
     PTR _28;
 };
 

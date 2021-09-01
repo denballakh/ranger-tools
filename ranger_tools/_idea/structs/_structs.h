@@ -1,3 +1,4 @@
+/** @file */
 struct TStarDist {
     int dist;
     TStar* star;

@@ -1,3 +1,4 @@
+/** @file */
 struct TCCInterface {
     __cls* cls;
 

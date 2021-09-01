@@ -1,25 +1,26 @@
+/** @file */
 struct __cls {
-    FUNC*     methods_p;              // указатель на указатель на первый метод в списке методов ( == &methods)
-    uint32_t  _04;                    // служебные поля, обычно равны нулю, не знаю за что отвечают
+    FUNC*     methods_p;              ///< указатель на указатель на первый метод в списке методов ( == &methods)
+    uint32_t  _04;                    ///< служебные поля, обычно равны нулю, не знаю за что отвечают
     uint32_t  _08;
     uint32_t  _0C;
     uint32_t  _10;
     uint32_t  _14;
     uint32_t  _18;
     uint32_t  _1C;
-    STR       type_name;              // имя класса
-    uint32_t  type_size;              // размер экземпляра класса
-    __cls*    parent_class;           // указатель на родительский класс ( == 0, если класс примитивный, обычно == VMT_TObject)
+    STR       type_name;              ///< имя класса
+    uint32_t  type_size;              ///< размер экземпляра класса
+    __cls*    parent_class;           ///< указатель на родительский класс ( == 0, если класс примитивный, обычно == VMT_TObject)
     FUNC      safe_call_exception;
-    FUNC      after_construction;     // исполняется после конструктора
-    FUNC      before_destruction;     // исполняется перед деструктором
-    FUNC      dispatch;               // ?
-    FUNC      default_handler;        // ?
-    FUNC      new_instance;           // ?
-    FUNC      free_instance;          // ?
+    FUNC      after_construction;     ///< исполняется после конструктора
+    FUNC      before_destruction;     ///< исполняется перед деструктором
+    FUNC      dispatch;               ///< ?
+    FUNC      default_handler;        ///< ?
+    FUNC      new_instance;           ///< ?
+    FUNC      free_instance;          ///< ?
 
-    FUNC      destroy;                // деструктор
-    FUNC      methods[100];           // список методов, у разных классов разное количество методов
+    FUNC      destroy;                ///< деструктор
+    FUNC      methods[100];           ///< список методов, у разных классов разное количество методов
 };
 
 struct VMT_TList {
@@ -47,6 +48,7 @@ struct VMT_TList {
 
 struct VMT_TEquipmentWithActCode {};
 
+struct VMT_TScriptShip: __cls {};
 
 struct VMT_TArtefact {
     FUNC*     methods;

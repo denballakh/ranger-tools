@@ -1,11 +1,13 @@
+/** @file */
 #define byte     uint8_t
 #define word     uint16_t
 #define dword    uint32_t
 
 #define PTR      void*
 #define UNK      dword
-#define STR      byte*
-#define WSTR     byte*
+// #define STR      char*
+#define STR      wchar_t*
+#define WSTR     wchar_t*
 
 #define _gap_8   byte
 #define _gap_16  word
@@ -14,6 +16,9 @@
 
 #define FUNC     void*
 
-#ifndef HANDLE
-    #define HANDLE dword
+#ifndef NOT_IDA
+    #define HANDLE_ HANDLE
+#else
+    #define HANDLE_ dword
 #endif
+

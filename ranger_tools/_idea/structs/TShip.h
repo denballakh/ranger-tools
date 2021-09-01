@@ -1,3 +1,4 @@
+/** @file */
 struct TShip {
     __cls* cls;
 
@@ -137,10 +138,7 @@ struct TShip {
     _gap _0EE;
     _gap _0EF;
     int money;
-    _gap _0F4;
-    _gap _0F5;
-    _gap _0F6;
-    _gap _0F7;
+    int group_no;  ///< номер группы, но не скриптовой?
     _gap_32 _0F8;
     _gap_32 _0FC;
     _gap _100;
@@ -224,10 +222,7 @@ struct TShip {
     _gap _153;
     _gap _154;
     _gap _155;
-    _gap _156;
-    _gap _157;
-    _gap _158;
-    _gap _159;
+    UNK fly_to_star;
     _gap _15A;
     _gap _15B;
     _gap _15C;

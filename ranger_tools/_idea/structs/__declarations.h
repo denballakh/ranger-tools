@@ -1,3 +1,4 @@
+/** @file */
 struct __cls;
 struct VMT_TEquipmentWithActCode;
 struct VMT_TArtefact;

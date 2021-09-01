@@ -1,3 +1,4 @@
+/** @file */
 struct TPlanet {
     __cls* cls;
 

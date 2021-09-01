@@ -1,3 +1,4 @@
+/** @file */
 #include "_defines.h"
 
 #include "__declarations.h"

@@ -1,3 +1,4 @@
+/** @file */
 struct TAsteroid {
     __cls* cls;
 
