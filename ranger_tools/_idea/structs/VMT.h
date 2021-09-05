@@ -1,4 +1,9 @@
 /** @file */
+
+typedef void __cls;
+
+#if 0
+
 struct __cls {
     FUNC*     methods_p;              ///< указатель на указатель на первый метод в списке методов ( == &methods)
     uint32_t  _04;                    ///< служебные поля, обычно равны нулю, не знаю за что отвечают
@@ -104,3 +109,5 @@ struct VMT_TThreadEC {
     FUNC  destroy;
     FUNC  process;
 };
+
+#endif

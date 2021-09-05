@@ -18,7 +18,7 @@ struct TScript {
     TCodeEC* code_next_turn;    ///< Turn-code
     TCodeEC* code_dialog_begin; ///< DialogBegin-code
     TEther* ether;              ///< Ether? ({@link TEther})
-    _gap_32 _44;
+    TShip* cur_ship;
     _gap_32 _48;
     _gap_32 _4C;
     _gap_32 _50;
@@ -71,9 +71,7 @@ struct TScriptItem {
     _gap_32 _24;
     TItem* item;                ///< указатель на сам итем
     _gap_32 _2C;
-    _gap_32 _30;
-    _gap_32 _34;
-    _gap_32 _38;
+    uint32_t data[3];
     _gap_32 _3C;
     _gap_32 _40;
     _gap_32 _44;

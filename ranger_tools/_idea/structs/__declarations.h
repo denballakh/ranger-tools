@@ -1,8 +1,8 @@
 /** @file */
-struct __cls;
-struct VMT_TEquipmentWithActCode;
-struct VMT_TArtefact;
-struct VMT_TThreadEC;
+// struct __cls;
+// struct VMT_TEquipmentWithActCode;
+// struct VMT_TArtefact;
+// struct VMT_TThreadEC;
 
 struct _pair_byte;
 struct _pair_int;

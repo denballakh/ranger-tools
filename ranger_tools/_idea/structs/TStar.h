@@ -2,10 +2,7 @@
 struct TStar {
     __cls* cls;
 
-    _gap _004;
-    _gap _005;
-    _gap _006;
-    _gap _007;
+    int id;
     int rnd_seed;
     _gap _00C;
     _gap _00D;

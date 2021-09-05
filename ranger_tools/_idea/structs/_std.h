@@ -41,7 +41,7 @@ struct TObject {
 };
 
 struct TList {
-    VMT_TList* cls;
+    __cls* cls;
 
     uint32_t* items;   ///< указатель на массив
     int count;         ///< количество элементов

@@ -1,9 +1,10 @@
+/** @file */
 class WList {
  public:
     TList* obj;
 
     static bool vmt_initialized;
-    static VMT_TList* vmt;
+    static void* vmt;
 
     WList(TList* obj): obj(obj) { this->init_vmt(); }
     WList(WList& other): obj(other.obj) {}
@@ -13,7 +14,7 @@ class WList {
     WList& operator=(TList* other) { this->obj = other; return *this; }
 
 
-    static TList*    (__fastcall *Create)      (VMT_TList* cls, int8_t flag);
+    static TList*    (__fastcall *Create)      (void* cls, int8_t flag);
     static void      (__fastcall *Destroy)     (TList* obj, int8_t flag);
     static void      (__fastcall *Add)         (TList* list, uint32_t value);
     static void      (__fastcall *Clear)       (TList* list);
@@ -34,12 +35,15 @@ class WList {
     static void      (__fastcall *SetCount)    (TList* list, int32_t new_count);
     // static void      (__fastcall *Notify)      (TList* list);
 
-    static void init_vmt(VMT_TList* vmt) {
-        WObject::init_vmt(vmt->parent_class);
+    static void init_vmt(void* vmt) {
+        if (vmt == nullptr) return;
+        if (WList::vmt_initialized) return;
+
+        // WObject::init_vmt(vmt->parent_class); // ПЕРЕДЕЛАТЬ
 
         WList::vmt_initialized = true;
         WList::vmt = vmt;
-        SET_VAR            (WList::Destroy    , vmt->destroy);
+        // SET_VAR            (WList::Destroy    , vmt->destroy); // ПЕРЕДЕЛАТЬ
         SET_VAR            (WList::Create     , WObject::Create);
 
         SET_VAR_WITH_OFFSET(WList::Add        , WList::Destroy, 0xA9C - 0xA7C);
@@ -61,7 +65,13 @@ class WList {
         SET_VAR_WITH_OFFSET(WList::SetCount   , WList::Destroy, 0xDE8 - 0xA7C);
         // SET_VAR_WITH_OFFSET(WList::Notify     , WList::Destroy, 0xE58 - 0xA7C);
     }
-    void init_vmt() { if (this->obj != nullptr) WList::init_vmt(this->obj->cls); }
+    void init_vmt() {
+        if (this->obj == nullptr) return;
+        WList::init_vmt(this->obj->cls);
+    }
+
+    static WList& create() { WList* x = new WList(WList::Create(WList::vmt, 1)); return *x; }
+    void destroy() { WList::Destroy(this->obj, 1); this->obj = nullptr; }
 
     void        add(uint32_t value)                 {        WList::Add         (this->obj, value); }
     void        clear()                             {        WList::Clear       (this->obj); }
@@ -80,7 +90,6 @@ class WList {
     void        set_count(int32_t new_value)        {        WList::SetCount    (this->obj, new_value); }
 
 
-    // uint32_t operator[](int32_t index) { return this->get(index); }
     uint32_t& operator[](int32_t index) {
         if (index >= 0)
             return this->obj->items[index];
@@ -90,5 +99,4 @@ class WList {
     int32_t count() { return this->obj->count; }
 };
 
-bool WList::vmt_initialized = false;
-
+void(__fastcall *WList::Destroy)(TList*,int8_t) = nullptr;

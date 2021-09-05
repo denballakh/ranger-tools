@@ -17,7 +17,7 @@ TThreadEC - 2c
 
 
 struct TThreadEC {
-    VMT_TThreadEC* cls;
+    __cls* cls;
 
     int (__fastcall *** _04)(dword);
     HANDLE_ thread;

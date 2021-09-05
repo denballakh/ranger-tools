@@ -17,7 +17,7 @@ struct TGalaxy {
     TList* _034;                        ///< список ?
     TList* planets;                     ///< список планет
     TList* rangers;                     ///< список рейнджеров
-    TList* RC_list;                     ///< список ЦР
+    int pirate_cnt;                     ///< кол-во пиратов
     _gap_32 _044;
     int _048;
     int turn;                           ///< текущий ход

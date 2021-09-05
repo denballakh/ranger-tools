@@ -59,11 +59,8 @@ struct TShip {
     _gap _079;
     _gap _07A;
     _gap _07B;
-    int _07C;
-    _gap _080;
-    _gap _081;
-    _gap _082;
-    _gap _083;
+    int free_space;
+    int rnd_seed;
     _gap _084;
     _gap _085;
     _gap _086;
@@ -120,7 +117,7 @@ struct TShip {
     _gap _0D9;
     _gap _0DA;
     _gap _0DB;
-    int free_space;
+    int _0DC;
     _gap _0E0;
     _gap _0E1;
     _gap _0E2;
@@ -138,7 +135,7 @@ struct TShip {
     _gap _0EE;
     _gap _0EF;
     int money;
-    int group_no;  ///< номер группы, но не скриптовой?
+    int group_no;  ///< номер группы, но не скриптовой? Используется в военных операциях
     _gap_32 _0F8;
     _gap_32 _0FC;
     _gap _100;
@@ -716,8 +713,8 @@ struct TShip {
     TList* artefacts;
     TList* drop_items;
     TList* _3C4;
-    TList* _3C8;
     TScriptShip* script_ship;
+    _gap_32 _3CC;
     _gap _3D0;
     _gap _3D1;
     _gap _3D2;
