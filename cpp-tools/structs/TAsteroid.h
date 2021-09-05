@@ -1,6 +1,6 @@
 /** @file */
 struct TAsteroid {
-    __cls* cls;
+    VMT cls;
 
     int index;
     TStar* star;

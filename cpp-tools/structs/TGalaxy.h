@@ -1,6 +1,6 @@
 /** @file */
 struct TGalaxy {
-    __cls* cls;
+    VMT cls;
 
     _gap_32 _004;
     _gap_32 _008;

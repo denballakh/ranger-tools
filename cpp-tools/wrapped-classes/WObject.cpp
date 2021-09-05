@@ -1,10 +1,11 @@
 /** @file */
+
 class WObject {
  public:
     TObject* obj;
 
     static bool vmt_initialized;
-    static __cls* vmt;
+    static VMT vmt;
 
     WObject(TObject* obj): obj(obj) { this->init_vmt(); }
     WObject(WObject& other): obj(other.obj) {}
@@ -14,10 +15,10 @@ class WObject {
     WObject& operator=(TObject* other) { this->obj = other; return *this; }
 
 
-    static TObject* (__fastcall *Create)(__cls* cls, int8_t flag);
+    static TObject* (__fastcall *Create)(VMT cls, int8_t flag);
     static void     (__fastcall *Destroy)(TObject* obj, int8_t flag);
 
-    static void init_vmt(__cls* vmt) {
+    static void init_vmt(VMT vmt) {
         if (vmt == nullptr) return;
         if (WObject::vmt_initialized) return;
 

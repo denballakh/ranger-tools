@@ -1,6 +1,6 @@
 /** @file */
 struct TShip {
-    __cls* cls;
+    VMT cls;
 
     int id;
     STR name;

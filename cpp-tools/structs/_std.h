@@ -22,7 +22,7 @@ struct _pair_double {
 // #ifdef NOT_IDA
 // template <class T = uint32_t>
 // struct TList<T> {
-//     __cls* cls;
+//     VMT cls;
 
 //     T* items;       // указатель на массив
 //     int count;      // количество элементов
@@ -37,11 +37,11 @@ struct _pair_double {
 // #else
 
 struct TObject {
-    __cls* cls;
+    VMT cls;
 };
 
 struct TList {
-    __cls* cls;
+    VMT cls;
 
     uint32_t* items;   ///< указатель на массив
     int count;         ///< количество элементов

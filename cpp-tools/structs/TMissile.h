@@ -1,6 +1,6 @@
 /** @file */
 struct TMissile {
-    __cls* cls;
+    VMT cls;
 
     PTR graph;
     int index;

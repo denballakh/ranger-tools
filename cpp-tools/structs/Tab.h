@@ -48,7 +48,7 @@ struct TabShipWeapon {
 };
 
 struct TabObject {
-    __cls* cls;
+    VMT cls;
 
     _gap_32 _04;
     _gap_32 _08;
@@ -233,7 +233,7 @@ struct TabShipAI: TabShip {
 
 
 struct TabSpace {
-    __cls* cls;
+    VMT cls;
 
     _gap_32 _04;
     TabSpace* _08;

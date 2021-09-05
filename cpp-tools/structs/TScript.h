@@ -1,6 +1,6 @@
 /** @file */
 struct TScript {
-    __cls* cls;
+    VMT cls;
 
     int class_;                 ///< "класс" скрипта, прописывается в мейне: myscript=class_,Script.myscript
     STR name;                   ///< название скрипта
@@ -28,7 +28,7 @@ struct TScript {
 };
 
 struct TScriptShip {
-    __cls* cls;
+    VMT cls;
 
     TScript* script;            ///< скрипт корабля
     int group;                  ///< номер группы корабля
@@ -43,7 +43,7 @@ struct TScriptShip {
 };
 
 struct TScriptPlace {
-    __cls* cls;
+    VMT cls;
 
     _gap_32 _04;
     _gap_32 _08;
@@ -58,7 +58,7 @@ struct TScriptPlace {
 };
 
 struct TScriptItem {
-    __cls* cls;
+    VMT cls;
 
     _gap_32 _04;
     _gap_32 _08;
@@ -81,7 +81,7 @@ struct TScriptItem {
 };
 
 struct TScriptState {
-    __cls* cls;
+    VMT cls;
 
     WSTR name;                  ///< имя стейта
     _gap_32 _08;
@@ -104,7 +104,7 @@ struct TScriptState {
 };
 
 struct TScriptGroup {
-    __cls* cls;
+    VMT cls;
 
     STR name;
     _gap_32 _08;
@@ -136,7 +136,7 @@ struct TScriptGroup {
 };
 
 struct TScriptStar {
-    __cls* cls;
+    VMT cls;
 
     _gap_32 _04;
     _gap_32 _08;
@@ -148,27 +148,27 @@ struct TScriptStar {
 };
 
 struct TScriptConstellation {
-    __cls* cls;
+    VMT cls;
 
     _gap_32 _04;
 };
 
 struct TScriptDialog {
-    __cls* cls;
+    VMT cls;
 
     _gap_32 _04;
     _gap_32 _08;
 };
 
 struct TScriptDialogMsg {
-    __cls* cls;
+    VMT cls;
 
     _gap_32 _04;
     _gap_32 _08;
 };
 
 struct TScriptDialogAnswer {
-    __cls* cls;
+    VMT cls;
 
     _gap_32 _04;
     _gap_32 _08;

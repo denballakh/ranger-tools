@@ -6,7 +6,7 @@ struct TStarDist {
 
 
 struct TPlanetTempl {
-    __cls* cls;
+    VMT cls;
     int type;
     STR mask_0;
     STR light_0;
@@ -49,7 +49,7 @@ struct TDomResearchProgress {
 
 
 struct TGalaxyEvent {
-    __cls* cls;
+    VMT cls;
 
     int type;
     int turn;
@@ -66,7 +66,7 @@ struct TSetItem {
 
 
 struct TMessagePlayer {
-    __cls* cls;
+    VMT cls;
 
     _gap_32 _004;
     _gap_32 _008;
@@ -87,7 +87,7 @@ struct TMessagePlayer {
 
 
 // struct TDemo {
-//     __cls* cls;
+//     VMT cls;
 //     TBufEC* buf_p;
 // };
 
@@ -125,7 +125,7 @@ struct TPlanetNews {
 };
 
 struct TEther {
-    __cls* cls;
+    VMT cls;
 
     _gap_32 _004;
     _gap_32 _008;

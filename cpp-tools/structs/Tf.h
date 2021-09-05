@@ -1,6 +1,6 @@
 /** @file */
 struct TMessageLoopGI {
-    __cls* cls;
+    VMT cls;
 
     STR _04;
     int _08;
@@ -67,7 +67,7 @@ struct TMessageLoopGIWithMainPanel: TMessageLoopGI {
 };
 
 struct TfScoreUnit {
-    __cls* cls;
+    VMT cls;
 
     byte _04;
     bool _05; // bad flag?

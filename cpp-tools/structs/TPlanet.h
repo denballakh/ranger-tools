@@ -1,6 +1,6 @@
 /** @file */
 struct TPlanet {
-    __cls* cls;
+    VMT cls;
 
     _gap _004;
     _gap _005;

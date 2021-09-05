@@ -1,6 +1,6 @@
 /** @file */
 struct TItem {
-    __cls* cls;
+    VMT cls;
 
     UNK _04; // появляется в космосе
     int index;

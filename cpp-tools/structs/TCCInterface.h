@@ -1,6 +1,6 @@
 /** @file */
 struct TCCInterface {
-    __cls* cls;
+    VMT cls;
 
     TBufEC* buf;
     TCCInterface_El* data;
@@ -8,7 +8,7 @@ struct TCCInterface {
 };
 
 struct TCBufControlEC {
-    __cls* cls;
+    VMT cls;
 
     _gap_32 _004;
     _gap_32 _008;
@@ -18,7 +18,7 @@ struct TCBufControlEC {
 }; // 0x18
 
 struct TCCInterface_El {
-    __cls* cls;
+    VMT cls;
 
     TCCInterface_El* next;
     bool bad_file_crack;

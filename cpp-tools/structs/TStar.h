@@ -1,6 +1,6 @@
 /** @file */
 struct TStar {
-    __cls* cls;
+    VMT cls;
 
     int id;
     int rnd_seed;

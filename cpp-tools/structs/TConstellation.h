@@ -1,6 +1,6 @@
 /** @file */
 struct TConstellation {
-    __cls* cls;
+    VMT cls;
 
     _gap _04;
     _gap _05;

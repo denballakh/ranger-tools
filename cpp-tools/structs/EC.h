@@ -1,6 +1,6 @@
 /** @file */
 struct TCodeUnitEC {
-    __cls* cls;
+    VMT cls;
 
     TCodeUnitEC* prev;
     TCodeUnitEC* next;
@@ -15,7 +15,7 @@ struct TCodeUnitEC {
 
 
 struct TCodeEC {
-    __cls* cls;
+    VMT cls;
 
     TCodeEC* parent;
     bool is_class;
@@ -33,7 +33,7 @@ struct TCodeEC {
 
 
 struct TBufEC {
-    __cls* cls;
+    VMT cls;
 
     int count;        // количество записанных байт
     int capacity;     // размер выделенной памяти
@@ -42,7 +42,7 @@ struct TBufEC {
 };
 
 struct TCacheDataEC {
-    __cls* cls;
+    VMT cls;
 
     _gap_32 _04;
     _gap_32 _08;
@@ -58,7 +58,7 @@ struct TCBufEC: TCacheDataEC {
 };
 
 struct TFileEC {
-    __cls* cls;
+    VMT cls;
 
     int file_handler;
     int is_opened;
@@ -66,7 +66,7 @@ struct TFileEC {
 };
 
 struct TBlockParEC {
-    __cls* cls;
+    VMT cls;
 
     TBlockParElEC* first;
     TBlockParElEC* last;
@@ -82,7 +82,7 @@ struct TBlockParEC {
 };
 
 struct TBlockParElEC {
-    __cls* cls;
+    VMT cls;
 
     TBlockParElEC* prev;
     TBlockParElEC* next;
@@ -97,7 +97,7 @@ struct TBlockParElEC {
 };
 
 struct TDataElEC {
-    __cls* cls;
+    VMT cls;
 
     _gap_32 _04;
     _gap_32 _08;
@@ -111,7 +111,7 @@ struct TDataElEC {
 
 
 struct TDataEC {
-    __cls* cls;
+    VMT cls;
 
     _gap_32 _04;
     _gap_32 _08;
@@ -126,19 +126,19 @@ struct TDataEC {
 };
 
 struct TPackFileEC {
-    __cls* cls;
+    VMT cls;
 
     //...
 };//210
 
 
 struct THashEC {
-    __cls* cls;
+    VMT cls;
 }; // d01c
 
 
 struct TPackCollectionEC {
-    __cls* cls;
+    VMT cls;
 
     TPackCollectionEC* field_4;
     TPackCollectionEC* field_8;
@@ -152,7 +152,7 @@ struct TPackCollectionEC {
 };//214
 
 struct TBlockMemUnitEC {
-    __cls* cls;
+    VMT cls;
 
     TBlockMemUnitEC* prev;
     TBlockMemUnitEC* next;
@@ -162,7 +162,7 @@ struct TBlockMemUnitEC {
 };
 
 struct TBlockMemEC {
-    __cls* cls;
+    VMT cls;
 
     TBlockMemUnitEC* first;
     TBlockMemUnitEC* last;
@@ -172,7 +172,7 @@ struct TBlockMemEC {
 };
 
 struct TStringsElEC {
-    __cls* cls;
+    VMT cls;
 
     TStringsElEC* prev;
     TStringsElEC* next;
@@ -180,7 +180,7 @@ struct TStringsElEC {
 };
 
 struct TStringsEC {
-    __cls* cls;
+    VMT cls;
 
     TStringsElEC* first;
     TStringsElEC* last;
@@ -202,7 +202,7 @@ enum TVarEC_type {
 };
 
 struct TVarEC {
-    __cls*          cls;
+    VMT          cls;
 
     byte*           name;
     TVarEC_type     type;
@@ -219,7 +219,7 @@ struct TVarEC {
 };
 
 struct TVarArrayEC {
-    __cls* cls;
+    VMT cls;
 
     int count;
     TVarEC* item;
@@ -227,7 +227,7 @@ struct TVarArrayEC {
 };
 
 struct TCodeAnalyzerUnitEC {
-    __cls* cls;
+    VMT cls;
 
     TCodeAnalyzerUnitEC* prev;
     TCodeAnalyzerUnitEC* next;
@@ -238,7 +238,7 @@ struct TCodeAnalyzerUnitEC {
 };
 
 struct TCodeAnalyzerEC {
-    __cls* cls;
+    VMT cls;
 
     TCodeAnalyzerUnitEC* first_free;
     TCodeAnalyzerUnitEC* last_free;
@@ -247,7 +247,7 @@ struct TCodeAnalyzerEC {
 };
 
 struct TExpressionEC {
-    __cls* cls;
+    VMT cls;
 
     int var_count;
     PTR var;
@@ -259,7 +259,7 @@ struct TExpressionEC {
 };
 
 struct TExpressionInstrEC {
-    __cls* cls;
+    VMT cls;
 
     int type;
     int count;
@@ -267,7 +267,7 @@ struct TExpressionInstrEC {
 };
 
 struct TExpressionVarEC {
-    __cls* cls;
+    VMT cls;
 
     int type;
     byte* str;

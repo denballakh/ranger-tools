@@ -29,7 +29,7 @@ TObjectSE - 4c
 */
 
 struct TObjectSE {
-    __cls* cls;
+    VMT cls;
 
     _gap_32 _04;
     _gap_32 _08;

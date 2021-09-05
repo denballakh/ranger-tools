@@ -1,6 +1,6 @@
 /** @file */
 
-typedef void __cls;
+typedef void* VMT;
 
 #if 0
 
@@ -15,7 +15,7 @@ struct __cls {
     uint32_t  _1C;
     STR       type_name;              ///< имя класса
     uint32_t  type_size;              ///< размер экземпляра класса
-    __cls*    parent_class;           ///< указатель на родительский класс ( == 0, если класс примитивный, обычно == VMT_TObject)
+    VMT    parent_class;           ///< указатель на родительский класс ( == 0, если класс примитивный, обычно == VMT_TObject)
     FUNC      safe_call_exception;
     FUNC      after_construction;     ///< исполняется после конструктора
     FUNC      before_destruction;     ///< исполняется перед деструктором
@@ -34,7 +34,7 @@ struct VMT_TList {
     // [0] = void (__fastcall *)(TList *, int, _DWORD
     STR       type_name;
     uint32_t  type_size;
-    __cls*    parent_class;
+    VMT    parent_class;
     FUNC      safe_call_exception;
     FUNC      after_construction;
     FUNC      before_destruction;

@@ -1,6 +1,6 @@
 /** @file */
 struct THole {
-    __cls* cls;
+    VMT cls;
 
     UNK index;
     TStar* star_1;
