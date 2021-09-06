@@ -1,0 +1,122 @@
+%YAML 1.2
+---
+# https://raw.githubusercontent.com/kkos/oniguruma/5.9.6/doc/RE
+# https://www.sublimetext.com/docs/3/syntax.html
+name: Dab's Code
+file_extensions:
+  - txt
+  - dump
+  - log
+scope: source
+
+first_line_match: \b\S+\b\s*(~|\^){
+
+contexts:
+  main:
+    - meta_scope: source
+    - match: \b\S+\b\s*(~|\^){
+      scope: dat_text
+      push: dat
+
+    - match: '"'
+      scope: punctuation.definition.string.begin
+      push: quoted_string
+    - match: "'"
+      scope: punctuation.definition.string.begin
+      push: quoted_string
+
+    - match: '//'
+      scope: comment
+      push: line_comment
+    - match: '/\*'
+      scope: comment
+      push: multiline_comment
+
+
+    - match: '\b(break|continue|else|float|for|if|int|dword|str|unknown|exit|while|result|throw)\b'
+      scope: keyword.control
+
+    - match: '\b(min|max|newarray|arraychange|free|count|copy|abs|arctan|exp|ln|round|sin|cos|sqr|sqrt|frac|int|ord|rnd|randomize|randseed|substr|findsubstr|trim|toansi|tounicode|lowercase|uppercase|loadlibrary|freelibrary|libraryfunction|ImportAll|ImportedFunction|new|delete|GRun|GCntRun|GLastTurnRun|GAllCntRun|IsScriptActive|GetValueFromScript|StatusPlayer|AddPlanetNews|AutoBattle|GetOwner|GiveReward|GiveRewardByNom|DeleteRewardByNom|CountReward|CountRewardByNom|Rnd|GameDateTxtByTurn|Id|SetName|UseTranclucator|HullDamage|Hitpoints|Hit|ChangeGlobalRelationsShips|ChangeGlobalRelationsPlanets|GlobalRelationsShips|GlobalRelationsPlanets|SetRelationGroup|SetRelationPlanet|GetRelationPlanet|CurTurn|ShipType|ConName|StarName|StarMapLabel|PlanetName|IdToPlanet|IdToShip|IdToItem|PlanetSetGoods|ShipName|ShipRank|ShipRankPoints|ShipNextRankPoints|ShipRaiseRank|ShipStar|StarToCon|ConNear|ConStars|ConStar|GalaxyStars|GalaxyStar|StarAngleBetween|FindPlanet|IsPlayer|GroupCount|GroupIn|CountIn|ChangeState|NearestGroup|StarAngle|NewsAdd|MsgAdd|Ether|CustomEther|EtherDelete|EtherIdAdd|EtherIdDelete|EtherState|ConChangeRelationToRanger|GetData|SetData|ShipData|ShipStatusEffect|Format|DeleteTags|Dialog|DText|DAddText|DAdd|DChange|DAnswer|Player|ItemExist|ItemIn|ItemCost|ItemCount|DropItem|DropScriptItem|DeleteEquipment|DecayGoods|UpsurgeGoods|GoodsAdd|GoodsCount|GoodsCost|GoodsRuinsForBuy|ShipGoods|ShipGoodsIllegalOnPlanet|GoodsDrop|SetFocus|UselessItemCreate|GoodsSellPrice|GoodsBuyPrice|CountTurn|ShipSetBad|GroupSetBad|ShipSetPartner|ShipJoin|ShipOut|AllShipOut|ShipInScript|ShipInGameEvent|ShipInCurScript|ShipInNormalSpace|ShipInHole|ShipIsTakeoff|ShipCntWeapon|ShipWeapon|ShipEqInSlot|ShipSpeed|EnginePower|ShipJump|ShipArmor|ShipProtectability|ShipDroidRepair|ShipRadarRange|ShipScanerPower|ShipHookPower|ShipHookRange|ShipAverageDamage|ShipHealthFactor|ShipHealthFactorStatus|PlayerImmunity|ShipGroup|ShipCanJump|ShipInStar|ShipInPlanet|ShipStatistic|PlayerDominatorStatistic|ShipMoney|ShipFuel|ShipFuelLow|ShipStrengthInBestRanger|ShipStrengthInAverageRanger|ChanceToWin|ShipFind|RangerStatus|RangerPlaceInRating|RangerExcludedFromRating|GalaxyMoney|ShipDestroy|ShipDestroyType|ItemDestroy|RangersCapital|GroupToShip|OrderLanding|OrderJump|GroupIs|StateIs|Dist|Angle|Dist2Star|BuyPirate|BuyTransport|Name|ShortName|FirstGiveMoney|HaveProgramm|GetProgramm|SetProgramm|DomikProgramm|DomikProgrammDate|HoleMamaCreate|HoleCreate|TerronWeaponLock|TerronGrowLock|TerronLandingLock|TerronToStar|KellerLeave|KellerNewResearch|KellerKill|BlazerLanding|BlazerSelfDestruction|GalaxyShipId|NearCivilPlanet|SkipGreeting|Sound|Tips|TipsState|CT|BlockExist|GetMainData|GetGameOptions|ResourceExist|SFT|CurrentMods|RobotSupport|StarShips|StarPlanets|StarMissiles|StarAsteroids|GroupShip|ShipItems|ShipArts|PlayerTranclucators|ArtTranclucatorToShip|LinkItemToScript|ReleaseItemFromScript|ScriptItemData|ScriptItemTextData|ScriptItemToItem|GetShipPirateRank|ShipPirateRankPoints|ShipNextPirateRankPoints|ShipInPirateClan|ShipOnSidePirateClan|RaisePirateRank|ItemType|CustomWeaponType|ItemName|ItemFullName|ItemSize|ItemOwner|ItemSubrace|ItemIsInUse|ItemIsInSet|PlayerEqSet|ItemIsBroken|ShipCanUseEq|ShipCanRepairEq|ShipTechLevelKnowledge|WeaponTarget|GetEquipmentStats|SetEquipmentStats|CreateHull|CreateEquipment|CreateArt|CreateCustomWeapon|CreateCustomArt|CanSellItem|CustomArtData|CustomArtTextData|CreateMM|CreateNodes|CreateCustomCountableItem|CreateZond|ExistingZonds|FreeItem|ShipJoinsClan|AddItemToShip|GetItemFromShip|GetArtFromShip|ArrangeItems|AddItemToPlanet|GetItemFromPlanet|AddItemToShop|GetItemFromShop|AddItemToStorage|GetItemFromStorage|FindItemInStorage|PutItemInVault|GetItemFromVault|DropItemInSystem|StopMovingItem|StarItems|PlanetItems|StorageItems|StorageItemLocation|ShopItems|AddDialogOverride|AddDialogInject|InjectAnswer|AddDialogBlock|ArtefactTypeInUse|ArtefactTypeBoosted|GotoGov|GetShipPlanet|GetShipHomePlanet|GetShipRuins|GetTalkShip|GetTalkType|TalkByAI|ScriptRun|CreateABShip|ConvertToABShip|ABShipModifiers|StartAB|StartTextQuest|StartRobots|ShipOwner|ShipPilotRace|ShipSkill|ShipFace|ShipFreeExp|GetShipExpByType|CoordX|CoordY|ShipSetCoords|ShipAngle|ObjectType|ShipInHyperSpace|ShipStatus|BuyRanger|BuyWarrior|BuyBigWarrior|BuyDomik|BuyDomikExtremal|BuyTranclucator|TransferShip|OrderForsage|OrderNone|OrderMove|OrderTeleport|OrderTakeOff|OrderFollowShip|OrderJumpHole|RelationToRanger|StarOwner|StarBattle|StarSeries|StarHoles|StarNearbyStars|StarNearbyStarsDist|StarSetGraph|CreatePlanet|PlanetSetGraph|PlanetGetGraph|PlanetPopulation|PlanetOwner|PlanetRace|PlanetGov|PlanetEco|PlanetTerrain|PlanetTerrainExplored|PlanetOrbitRadius|PlanetOrbitalVelocity|PlanetSize|PlanetCurInvention|PlanetCurInventionPoints|PlanetInventionLevel|PlanetBoostInventions|PlanetWarriors|GalaxySectors|GalaxyTechLevel|GalaxyDominatorResearchPercent|GalaxyDominatorResearchMaterial|GalaxyDiffLevels|SectorVisible|HullHP|HullDamageSuspectibility|HullType|HullSpecial|HullSeries|GalaxyHoles|HoleCreate2|HoleStar1|HoleStar2|HoleX1|HoleY1|HoleX2|HoleY2|HoleTurnCreate|HoleMap|StarRuins|CreateQuestItem|ShipOrder|ShipTurnBeforeEndOrder|ShipOrderData1|ShipOrderData2|ShipOrderObj|ShipDestination|BuildRuins|BuildCustomRuins|RuinsChangeType|ShipSlots|MissileType|CustomMissileType|MissileOwner|MissileTarget|MissileMaxDamage|MissileMinDamage|MissileLive|MissileSpeed|MissileAngle|CustomWeaponTypes|AsteroidMinerals|AsteroidGraph|AsteroidRespawn|ArrayAdd|ArrayDelete|ArrayClear|ArrayDim|ArraySort|ArraySortPartial|ArrayRandomize|ArrayFind|ArrayFindInSorted|DistToNearestEnemySystem|StarEnemyThreatLevel|BuildListOfQuestPossibleLocations|FindItemInShip|GalaxyRangers|MakeShipEnterStar|ShipGetBad|ShipAddDropItem|OrderLock|BonusCount|BonusPriority|BonusIsSpecial|BonusName|BonusNumInCfg|SeriesNumInCfg|BonusValue|FindBonusByName|FindSeriesByName|FindBonusByCustomTag|FindBonusByNameInCfg|BonusCustomTag|CreateEquipmentWithSpecial|SpecialToEquipment|ModuleToEquipment|MarkRobotsMapAsUsed|EqSpecial|EqModule|MayAddBonusToEq|BuildListOfMMByPriority|BuildListOfNewShips|PlanetToStar|Chameleon|IsChameleon|PlayerChameleonCharges|PlayerChameleonCurType|PlayerChameleonDetected|PlayerLogicChameleon|SwitchToMirrorImage|EquipmentImageName|StarFonImage|ExtremalTakeOff|ForceNextDay|ScriptActionsRun|StarListToPlanetList|EndGame|CustomWin|CustomLose|PirateWin|StartVideo|StartMusic|NoComeKlingToStar|NoDropToShip|NoTargetToShip|NoTalkToShip|NoScanToShip|NoJump|NoLanding|NoShopUpdate|NoDropItem|TruceBetweenShips|ShipInPrison|ShipPartners|PlayerPirates|ShipIsPartner|ShipFreeSpace|ShipWealth|DomiksDefeated|CoalitionDefeated|ShipRefuel|ShipRepairEq|ItemInScript|FindPlanetByAdvancement|StarListToTransitPlanetList|GalaxyEvents|GalaxyEventDate|GalaxyEventType|GalaxyEventData|GalaxyEventsTextData|PlanetNews|PlanetNewsDate|PlanetNewsType|PlanetNewsText|TranclucatorData|ControlledSystems|ShipInFear|CreateGoods|GetNodesFromShip|GetNodesFromStorage|RangerBaseNodes|RuinsAllowModernization|RuinsMicromoduleChain|DomikKilledInCurSystem|ShipTypeN|ShipSubType|ShipChangeStar|IsFilm|FilmFlags|ShowEffect|ShowStaticEffect|FilmSound|FireWeapon|WeaponHit|DealDamageToShip|LaunchMissile|SpawnMissile|BonusText|PlanetPirateClan|Blazer|Keller|Terron|PirateType|PlayerQuestInProgress|PlayerQuestsCompleted|QuestsStatusByNom|PlayerMayTakeSubCrack|SubCrackCost|ShipCalcParam|ShipRefit|ShipImproveItems|ItemImprovement|ShipFreeFlight|ShipKillFactionInCurSystem|CapitalShipStats|PlayerBridge|PlayerDebt|PlayerDebtDate|PlayerDebtCnt|PlayerDeposit|PlayerDepositDate|PlayerDepositDay|PlayerDepositPercent|PlayerMedPolicy|PlayerPlanetaryBattlesCompleted|ShipCustomShipInfosCount|ShipAddCustomShipInfo|ShipDeleteCustomShipInfo|ShipFindCustomShipInfoByType|ShipCustomShipInfoDescription|ShipCustomShipInfoData|ShipCustomShipInfoTextData|StarCustomStarInfosCount|StarAddCustomStarInfo|StarDeleteCustomStarInfo|StarFindCustomStarInfoByType|StarCustomStarInfoData|ItemCanBeBroken|ItemDurability|ItemLevel|ContainerFuel|ItemCharge|MissilesToRearm|WeaponAmmunition|WeaponMaxAmmunition|ShipSpecialBonuses|ItemExtraSpecials|ItemExtraSpecialsCountByType|ItemExtraSpecialsAddByType|ItemExtraSpecialsDeleteByType|ExecuteCodeFromString|GenerateCodeStringFromBlock|ItemOnUseCode|ItemOnActCode|CreateActCodeEvent|CurItem|CurInfo|ScriptItemActShip|ScriptItemActObject1|ScriptItemActObject2|ScriptItemActParam|ScriptItemActionType|OnUseCodeTranclucator|OnUseCodeTransmitter|OnUseCodeBlackHole|OnUseCodeMissileDef|MessageBox|MessageBoxYesNo|CountBox|NumberBox|TextBox|ListBox|FormCurShip|UselessItemText|UselessItemData|GetAchievementSHU|GetAchievementGIRLSHIRE|GetAchievementGIRLSQUEST|GetAchievementPIRATEWIN|GetAchievementCOALLITION|GetAchievementHULL|UICheckElement|InterfaceState|InterfaceText|InterfaceImage|InterfacePos|InterfaceSize|ButtonClick|CurrentForm|FormShipCurItem|UpdateFormShip|FormChange|RunChildForm|OpenCustomForm|CloseCustomForm|CustomInterfaceState|CustomInterfaceText|CustomInterfaceImage|CustomInterfacePos|CustomInterfacePosZ|CustomInterfaceSize|StarMapCenterView|StarMapCurPosX|StarMapCurPosY|InventNewCustomWeapon|GetCustomWeaponInfo|GetCustomWeaponData|GetCustomWeaponPrimaryDamageType|SetCustomWeaponAvailability|SetCustomWeaponSE|SetCustomWeaponPrimaryData|SetCustomWeaponSizeAndCost|SetCustomWeaponDamageData|SetCustomWeaponShotData|SetCustomMissileWeaponStats|StarCustomFaction|ShipCustomFaction|EqCustomFaction|ItemFragility|ShipTechLevelKnowledge|ShipPicksItem|GetItemFromStar|MissileStar|MissileWeaponID|ShipStanding)\b'
+      scope: support.variable
+
+    - match: '\b(GRunFrom|GScriptName|GScriptName|GAnswerData|GQuestStatus|GABStatus|GVideoStatus|CurShip|EndState|pi|UselessItem|ForLiberationSystem|ForAccomplishment|ForSecretMission|ForCowardice|ForPerfidy|ForPlanetBattle|Maloc|Peleng|People|Fei|Gaal|Kling|None|PirateClan|t_Food|t_Medicine|t_Technics|t_Luxury|t_Minerals|t_Alcohol|t_Arms|t_Narcotics|t_Artefact|t_Artefact2|t_ArtefactHull|t_ArtefactFuel|t_ArtefactSpeed|t_ArtefactPower|t_ArtefactRadar|t_ArtefactScaner|t_ArtefactDroid|t_ArtefactNano|t_ArtefactHook|t_ArtefactDef|t_ArtefactAnalyzer|t_ArtefactMiniExpl|t_ArtefactAntigrav|t_ArtefactTransmitter|t_ArtefactBomb|t_ArtefactTranclucator|t_Hull|t_FuelTanks|t_Engine|t_Radar|t_Scaner|t_RepairRobot|t_CargoHook|t_DefGenerator|t_Weapon1|t_Weapon2|t_Weapon3|t_Weapon4|t_Weapon5|t_Weapon6|t_Weapon7|t_Weapon8|t_Weapon9|t_Weapon10|t_Weapon11|t_Weapon12|t_Weapon13|t_Weapon14|t_Weapon15|t_Weapon16|t_Weapon17|t_Weapon18|t_CustomWeapon|t_Protoplasm|t_UselessItem|ReWar|ReBad|ReNormal|ReGood|ReBest|Trader|Pirate|Warrior|t_Kling|t_Ranger|t_Transport|t_Pirate|t_Warrior|t_Tranclucator|t_RC|t_PB|t_WB|t_SB|t_BK|t_MC|t_CB|t_UB|progKellerCall|progLogicalNegation|progDematerial|progEnergotron|progSabCrack|progIntercom|t_ArtDefToEnergy|t_ArtEnergyPulse|t_ArtEnergyDef|t_ArtSplinter|t_ArtDecelerate|t_ArtMissileDef|t_ArtForsage|t_ArtWeaponToSpeed|t_ArtGiperJump|t_ArtBlackHole|t_ArtDefToArms1|t_ArtDefToArms2|t_ArtArtefactor|t_ArtBio|t_ArtPDTurret|t_ArtFastRacks|t_Cistern|t_Satellite|t_MicroModule|t_UselessCountableItem|TalkMoney|TalkGoods|TalkTruce|TalkAttack|TalkBreakPartner|TalkPartnerTheEnd|TalkPartnerRiot|bonHull|bonFuel|bonSpeed|bonJump|bonRadar|bonScan|bonDroid|bonHook|bonDef|bonWEnergy|bonWSplinter|bonWMissile|bonWRadius|bonSlotRadar|bonSlotScaner|bonSlotDroid|bonSlotHook|bonSlotDef|bonSlotWeapon|bonSlotArt|bonSlotForsage|bonHookRadius|bonSkill1|bonSkill2|bonSkill3|bonSkill4|bonSkill5|bonSkill6|bonMass|bonExtraAkrinEff|bonExtraAkrinPenalty|bonAmmo|bonShots|bonMissileSpeed|bonShotSpeed|bonHookMaxSpeed|bonHookMinSpeed|bonStimCapacity|bonZonds|bonAttacks|bonResistAsteroid|t_OnStep|t_OnWeaponShot|t_OnMissileShot|t_OnWeaponShot2|t_OnMissileShot2|t_OnGettingWeaponHit|t_OnGettingMissileHit|t_OnDealingDamage|t_OnTakingDamage|t_OnTakingDamageEn|t_OnTakingDamageSp|t_OnTakingDamageMi|t_OnDroidRepair|t_OnItemPickUp|t_OnScan|t_OnAnotherItem|t_OnAnotherItem2|t_OnItemHit|t_OnMissileHittingObject|t_OnEnteringForm|t_OnLeavingForm|t_OnReEnteringForm|t_OnPlayerSkillIncrease|t_OnPlayerTalkedWithShip|t_OnShipTalkedWithPlayer|t_OnDropItem|t_OnDropItemFixed|t_OnTrancPacking|t_OnReduceEqBattle|t_OnReduceEqUse|t_OnReduceEqForce|t_OnReduceEqForsage|t_OnItemDestroy|t_OnPlayerChangeHull|t_OnPlayerUseMM|t_OnItemEquip|t_OnItemDeEquip|t_OnShipBuysGoods|t_OnShipSellsGoods|t_OnShowingItemInfo|t_OnNonStandartEqChange|t_OnStartAB|t_OnABItemDrop|t_OnCheckingUsability|t_OnCheckingUsability2|t_OnDeath|t_OnAnotherGoods|t_OnCheckingUsabilityGoods)\b'
+      scope: entity.name.function
+
+    - match: '\b(ParsCountFromString|GetParFromString|SetParFromString|TrimNumbers|RoundTo|Exponent|DistCoords|PortionInDiapason|CustomArtCostCalc|CustomArtSizeCalc|IsShiftCtrlPressed|SendStringToClipboard|GetStringFromClipboard|SetModsCFGValue|GetModsCFGValue)\b'
+      scope: custom_function
+
+    - match: '\bfunction\b'
+      scope: keyword.control
+      push: func_name
+
+    - match: '\b[0-9]+\.?[0-9]*\b'
+      scope: constant.numeric
+
+    - match: '[-+*/=!&|^~<>]'
+      scope: keyword.operator # красные операторы
+      # scope: punctuation.section # темные операторы
+
+    - match: '[\[\]\(\){},;.:]'
+      scope: punctuation.section
+
+  quoted_string:
+    - meta_scope: string.quoted
+    - match: '\\.'
+      scope: constant.character.escape
+    - match: "['\"]"
+      scope: punctuation.definition.string.end
+      pop: true
+
+  line_comment:
+    - meta_scope: comment
+    - match: $
+      pop: true
+
+  multiline_comment:
+    - meta_scope: comment
+    - match: '\*/'
+      pop: true
+
+  func_name:
+    - match: \b\w+\b
+      scope: entity.name.function
+      set: func_bracket
+  func_bracket:
+    - match: '\('
+      scope: punctuation.section
+      set: func_params
+  func_params:
+    - match: '\b(int|float|dword|str|unknown)\b'
+      scope: keyword.control
+    - match: '\b\w+\b'
+      scope: variable.parameter
+    - match: ','
+      scope: punctuation.section
+    - match: '\)'
+      scope: punctuation.section
+      pop: true
+
+  dat:
+    - match: \b(OnActCode|OnActCodeTypes|OnActStepTypes|OnUseCode|OnPressCode|OnMouseRightClick|OnMouseEnterCode|OnMouseLeaveCode|CodeBeforeRun|CodeAfterRun|)\b
+      scope: dat_special
+    - match: //
+      scope: comment
+      push: line_comment
+    - match: '/\*'
+      scope: comment
+      push: multiline_comment
+    - match: =
+      scope: punctuation.section
+      embed_scope: source
+      embed: main
+      escape: $
+    - match: (~|\^)\{
+      scope: dat_text
+      push: dat
+    - match: \}
+      scope: dat_text
+      pop: true
+    - match: .
+      scope: dat_text
+
+

@@ -1,0 +1,29 @@
+{
+    "variables": {
+    },
+    "globals": {
+    },
+    "rules": [
+        {
+            "scope": "comment, comment keyword, comment markup.underline.link, comment string, comment punctuation.definition, comment punctuation, comment text",
+            "font_style": "normal", // italic
+        },
+        {
+            "scope": "variable.parameter, parameters variable.function",
+            "font_style": "normal", // italic
+        },
+        {
+            "scope": "custom_function",
+            "foreground": "#1F85E7",
+        },
+        {
+            "scope": "dat_text",
+            "foreground": "#DCB151",
+        },
+        {
+            "scope": "dat_special",
+            "foreground": "#80FF80"
+        }
+
+    ]
+}
