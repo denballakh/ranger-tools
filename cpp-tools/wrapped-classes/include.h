@@ -1,6 +1,10 @@
 /** @file */
 
 #pragma once
+
+#include <string>
+#include <unordered_map>
+
 #include "../structs/include.h"
 
 #define SET_VAR(lhs, rhs)                     *(int8_t**)&lhs = (int8_t*)rhs;
@@ -12,7 +16,7 @@
 
 
 #include "ClassTools.cpp"
-#include "WBaseClass.cpp"
-#include "WObject.cpp"
-#include "WList.cpp"
+// #include "WBaseClass.cpp"
+// #include "WObject.cpp"
+// #include "WList.cpp"
 

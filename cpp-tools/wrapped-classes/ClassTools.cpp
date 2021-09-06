@@ -1,4 +1,3 @@
-
 int vmtSelfPtr           = -76;
 int vmtIntfTable         = -72;
 int vmtAutoTable         = -68;
@@ -27,14 +26,14 @@ void* TypeInfo           (VMT vmt) { return *(void**)((uint8_t*)vmt + vmtTypeInf
 void* FieldTable         (VMT vmt) { return *(void**)((uint8_t*)vmt + vmtFieldTable); }
 void* MethodTable        (VMT vmt) { return *(void**)((uint8_t*)vmt + vmtMethodTable); }
 void* DynamicTable       (VMT vmt) { return *(void**)((uint8_t*)vmt + vmtDynamicTable); }
-char* ClassName          (VMT vmt) {
+std::string ClassName          (VMT vmt) {
     int len = *(uint8_t*)((uint8_t*)vmt + vmtClassName);
     char* src_str = (char*)(*(uint8_t**)((uint8_t*)vmt + vmtClassName) + 1);
     char* copy_str = new char[len + 1];
     for (int i = 0; i < len; i++)
         copy_str[i] = src_str[i];
     copy_str[len] = 0;
-    return copy_str;
+    return std::string(copy_str);
 }
 uint32_t InstanceSize (VMT vmt) { return *(uint32_t*)((uint8_t*)vmt + vmtInstanceSize); }
 VMT   Parent             (VMT vmt) { return *(VMT  *)((uint8_t*)vmt + vmtParent); }
@@ -47,4 +46,12 @@ void* NewInstance        (VMT vmt) { return *(void**)((uint8_t*)vmt + vmtNewInst
 void* FreeInstance       (VMT vmt) { return *(void**)((uint8_t*)vmt + vmtFreeInstance); }
 void* Destroy            (VMT vmt) { return *(void**)((uint8_t*)vmt + vmtDestroy); }
 void* Method  (VMT vmt, int index) { return *(void**)((uint8_t*)vmt + 4 * index); }
+
+std::unordered_map<std::string, VMT> vmts;
+
+void add_class(VMT vmt) {
+    if (vmt == nullptr) return;
+    vmts[ClassName(vmt)] = vmt;
+    add_class(Parent(vmt));
+}
 
