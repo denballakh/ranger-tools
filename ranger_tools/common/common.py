@@ -50,6 +50,14 @@ def check_dir(path):
             os.mkdir(res)
 
 
+def clamp(v, lt, gt):
+    if(v <= lt):
+        return lt
+    if(v >= gt):
+        return gt
+    return v
+
+
 def rgb16_to_rgb24(rgb16: bytes) -> tuple:
     b, a = rgb16
     x = a * 0x100 + b
@@ -61,6 +69,7 @@ def rgb16_to_rgb24(rgb16: bytes) -> tuple:
 
 def rgb24_to_rgb16(rgb24: tuple) -> bytes:
     r, g, b = rgb24
+
     r = round(r / 0xff * 0x1f) << 11
     g = round(g / 0xff * 0x3f) << 5
     b = round(b / 0xff * 0x1f)
@@ -71,3 +80,37 @@ def rgb24_to_rgb16(rgb24: tuple) -> bytes:
     a, b = divmod(r | g | b, 0x100)
 
     return bytes([b, a])
+
+
+def rgba8888_to_rgb565le(rgba32: tuple) -> bytes:
+    r, g, b, a = rgba32
+
+    if a == 0:
+        return bytes([0, 0])
+
+    else:
+        if a == 255:
+            # Essentially reducing green channel bit depth to 5 for white balance
+            g &= 0b11111011
+
+        else:
+            # Preventing format from "exploding" color channel values when combined with transparency channel
+            # (Not perfect on lower transparency with pixels that have multiple colors)
+            if r > a:
+                r = max(r - (255 - a), a)
+
+            if g > a:
+                g = max(g - (255 - a), a)
+
+            if b > a:
+                b = max(b - (255 - a), a)
+
+            # White balance color correction
+            g = max(g - 4, 0)
+
+        r = r >> 3 << 11
+        g = g >> 2 << 5
+        b = b >> 3
+
+    # Swap to little endian
+    return bytes([g & 0b11100000 | b, (r | g) >> 8])

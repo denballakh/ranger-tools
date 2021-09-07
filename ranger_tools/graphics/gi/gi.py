@@ -2,7 +2,7 @@ from PIL import Image
 import time
 
 from ...io import Buffer
-from ...common import rgb16_to_rgb24, rgb24_to_rgb16, Point
+from ...common import rgb16_to_rgb24, rgb24_to_rgb16, Point, rgba8888_to_rgb565le
 
 __all__ = [
     'GI',
@@ -366,16 +366,21 @@ def from_image_2(img: Image, fmt, opt=None) -> GI:
 
     cnt = 0
     pixels = b''
+
+    # RGBA8888
+    data = list(img.getdata())
+    index = 0
+
     for y in range(height):
         for x in range(width):
-            r, g, b, a = img.getpixel((x, y))
-            if a == 255:
+            if data[index][3] == 255:
                 if cnt and not pixels:
                     buf0.write_byte(cnt) # skip cnt pixels
                     cnt = 0
                     pixels = b''
                 cnt += 1
-                pixels += rgb24_to_rgb16((r, g, b))
+
+                pixels += rgba8888_to_rgb565le(data[index])
 
                 if cnt >= 127:
                     buf0.write_byte(0x80 + cnt) # read cnt pixels + pixels
@@ -394,6 +399,9 @@ def from_image_2(img: Image, fmt, opt=None) -> GI:
                     buf0.write_byte(cnt) # skip cnt pixels
                     cnt = 0
                     pixels = b''
+
+            index += 1
+
         if pixels:
             buf0.write_byte(0x80 + cnt) # read cnt pixels + pixels
             buf0.write(pixels)
@@ -405,6 +413,7 @@ def from_image_2(img: Image, fmt, opt=None) -> GI:
                 continue
             else:
                 buf0.write_byte(cnt) # skip cnt pixels
+
         cnt = 0
 
         buf0.write_byte(0x00) # go to next line
@@ -412,10 +421,12 @@ def from_image_2(img: Image, fmt, opt=None) -> GI:
     cnt = 0
     pixels1 = b''
     pixels2 = b''
+
+    index = 0
+
     for y in range(height):
         for x in range(width):
-            r, g, b, a = img.getpixel((x, y))
-            if a not in (0, 255):
+            if data[index][3] not in (0, 255):
                 if cnt and not pixels1:
                     buf1.write_byte(cnt)  # skip cnt pixels
                     buf2.write_byte(cnt)
@@ -423,8 +434,9 @@ def from_image_2(img: Image, fmt, opt=None) -> GI:
                     pixels1 = b''
                     pixels2 = b''
                 cnt += 1
-                pixels1 += rgb24_to_rgb16((r, g, b))
-                pixels2 += bytes([round(63 - a / 4)])
+
+                pixels1 += rgba8888_to_rgb565le(data[index])
+                pixels2 += bytes([(255 - data[index][3]) >> 2])
 
                 if cnt >= 127:
                     buf1.write_byte(0x80 + cnt)
@@ -451,12 +463,14 @@ def from_image_2(img: Image, fmt, opt=None) -> GI:
                     cnt = 0
                     pixels1 = b''
                     pixels2 = b''
+
+            index += 1
+
         if pixels1:
             buf1.write_byte(0x80 + cnt)
             buf1.write(pixels1)
             buf2.write_byte(0x80 + cnt)
             buf2.write(pixels2)
-
             pixels1 = b''
             pixels2 = b''
         elif cnt:
@@ -472,7 +486,6 @@ def from_image_2(img: Image, fmt, opt=None) -> GI:
         cnt = 0
         buf1.write_byte(0x00) # go to next line
         buf2.write_byte(0x00)
-
 
 
     buf0_ = Buffer()
