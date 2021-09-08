@@ -1,9 +1,11 @@
-from typing import Union, Iterable
+from typing import Union, Iterable, Any, Sized
+# from io import BinaryIO
 import struct
 
 __all__ = [
     'AbstractIBuffer',
     'Buffer',
+    'Stack',
 ]
 
 class AbstractIBuffer:
@@ -19,6 +21,27 @@ class AbstractIBuffer:
 
     def end(self) -> bool:
         return 0 <= self.pos < len(self.data)
+
+
+class Stack:
+    data: list
+
+    def __init__(self, lst: list = None):
+        if lst is None:
+            self.data = []
+        else:
+            self.data = lst
+
+    def __repr__(self) -> str:
+        return str(self.data)
+
+    def push(self, value):
+        self.data.append(value)
+
+    def pop(self) -> 'Any':
+        assert self.data, 'Stack underflow'
+        return self.data.pop()
+
 
 
 class Buffer:
@@ -45,13 +68,16 @@ class Buffer:
         #     i += 1
 
     def __str__(self) -> str:
+        return str(self.data)
         offset = 16
         return (
-            f'Buffer('
-            f'before={bytes(self.data[max(0, self.pos - offset): self.pos])!r}, '
-            f'current={bytes(self.data[self.pos : self.pos + 1])!r} ({self.data[self.pos]}),'
-            f'after={bytes(self.data[self.pos + 1 : min(self.pos + offset, len(self.data))])!r}), '
+            f'<Buffer: '
+            f'pos={self.pos} '
+            f'before={bytes(self.data[max(0, self.pos - offset): min(self.pos, len(self.data))])!r}, '
+            f'current={bytes([self.data[self.pos]]) if self.pos in range(len(self.data)) else None!r} ({self.data[self.pos]}), '
+            f'after={bytes(self.data[self.pos + 1 : min(self.pos + offset, len(self.data))])!r}, '
             f'len={len(self.data)}'
+            f'>'
         )
 
     def __eq__(self, other):
@@ -65,6 +91,9 @@ class Buffer:
 
     def __len__(self) -> int:
         return len(self.data)
+
+    def __getitem__(self, key):
+        return self.data[key]
 
     def to_bytes(self) -> bytes:
         return bytes(self.data)
@@ -82,14 +111,15 @@ class Buffer:
 
     def push_pos(self, pos: int = None) -> int:
         if pos is None: pos = self.pos
-        assert 0 <= pos <= len(self.data), f'Invalid buffer position: {self.pos}, len={len(self.data)}'
+        assert 0 <= pos <= len(self.data), f'Invalid buffer position: {pos}, self.pos={self.pos}, len={len(self.data)}'
         result = self.pos
         self._position_stack.append(self.pos)
         self.pos = pos
         return result
 
 
-    def read(self, n: Union[int, None] = None) -> bytearray:
+    def read(self, n: Union[int, None] = None, pos=None) -> bytes:
+        if pos is not None: self.push_pos(pos)
         if n is None:
             n = len(self.data) - self.pos
         elif n < 0:
@@ -98,12 +128,15 @@ class Buffer:
 
         result = bytes(self.data[self.pos : self.pos + n])
         self.pos += n
+        if pos is not None: self.pop_pos()
         return result
 
-    def write(self, data: Iterable[int]):
+    def write(self, data: Iterable[int], pos=None):
+        if pos is not None: self.push_pos(pos)
         assert 0 <= self.pos <= len(self.data), f'Invalid buffer position: {self.pos}, len={len(self.data)}'
-        self.data[self.pos : self.pos + len(data)] = data
-        self.pos += len(data)
+        self.data[self.pos : self.pos + len(data)] = data  # type: ignore[arg-type]
+        self.pos += len(data)  # type: ignore[arg-type]
+        if pos is not None: self.pop_pos()
 
     def seek(self, pos: int):
         self.pos = pos
@@ -124,11 +157,11 @@ class Buffer:
 
     def load_file(self, path: str):
         with open(path, 'rb') as file:
-            self.load(file)
+            self.load(file)  # type: ignore[arg-type]
 
     def save_file(self, path: str):
         with open(path, 'wb') as file:
-            self.save(file)
+            self.save(file)  # type: ignore[arg-type]
 
     @classmethod
     def from_file(cls, path: str) -> 'Buffer':
@@ -137,48 +170,67 @@ class Buffer:
         return buf
 
 
-    def write_format(self, fmt: str, *values: list['Any']):
-        self.write(struct.pack(fmt, *values))
+    def write_format(self, fmt: str, *values: Any, pos=None):
+        if pos is not None:
+            self.push_pos(pos)
 
-    def read_format(self, fmt: str) -> list['Any']:
-        return struct.unpack(fmt, self.read(struct.calcsize(fmt)))
+        try:
+            self.write(struct.pack(fmt, *values))
+        except Exception as e:
+            raise Exception(f'Error in struct.pack: fmt={fmt}, values={values}, pos={pos}') from e
+        if pos is not None:
+            self.pop_pos()
 
 
-    def read_byte(self) -> int: return self.read_format('B')[0]
-    def write_byte(self, value: int): return self.write_format('B', value)
+    def read_format(self, fmt: str, pos=None) -> Any:
+        if pos is not None:
+            self.push_pos(pos)
 
-    def read_bool(self) -> bool: return self.read_format('?')[0]
-    def write_bool(self, value: bool): return self.write_format('?', value)
+        try:
+            result = struct.unpack(fmt, self.read(struct.calcsize(fmt)))
+        except Exception as e:
+            raise Exception(f'Error in struct.unpack: fmt={fmt}, pos={pos}') from e
 
-    def read_char(self) -> int: return self.read_format('b')[0]
-    def write_char(self, value: int): return self.write_format('b', value)
+        if pos is not None:
+            self.pop_pos()
+        return result
 
-    def read_uchar(self) -> int: return self.read_format('B')[0]
-    def write_uchar(self, value: int): return self.write_format('B', value)
 
-    def read_short(self) -> int: return self.read_format('<h')[0]
-    def write_short(self, value: int): return self.write_format('<h', value)
+    def read_byte(self, pos=None) -> int: return self.read_format('B', pos=pos)[0]
+    def write_byte(self, value: int, pos=None): return self.write_format('B', value, pos=pos)
 
-    def read_ushort(self) -> int: return self.read_format('<H')[0]
-    def write_ushort(self, value: int): return self.write_format('<H', value)
+    def read_bool(self, pos=None) -> bool: return self.read_format('?', pos=pos)[0]
+    def write_bool(self, value: bool, pos=None): return self.write_format('?', value, pos=pos)
 
-    def read_int(self) -> int: return self.read_format('<i')[0]
-    def write_int(self, value: int): return self.write_format('<i', value)
+    def read_char(self, pos=None) -> int: return self.read_format('b', pos=pos)[0]
+    def write_char(self, value: int, pos=None): return self.write_format('b', value, pos=pos)
 
-    def read_uint(self) -> int: return self.read_format('<I')[0]
-    def write_uint(self, value: int): return self.write_format('<I', value)
+    def read_uchar(self, pos=None) -> int: return self.read_format('B', pos=pos)[0]
+    def write_uchar(self, value: int, pos=None): return self.write_format('B', value, pos=pos)
 
-    def read_long(self) -> int: return self.read_format('<q')[0]
-    def write_long(self, value: int): return self.write_format('<q', value)
+    def read_short(self, pos=None) -> int: return self.read_format('<h', pos=pos)[0]
+    def write_short(self, value: int, pos=None): return self.write_format('<h', value, pos=pos)
 
-    def read_ulong(self) -> int: return self.read_format('<Q')[0]
-    def write_ulong(self, value: int): return self.write_format('<Q', value)
+    def read_ushort(self, pos=None) -> int: return self.read_format('<H', pos=pos)[0]
+    def write_ushort(self, value: int, pos=None): return self.write_format('<H', value, pos=pos)
 
-    def read_float(self) -> float: return self.read_format('<f')[0]
-    def write_float(self, value: float): return self.write_format('<f', value)
+    def read_int(self, pos=None) -> int: return self.read_format('<i', pos=pos)[0]
+    def write_int(self, value: int, pos=None): return self.write_format('<i', value, pos=pos)
 
-    def read_double(self) -> float: return self.read_format('<d')[0]
-    def write_double(self, value: float): return self.write_format('<d', value)
+    def read_uint(self, pos=None) -> int: return self.read_format('<I', pos=pos)[0]
+    def write_uint(self, value: int, pos=None): return self.write_format('<I', value, pos=pos)
+
+    def read_long(self, pos=None) -> int: return self.read_format('<q', pos=pos)[0]
+    def write_long(self, value: int, pos=None): return self.write_format('<q', value, pos=pos)
+
+    def read_ulong(self, pos=None) -> int: return self.read_format('<Q', pos=pos)[0]
+    def write_ulong(self, value: int, pos=None): return self.write_format('<Q', value, pos=pos)
+
+    def read_float(self, pos=None) -> float: return self.read_format('<f', pos=pos)[0]
+    def write_float(self, value: float, pos=None): return self.write_format('<f', value, pos=pos)
+
+    def read_double(self, pos=None) -> float: return self.read_format('<d', pos=pos)[0]
+    def write_double(self, value: float, pos=None): return self.write_format('<d', value, pos=pos)
 
     def read_str(self, length: int = -1) -> str:
         if length == -1:
