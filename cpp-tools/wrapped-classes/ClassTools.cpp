@@ -45,6 +45,7 @@ void* Destroy            (VMT vmt) { return vmt_struct(vmt)->destroy; }
 uint32_t InstanceSize    (VMT vmt) { return vmt_struct(vmt)->instance_size; }
 VMT   Parent             (VMT vmt) { return vmt_struct(vmt)->parent; }
 void* Method  (VMT vmt, int index) { return vmt_struct(vmt)->methods[index]; }
+bool IsInstance(VMT obj, VMT cls) { /*not implemented*/ }
 
 std::string ClassName    (VMT vmt) {
     int len = *vmt_struct(vmt)->class_name;

@@ -1,6 +1,5 @@
 *.exe
 dat_sign.py
-*_test*
 doxygen/doc/
 _test/
 _dats/
