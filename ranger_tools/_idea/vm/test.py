@@ -1,6 +1,6 @@
 from pprint import pprint
 
-from ranger_tools.io import Buffer
+# from ranger_tools.io import Buffer
 
 import vm
 
@@ -10,8 +10,13 @@ class HelperClass:
     def __init__(self, *values):
         self.values = values
 
+    def x(self): pass
+    def y(self): pass
+
 class Lbl(HelperClass): pass
 class Ref(HelperClass): pass
+class Undef(HelperClass): pass
+
 class Data(HelperClass): pass
 class Filler(HelperClass): pass
 
@@ -21,9 +26,21 @@ class Const(HelperClass): pass
 class Cint(HelperClass): pass
 class Cuint(HelperClass): pass
 
-# class Cbyte(HelperClass): pass
-# class C(HelperClass): pass
+class Ret(HelperClass): pass
+class Call(HelperClass): pass
+class Jump(HelperClass): pass
+class JumpIf(HelperClass): pass
+class Func(HelperClass): pass
 
+class Read(HelperClass): pass
+class Write(HelperClass): pass
+
+def split2len(s, n):
+    def _f(s, n):
+        while s:
+            yield s[:n]
+            s = s[n:]
+    return list(_f(s, n))
 
 def generate_mem(data):
     buf = vm.VMMemory(size=0)
@@ -33,8 +50,8 @@ def generate_mem(data):
 
     items_index = 0
 
-    while items_index < len(data):
-        item = data[items_index]
+    while data:
+        item = data.pop(0)
 
         if isinstance(item, Lbl):
             name = item.values[0]
@@ -44,7 +61,13 @@ def generate_mem(data):
         elif isinstance(item, Ref):
             name = item.values[0]
             const_refs[buf.pos] = name
-            buf.write_uint(0xFFFFFFFF)
+            buf.write_uint(0xFFFFFFFF) # будет перезаписано позже
+
+        elif isinstance(item, Undef): # not implemented
+            # name = item.values[0]
+            # assert name in const_values
+            # const_values[name] = None
+            pass
 
         elif isinstance(item, Cuint):
             value = item.values[0]
@@ -70,132 +93,181 @@ def generate_mem(data):
             value = item.values[1]
             const_values[name] = value
 
-        elif isinstance(item, Const):
+        elif isinstance(item, Const): # ничем не отличается от Ref
             name = item.values[0]
             const_refs[buf.pos] = name
-            buf.write_uint(0xFFFFFFFF)
+            buf.write_uint(0xFFFFFFFF) # будет перезаписано позже
+
+        elif isinstance(item, Ret):
+            data.insert(0, o.LDC)
+            data.insert(1, Ref(RET_NAME))
+            data.insert(2, o.JMP)
+
+        elif isinstance(item, Call):
+            funcname = item.values[0]
+            data.insert(0, o.LDC)
+            data.insert(1, Ref(funcname))
+            data.insert(2, o.IPT)
+            data.insert(3, o.LDC)
+            data.insert(4, Ref(CALL_NAME))
+            data.insert(5, o.JMP)
+
+        elif isinstance(item, Jump):
+            funcname = item.values[0]
+            data.insert(0, o.LDC)
+            data.insert(1, Ref(funcname))
+            data.insert(2, o.JMP)
+
+        elif isinstance(item, JumpIf):
+            funcname = item.values[0]
+            data.insert(0, o.LDC)
+            data.insert(1, Ref(funcname))
+            data.insert(2, o.JMZ)
+
+        elif isinstance(item, Func):
+            funcname = item.values[0]
+            data.insert(0, o.ERR) # invalid op before function
+            data.insert(1, Lbl(funcname))
+
+        elif isinstance(item, Read):
+            addrname = item.values[0]
+            data.insert(0, o.LDC)
+            data.insert(1, Ref(addrname))
+            data.insert(2, o.RMM)
+
+        elif isinstance(item, Write):
+            addrname = item.values[0]
+            data.insert(0, o.LDC)
+            data.insert(1, Ref(addrname))
+            data.insert(2, o.WMM)
+
+
+        elif isinstance(item, vm.OpCode):
+            buf.write_ushort(item)
+
+        elif isinstance(item, int):
+            buf.write_byte(item)
 
         else:
-            buf.write_byte(item)
+            raise TypeError('Invalid item type: {item}')
 
         items_index += 1
 
     for pos, name in const_refs.items():
-        assert name in const_values
+        assert name in const_values, name
         buf.write_uint(const_values[name], pos=pos)
 
+    print('Labels:')
     pprint(const_values)
 
-    buf.pos = 1
+    buf.pos = vm.OPCODE_SIZE
     return buf
 
 
+################################################################################
+################################################################################
+################################################################################
 
-program = [
-o.ZER, # wrong opcode at 0 address
+CALL_NAME = '__call'
+RET_NAME = '__ret'
+
+STACK_SIZE = 16
+SIZE_T = vm.ARG_SIZE
+
+PROGRAM = [
+o.ERR, # wrong opcode at 0 address for error detection
 
 # entry point here:
-o.LDC, Ref('entry_point'), o.JMP,
+Jump('main'),
 
 
-
-o.ZER,
-Lbl('exit'),
+Func('__exit'), # ... exitcode
+    o.DUP,
+    o.PRT, # prints exit code
+    o.NOT,
+    JumpIf('__exit_log'),
+    o.LOG,
+    Lbl('__exit_log'),
     o.HLT,
-o.ZER,
+Undef('__exit_log'),
 
 
+Data('__CS_INDEX', SIZE_T),
+Data('__CS', STACK_SIZE * SIZE_T),
+DefConst('__CS_SIZE_', STACK_SIZE),
 
-Data('call_stack_index', 4),
-Data('call_stack', 64 * 4),
-DefConst('call_stack_size', 64),
 
-o.ZER,
-Lbl('call'), # ... callee caller
-    DefConst('call_fix_', 6),
-
-    # reading call stack index
-    o.LDC, Ref('call_stack_index'),
-    o.RMM,
+Func(CALL_NAME), # ... callee caller
+    DefConst('__call_FIX_', SIZE_T + 2 * vm.OPCODE_SIZE),
+    Read('__CS_INDEX'),
     o.DUP,
     o.LDC, Cint(1),
     o.ADD,
-    o.LDC, Ref('call_stack_index'),
-    o.WMM,
-    # increasing CSI
-    # o.RMM,
-    # o.LDC, Ref('call_stack_index'),
-    # o.WMM,
-
-
-    # calculating ptr to addr
-    o.LDC, Cint(4),
+    o.DUP,
+    Write('__CS_INDEX'),
+    o.LDC, Const('__CS_SIZE_'),
+    o.LSS,
+    JumpIf('__call_stack_overflow'),
+    o.LDC, Cint(SIZE_T),
     o.MUL,
-    o.LDC, Ref('call_stack'),
+    o.LDC, Ref('__CS'),
     o.ADD,
-
-    # writing caller address
     o.SWP,
-    o.LDC, Const('call_fix_'),
+    o.LDC, Const('__call_FIX_'),
     o.ADD,
     o.SWP,
     o.WMM,
-
-
-    # jump to callee address
     o.JMP,
-o.ZER,
+    Lbl('__call_stack_overflow'),
+        o.POP, o.POP, o.POP,
+        o.LDC, Cint(1),
+        Jump('__exit'),
+Undef('__call_FIX_'),
+Undef('__call_stack_overflow'),
 
 
-
-
-o.ZER,
-Lbl('ret'), # ...
-    o.LDC, Ref('call_stack_index'),
-    o.RMM,
+Func(RET_NAME), # ...
+    Read('__CS_INDEX'),
+    o.DUP,
+    o.LDC, Cint(0),
+    o.EQL,
+    JumpIf('__ret_stack_underflow'),
     o.LDC, Cint(-1),
     o.ADD,
     o.DUP,
-
-    o.LDC, Cint(4),
+    o.LDC, Cint(SIZE_T),
     o.MUL,
-    o.LDC, Ref('call_stack'),
+    o.LDC, Ref('__CS'),
     o.ADD,
     o.RMM,
     o.SWP,
-    o.LDC, Ref('call_stack_index'),
-    o.WMM,
-
+    Write('__CS_INDEX'),
     o.JMP,
+    Lbl('__ret_stack_underflow'),
+        o.POP,
+        o.LDC, Cint(1),
+        Jump('__exit'),
+Undef('__ret_stack_underflow'),
 
-o.ZER,
 
-
-
-
-o.ZER,
-Lbl('test_func'),
+Func('test_func'),
     o.LDC, Cint(222),
     o.LDC, Cint(333),
     o.LDC, Cint(444),
     o.PRT,
     o.PRT,
     o.PRT,
-
-o.LDC, Ref('ret'), o.JMP,
-o.ZER,
+    Ret(),
 
 
 
-o.ZER,
-Lbl('factorial'),
+Func('factorial'),
     o.DUP,
-    o.LDC, Ref('fact_nonzero_arg'),
-    o.JMZ,
+    JumpIf('fact_nonzero_arg'),
     Lbl('fact_zero_arg'),
         o.POP,
         o.LDC, Cint(1),
-        o.LDC, Ref('ret'), o.JMP,
+        Ret(),
 
     Lbl('fact_nonzero_arg'),
         o.DUP,
@@ -203,68 +275,49 @@ Lbl('factorial'),
         o.SWP,
         o.SUB,
 
-        o.LDC, Ref('factorial'), o.IPT,
-        o.LDC, Ref('call'), o.JMP,
+        Call('factorial'),
 
         o.MUL,
-        o.LDC, Ref('ret'), o.JMP,
-o.ZER,
+        Ret(),
+Undef('fact_zero_arg'),
+Undef('fact_nonzero_arg'),
 
 
 
-
-o.ZER,
-Lbl('entry_point'),
-    o.LDC, Cint(70),
-
-    o.LDC, Ref('factorial'), o.IPT,
-    o.LDC, Ref('call'), o.JMP,
-
+Func('main'),
+    o.LDC, Cint(10),
+    Call('factorial'),
     o.PRT,
 
-o.LDC, Ref('exit'), o.JMP,
-o.ZER,
-Lbl('_end'),
+    o.LDC, Cint(0),
+    Jump('__exit'),
 
 
+
+Lbl('!end'), # == len(v.memory.data)
 ]
 
+################################################################################
+################################################################################
+################################################################################
+
+
 v = vm.VM()
-v.memory = generate_mem(program)
-# print(v.memory.data)
+v.memory = generate_mem(PROGRAM)
+
+print('')
+print('OpCodes:')
+pprint(list(vm.OpCode))
+print('')
+print('Memory:')
+
+s = v.memory.data.hex()
+s = split2len(s, 32)
+s = [' '.join(split2len(i, 2)) for i in s]
+print(*s, sep='\n')
+print('')
+print('Execution log:')
+print('')
+
 v.execute()
-
-# @unique
-# class OpCode(IntEnum):
-#     # basic
-#     ZER = 0
-#     HLT = 1
-#     NOP = 2
-
-#     # io
-#     PRT = 3
-
-#     # stack
-#     DUP = 4
-#     POP = 5
-#     GET = 6
-#     ROT = 6
-
-#     # const
-#     LDC = 7
-
-#     # mem
-#     RMM = 8
-#     WMM = 9
-
-#     # jumps
-#     IPT = 10
-#     JMP = 11
-#     JMZ = 12
-
-#     # math
-#     MUL = 13
-#     DIV = 14
-#     ADD = 15
-#     SUB = 16
 

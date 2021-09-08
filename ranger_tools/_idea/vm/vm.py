@@ -13,6 +13,17 @@ class VMHaltException(VMException):
 class VMOpCodeException(VMException):
     pass
 
+def unique_ints(init = 1):
+    x = init
+    while True:
+        yield x
+        x += 1
+
+opcode_generator = unique_ints(init=1)
+OG = lambda: next(opcode_generator)
+
+OPCODE_SIZE = 2
+ARG_SIZE = 4
 
 @unique
 class OpCode(IntEnum):
@@ -22,42 +33,51 @@ class OpCode(IntEnum):
     # ... - это 0 или более элементов под именованными элементами
 
     # basic
-    ZER = 0 # wrong opcode
-    HLT = 1 # halts program
-    NOP = 2 # no operation
+    ERR = 0 # wrong opcode
+    HLT = OG() # halts program
+    NOP = OG() # no operation
 
     # io
-    PRT = 3 # ... a -> ...
+    PRT = OG() # ... a -> ...
             # prints a
 
     # stack
-    DUP = 4 # ... a -> ... a a
-    POP = 5 # ... a -> ...
-    GET = 6 # ... index -> ... stack[-index]
-    ROT = 17 # ... c b a -> ... a c b
-    SWP = 18 # ... b a -> ... a b
+    DUP = OG() # ... a -> ... a a
+    POP = OG() # ... a -> ...
+    GET = OG() # ... index -> ... stack[-index]
+    ROT = OG() # ... c b a -> ... a c b
+    SWP = OG() # ... b a -> ... a b
 
     # const
-    LDC = 7 # ... -> ... C
+    LDC = OG() # ... -> ... C
             # reads const (signed int) and pushes it
 
     # mem
-    RMM = 8 # ... addr -> ... mem[addr]
-    WMM = 9 # ... val addr -> ...
+    RMM = OG() # ... addr -> ... mem[addr]
+    WMM = OG() # ... val addr -> ...
             # writes val to addr
 
     # jumps
-    IPT = 10 # ... -> ... (instruction pointer)
-    JMP = 11 # ... addr -> ...
+    IPT = OG() # ... -> ... (instruction pointer)
+    JMP = OG() # ... addr -> ...
              # jumps to addr
-    JMZ = 12 # ... cond addr -> ...
+    JMZ = OG() # ... cond addr -> ...
              # jumps to addr if cond
 
     # math
-    MUL = 13 # ... b a -> ... (a * b)
-    DIV = 14 # ... b a -> ... (a // b)
-    ADD = 15 # ... b a -> ... (a + b)
-    SUB = 16 # ... b a -> ... (a - b)
+    MUL = OG() # ... b a -> ... (a * b)
+    DIV = OG() # ... b a -> ... (a // b)
+    ADD = OG() # ... b a -> ... (a + b)
+    SUB = OG() # ... b a -> ... (a - b)
+
+    # logic
+    LSS = OG() # ... b a -> ... (a < b)
+    LSE = OG() # ... b a -> ... (a <= b)
+    EQL = OG() # ... b a -> ... (a == b)
+    NOT = OG() # ... a -> ... !a
+
+
+    LOG = OG()
 
 
 
@@ -91,11 +111,11 @@ class VM:
             try:
                 self.execute_cmd()
             except VMHaltException:
-                print('Halted')
+                # print('Halted')
                 break
             except Exception as e:
                 print(f'Error! state: {self}')
-                raise Exception from e
+                raise Exception(f'Error at {self.memory.pos}') from e
             # time.sleep(0.005)
 
     def execute_cmd(self):
@@ -103,19 +123,19 @@ class VM:
         mem = vm.memory
         stack = vm.stack
 
-        b0 = mem.read_byte()
+        opcode = mem.read_ushort()
         try:
-            opcode = OpCode(b0)
+            opcode = OpCode(opcode)
         except ValueError as e:
-            raise VMOpCodeException(f'Invalid opcode: {b0}') from e
+            raise VMOpCodeException(f'Invalid opcode: {opcode}') from e
 
         # print(f'Executing opcode: {opcode!r}, pos={mem.pos}')
 
-        if opcode is OpCode.ZER:
-            raise VMOpCodeException(f'Zero opcode at {mem.pos - 1}')
+        if opcode is OpCode.ERR:
+            raise VMOpCodeException(f'ERR opcode at {mem.pos - 1}')
 
         elif opcode is OpCode.HLT:
-            raise VMHaltException(f'Halting...')
+            raise VMHaltException()
 
         elif opcode is OpCode.NOP:
             pass
@@ -207,6 +227,35 @@ class VM:
             v1 = stack.pop()
             v2 = stack.pop()
             stack.push(v1 - v2)
+
+
+        elif opcode is OpCode.LSS:
+            v1 = stack.pop()
+            v2 = stack.pop()
+            stack.push(int(v1 < v2))
+
+        elif opcode is OpCode.LSE:
+            v1 = stack.pop()
+            v2 = stack.pop()
+            stack.push(int(v1 <= v2))
+
+        elif opcode is OpCode.EQL:
+            v1 = stack.pop()
+            v2 = stack.pop()
+            stack.push(int(v1 == v2))
+
+        elif opcode is OpCode.NOT:
+            v1 = stack.pop()
+            stack.push(int(not v1))
+
+
+        elif opcode is OpCode.LOG:
+            print('-' * 80)
+            print('VM State:')
+            print(f'  cmdptr = {self.memory.pos}')
+            print(f'  stack = {self.stack}')
+            print(f'  memory = {self.memory}')
+            print('-' * 80)
 
         else:
             raise Exception(f'Empty code for opcode: {opcode}')
