@@ -1,12 +1,11 @@
-'''
+"""
 Перекрашивает .png и .txt в соответствии с правилами
-'''
-from PIL import Image  # type: ignore[import]
+"""
+from math import cos, sin, radians, sqrt, pow
+
+from PIL import Image
 from random import sample
 import os
-# import sys
-import colorsys
-# from math import ceil
 import time
 
 randomize = False
@@ -28,16 +27,9 @@ dat_file = 'Main.txt'
 modified_rules = []
 dat_rule_mod = 0
 
+
 def get_rules():
-    rules = {
-        'Red':           transform(-4/18, 0, 8/18),
-        'Green':         transform(0, 4/18, -4/18, dark=0.9),
-        'Blue':          transform(0, 0, 2/18, dark=1.0),
-
-        'Grey':          to_grey(1.00),
-        'DarkGrey':      to_grey(0.75),
-    }
-
+    rules = {}
     return rules
 
 dat_colors = [
@@ -217,17 +209,22 @@ def recolor_dat():
             fp.write(s)
 
 
+# (1 - k / 2) * k == 1 - (1 - (1 - k / 2)) / k
 def darken(k):
-    assert 0 < k < 2, f'Invalid k value: k = {k}'
-    k = k / 2
+    assert 0 < k < 2, f'Value for k should be between 0 and 2: k = {k}'
+
+    k /= 2  # For balance to be at 1 instead of 0.5
     _k = 1 - k
-    kk = k / _k
+    kd = k / _k
+
     def f(x):
         if x > _k:
-            return 1 - (1 - x) / kk
+            return 1 - (1 - x) / kd
         else:
-            return x * kk
+            return x * kd
+
     return f
+
 
 def my_mul(x, mn, mx, mul):
     assert mul >= 0
@@ -239,30 +236,46 @@ def my_mul(x, mn, mx, mul):
         result = x
     return min(max(result, mn), mx)
 
-def rotate(color, angle):
-    if len(color) == 4:
-        r, g, b, a = color
-        h, s, v = colorsys.rgb_to_hsv(r, g, b)
-        h = (h + angle) % 1
-        R, G, B = colorsys.hsv_to_rgb(h, s, v)
-        A = a
-        return R, G, B, A
-    else:
-        r, g, b = color
-        h, s, v = colorsys.rgb_to_hsv(r, g, b)
-        h = (h + angle) % 1
-        R, G, B = colorsys.hsv_to_rgb(h, s, v)
-        return R, G, B
+
+# Clamping to 0, 255
+def clamp(v):
+    if v < 0:
+        return 0
+    if v > 255:
+        return 255
+    return v
+
 
 def average(c1, c2, ratio=0.5):
     return tuple(y * ratio + x * (1 - ratio) for x, y in zip(c1, c2))
 
-def to_grey(k):
+
+# Degree of non-linearity expressed in values [-∞, -0.0…1] ∪ [0.0…1, ∞]. Non-linearity increases when approaching 0
+# Bias is neutral at 1.0.
+# Lowering value shifts bias of the non-linearity towards 0 on the x scale, raising shifts bias towards max
+def nonlinear_brightness(dn, bias=1.0):
+    assert bias > 0, f'Value for bias should be higher than 0: bias = {bias}'
+    assert dn != 0, f'Value for dn cannot be equal to 0'
+
+    # To reflect behavior of positive dn values
+    if dn < 0:
+        dn -= 1
+
+    def f(x):
+        return ((1 + dn) * pow(x, bias)) / (dn + pow(x, bias))
+
+    return f
+
+
+def to_grey(brightness, bias=1.0, gamma=2.2):
     size = 5
     _255 = range(256 - size, 256)
     _0 = range(0, 0 + size)
 
-    darker = darken(k)
+    if brightness != 0:
+        lightness = nonlinear_brightness(brightness, bias)
+    else:
+        lightness = lambda x : x
 
     def f(color, mask=None):
         mask = mask or (255, 255, 255, 255)
@@ -270,36 +283,64 @@ def to_grey(k):
         r, g, b, a = color
         mr, mg, mb, ma = mask
 
-        color = r, g, b
-        mask = mr, mg, mb
+        #mask = mr, mg, mb
 
-        if mr in _255  and mg in _0 and mb in _0:
-            return *color, a
-        if mr in _0  and mg in _255 and mb in _0:
-            return *color, a
+        if mr in _255 and mg in _0 and mb in _0:
+            return *(r, g, b), a
+        if mr in _0 and mg in _255 and mb in _0:
+            return *(r, g, b), a
 
-        v = max(color)
-        # result = colorsys.hls_to_rgb(0, 0, v)
-        result = v, v, v
-        # result = tuple(255 * x for x in result)
-        # result = (r,g,b)
+        # Linearize RGB from gamma
+        original = tuple(pow(channel / 255, gamma) for channel in (r, g, b))
+        # Rec. 709 luma grayscale coefficients
+        v = original[0] * .2126 + original[1] * .7152 + original[2] * .0722
+        # Apply non-linearity
+        v = lightness(v)
 
         ratio = ma / 255
-        result = tuple(darker(c / 255) * 255 for c in result)
-        result = average(color, result, ratio)
+        if ratio != 1.0:
+            result = v, v, v
+            result = average(original, result, ratio)
+        # De-linearize to gamma
+            result = tuple(pow(channel, 1 / gamma) * 255 for channel in result)
+        else:
+            v = pow(v, 1 / gamma) * 255
+            result = v, v, v
 
         return *result, a
 
     return f
 
 
-def transform(red_angle, green_angle, blue_angle, dark=1.0):
-
+def transform(red_angle, green_angle, blue_angle, saturation=1.0, value=1.0, brightness=0.0, bias=1.0, gamma=2.2):
     size = 5
     _255 = range(256 - size, 256)
     _0 = range(0, 0 + size)
 
-    darker = darken(dark)
+    # Precompute RGB hue rotation matrices for "red", "green" and "blue" mask angles at start
+    p_matrix = ([[1., 0., 0.], [0., 1., 0.], [0., 0., 1.]],
+                [[1., 0., 0.], [0., 1., 0.], [0., 0., 1.]],
+                [[1., 0., 0.], [0., 1., 0.], [0., 0., 1.]])
+    angles = (red_angle, green_angle, blue_angle)
+
+    for matrix, angle in zip(p_matrix, angles):
+        vsu = value * saturation * cos(radians(angle))
+        vsv = value * saturation * sin(radians(angle))
+
+        matrix[0][0] = value *       vsu       + (1 - vsu) /      3
+        matrix[0][1] = value * ((1 - vsu) / 3) -      vsv  / sqrt(3)
+        matrix[0][2] = value * ((1 - vsu) / 3) +      vsv  / sqrt(3)
+        matrix[1][0] = value * ((1 - vsu) / 3) +      vsv  / sqrt(3)
+        matrix[1][1] = value *       vsu       + (1 - vsu) /      3
+        matrix[1][2] = value * ((1 - vsu) / 3) -      vsv  / sqrt(3)
+        matrix[2][0] = value * ((1 - vsu) / 3) -      vsv  / sqrt(3)
+        matrix[2][1] = value * ((1 - vsu) / 3) +      vsv  / sqrt(3)
+        matrix[2][2] = value *       vsu       + (1 - vsu) /      3
+
+    if brightness != 0:
+        lightness = nonlinear_brightness(brightness, bias)
+    else:
+        lightness = lambda x : x
 
     def f(color, mask=None):
         mask = mask or (255, 255, 255, 255)
@@ -307,17 +348,18 @@ def transform(red_angle, green_angle, blue_angle, dark=1.0):
         r, g, b, a = color
         mr, mg, mb, ma = mask
 
-        color = r, g, b
-        mask = mr, mg, mb
+        #mask = mr, mg, mb
 
+        if mr in _255 and mg in _0 and mb in _0:
+            angle = red_angle
+            matrix = p_matrix[0]
+        elif mr in _0 and mg in _255 and mb in _0:
+            angle = green_angle
+            matrix = p_matrix[1]
+        else:
+            angle = blue_angle
+            matrix = p_matrix[2]
 
-        ratio = ma / 255
-        angle = blue_angle
-
-        if mr in _255  and mg in _0 and mb in _0:
-            return *rotate(color, red_angle), a
-        if mr in _0  and mg in _255 and mb in _0:
-            return *rotate(color, green_angle), a
         # elif mr in _0  and mg in _0 and mb in _255:
         #     pass
         # elif mr in _255  and mg in _255 and mb in _255:
@@ -325,9 +367,26 @@ def transform(red_angle, green_angle, blue_angle, dark=1.0):
         # else:
         #     pass
 
-        result = rotate(color, angle)
-        result = tuple(darker(c / 255) * 255 for c in result)
-        result = average(color, result, ratio)
+        # RGB hue rotation
+        result = clamp(color[0] * matrix[0][0] + color[1] * matrix[0][1] + color[2] * matrix[0][2]), \
+                 clamp(color[0] * matrix[1][0] + color[1] * matrix[1][1] + color[2] * matrix[1][2]), \
+                 clamp(color[0] * matrix[2][0] + color[1] * matrix[2][1] + color[2] * matrix[2][2])
+
+        if angle == blue_angle:
+            ratio = ma / 255
+
+            if brightness != 0.0 or ratio != 1.0:
+                # Linearize RGB from gamma
+                result = tuple(pow(channel / 255, gamma) for channel in result)
+                # Apply non-linearity
+                result = tuple(lightness(channel) for channel in result)
+
+                if ratio != 1.0:
+                    original = tuple(pow(channel / 255, gamma) for channel in (r, g, b))
+                    result = average(original, result, ratio)
+
+                # De-linearize to gamma
+                result = tuple(pow(channel, 1 / gamma) * 255 for channel in result)
 
         return *result, a
 
