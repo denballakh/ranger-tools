@@ -1,0 +1,9 @@
+__pycache__
+0_game/
+0_orig/
+2_colored/
+3_result/
+4_output/
+*.log
+*.png
+!*_mask.png
