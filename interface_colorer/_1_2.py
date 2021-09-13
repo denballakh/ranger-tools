@@ -283,9 +283,9 @@ def to_grey(brightness, bias=1.0, gamma=2.2):
         #mask = mr, mg, mb
 
         if mr in _255 and mg in _0 and mb in _0:
-            return *(r, g, b), a
+            return r, g, b, a
         if mr in _0 and mg in _255 and mb in _0:
-            return *(r, g, b), a
+            return r, g, b, a
 
         # Linearize RGB from gamma
         original = tuple(pow(channel / 255, gamma) for channel in (r, g, b))
