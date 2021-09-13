@@ -67,7 +67,7 @@ def get_module_info_content(color, colors):
     conflict = ','.join(conflict)
     return (f'' +
             f'Name={mod_name}{color}' + '\n' +
-            f'Author=denball' + '\n' +
+            f'Author=denball, Killi' + '\n' +
             f'Conflict={conflict}' + '\n' +
             f'Priority={priority}' + '\n' +
             f'Dependence=' + '\n' +
