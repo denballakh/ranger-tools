@@ -8,15 +8,17 @@ from random import sample
 import os
 import time
 
-randomize = False
 
 Image.MAX_IMAGE_PIXELS = 4096 ** 2
 
 min_alpha = 2
 
+# Controlled by main.py
 rewrite = False
-PROFILE = True
-modified_file_delta = 3600 # s
+randomize = False
+PROFILE = False
+
+modified_file_delta = 3600  # s
 
 _in = '1_converted/'
 _out = '2_colored/'
@@ -33,46 +35,43 @@ def get_rules():
     return rules
 
 dat_colors = [
-    (91,91,91),
+    ( 91,  91,  91),
 
-    (82,227,255),
+    ( 82, 227, 255),
     # (165,182,140),
     # (189,109,107),
-    (82,227,255),
+    ( 82, 227, 255),
     # (0,255,0),
     # (255,127,0),
     # (255,0,0),
-    (0,40,57),
-    (82,146,173),
-    (90,125,140),
-    (57,117,140),
-    (24,65,90),
-    (82,150,165),
-    (41,101,123),
+    (  0,  40,  57),
+    ( 82, 146, 173),
+    ( 90, 125, 140),
+    ( 57, 117, 140),
+    ( 24,  65,  90),
+    ( 82, 150, 165),
+    ( 41, 101, 123),
     # (173,56,57),
-    (198,239,255),
-    (0,166,198),
-    (49,239,255),
-    (74,166,255),
-    (33,235,239),
-    (0,40,66),
-    (0,255,255),
+    (198, 239, 255),
+    (  0, 166, 198),
+    ( 49, 239, 255),
+    ( 74, 166, 255),
+    ( 33, 235, 239),
+    (  0,  40,  66),
+    (  0, 255, 255),
 
-
-
-    (  0, 135, 192), #
-    ( 37, 178, 189), #
-    ( 61,  88,  95), #
+    (  0, 135, 192),  #
+    ( 37, 178, 189),  #
+    ( 61,  88,  95),  #
     # (209, 144,  62), #
 
-    (0,62,77),
-    (0,204,117),
-    (38,176,195),
-    (151,225,238),
-    (171,198,207),
-    (0,110,176),
-    (0,34,54),
-
+    (  0,  62,  77),
+    (  0, 204, 117),
+    ( 38, 176, 195),
+    (151, 225, 238),
+    (171, 198, 207),
+    (  0, 110, 176),
+    (  0,  34,  54),
 
     # (  0,   0,   0), # 0x000000
     (  0,   0, 255), # 0x0000ff
@@ -140,8 +139,6 @@ dat_prefixes = [
     'CaptionShadowColorDisable',
     'CaptionShadowColorDisableA',
     # 'TransColor',
-
-
     'MapsNameColor',
     'QuestsNameColor',
     'MapsNameColor',
@@ -393,19 +390,17 @@ def transform(red_angle, green_angle, blue_angle, saturation=1.0, value=1.0, bri
     return f
 
 
-
 def recolor_two_colors(rule1, rule2):
     def f(color, mask=None):
-        if (mask):
+        if mask:
             return rule1(color, mask)
         else:
             return rule2(color, mask)
     return f
 
 
-
-
 rules = get_rules()
+
 
 def process():
     recolor_dat()
@@ -417,17 +412,18 @@ def process():
     for path, _, files in walk:
         for file in sample(files, k=len(files)) if randomize else files:
             filename = '/'.join([path, file]).replace('//', '/').replace('\\', '/')
+
             if not filename.endswith('.png'): continue
             if filename.endswith('_mask.png'): continue
             if os.stat(filename).st_size == 0: continue
+
             path2 = path.replace(_in, '', 1)
 
-            img = None
+            img = Image.open(filename).convert('RGBA')
             mask_name = filename.replace('.png', '_mask.png')
             universal_mask_name = path + '/' + 'universal_mask.png'
             if not os.path.isfile(mask_name) and os.path.isfile(universal_mask_name):
                 mask_name = universal_mask_name
-                # print(mask_name)
 
             images = {}
 
@@ -435,66 +431,64 @@ def process():
                 out_name = _out + f'{rulename}/{path2}/{file}'
                 out_name = out_name.replace('\\', '/').replace('//', '/')
                 if not rewrite \
-                    and os.path.isfile(out_name) \
-                    and os.path.getmtime(out_name) > os.path.getmtime(filename) \
-                    and (os.path.isfile(mask_name) and os.path.getmtime(out_name) > os.path.getmtime(mask_name) or not os.path.isfile(mask_name)) \
-                    and 'test' not in rulename \
-                    and rulename not in modified_rules \
-                    or \
-                    rulename in modified_rules and \
-                    os.path.isfile(out_name) \
-                    and os.path.getmtime(out_name) > os.path.getmtime(filename) \
-                    and (os.stat(out_name).st_size == 0 or time.time() - os.path.getmtime(out_name) < modified_file_delta):
-                    continue
+                   and os.path.isfile(out_name) \
+                   and os.path.getmtime(out_name) > os.path.getmtime(filename) \
+                   and (os.path.isfile(mask_name) and os.path.getmtime(out_name) > os.path.getmtime(mask_name)
+                        or not os.path.isfile(mask_name)) \
+                   and 'test' not in rulename \
+                   and rulename not in modified_rules \
+                        or rulename in modified_rules \
+                       and os.path.isfile(out_name) \
+                       and os.path.getmtime(out_name) > os.path.getmtime(filename) \
+                       and (os.stat(out_name).st_size == 0
+                            or time.time() - os.path.getmtime(out_name) < modified_file_delta): continue
 
                 check_dir(out_name)
                 open(out_name, 'wb').close()
-                print(out_name)
+                print('Writing image: ' + out_name)
 
-                if img is None:
-                    img = Image.open(filename).convert('RGBA')
-                images[rulename] = Image.new('RGBA', img.size)
+                images[rulename] = None  # Just for init
 
             if not images: continue
-
-            width, _ = img.size
-            data = list(img.getdata())
 
             mask = None
             if os.path.isfile(mask_name):
                 mask = Image.open(mask_name).convert('RGBA')
+                print('Applying mask: ' + mask_name)
                 assert mask.size == img.size
 
-            res = {rulename: [] for rulename in images}
             images_items = images.items()
-            for i, px in enumerate(data):
-                # if i % 10000 == 0: print(f'{round(i / len(data) * 100, 1): >5} %')
-                y, x = divmod(i, width)
 
+            data = list(img.getdata())
 
-                for rulename, image in images_items:
-                    image.putpixel((x, y), px)
+            if mask is not None:
+                mask_data = list(mask.getdata())
 
-                if px[-1] < min_alpha:
-                    continue
+            out_data = []
 
-                mask_px = None
-                if mask is not None:
-                    mask_px = mask.getpixel((x, y))
+            #start_time = time.perf_counter_ns()
 
-                for rulename, image in images_items:
-                    rule = rules[rulename]
-                    color = rule(px, mask_px)# if mask_px is not None else rule(px)
-                    color = tuple(max(min(255, round(x)), 0) for x in color)
-                    image.putpixel((x, y), color)
-
-            for rulename, data in res.items():
+            for rulename, image in images_items:
                 for i, px in enumerate(data):
-                    y, x = divmod(i, width)
-                    images[rulename].putpixel((x, y), px)
+                    if px[-1] < min_alpha:
+                        out_data += (0, 0, 0, 0)
+                        continue
+
+                    mask_px = None
+                    if mask is not None:
+                        mask_px = mask_data[i]
+
+                    rule = rules[rulename]
+                    color = rule(px, mask_px)  # if mask_px is not None else rule(px)
+                    color = tuple(max(min(255, round(x)), 0) for x in color)
+                    out_data += color
 
                 out_name = _out + f'{rulename}/{path2}/{file}'
+                images[rulename] = Image.frombytes('RGBA', img.size, bytes(out_data))
+                out_data = []
                 images[rulename].save(out_name)
+
+            #print('Saving  image: {:<32}'.format(rulename + '/' + file) + ' -   ' + '{:<16}'.format(time.perf_counter_ns() - start_time) + ' ns')
 
 
 def check_dir(path):
@@ -511,6 +505,7 @@ def check_dir(path):
                 os.mkdir(res)
             except FileExistsError:
                 pass
+
 
 if __name__ == '__main__':
     if PROFILE:
@@ -531,6 +526,3 @@ if __name__ == '__main__':
         ps.print_stats()
         with open('logs/time_profiling_1_2.log', 'wt') as file:
             file.write(s.getvalue())
-
-
-
