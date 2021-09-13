@@ -449,7 +449,7 @@ def process():
 
                 if img is None:
                     img = Image.open(filename).convert('RGBA')
-                images[rulename] = Image.new('RGBA', img.size)
+                images[rulename] = None  # Just for init
 
             if not images: continue
 
