@@ -7,3 +7,5 @@ __pycache__
 *.log
 *.png
 !*_mask.png
+
+Original_Main.txt
