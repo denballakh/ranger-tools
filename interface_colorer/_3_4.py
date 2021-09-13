@@ -14,22 +14,23 @@ import shutil
 from ranger_tools.pkg import PKG
 from ranger_tools.dat import DAT
 
-COMPRESS_PKG = False
-PROFILE = True
+COMPRESS_PKG = True
+PROFILE = False
 
 rewrite = False
 
 color_texts = {
-    'Red':      ('150,0,0',     'красный',      'red'),
-    'Blue':     ('0,0,150',     'синий',        'blue'),
-    'Green':    ('0,150,0',     'зеленый',      'green'),
+    'Red':       ('150,0,0',     'красный',        'red'),
+    'Blue':      ('0,0,150',     'синий',          'blue'),
+    'Green':     ('0,150,0',     'зеленый',        'green'),
+    'LightPink': ('188,134,162', 'светло-розовый', 'light pink'),
 
-    'Yellow':   ('150,150,0',   'желтый',       'yellow'),
-    'Magenta':  ('150,0,150',   'пурпурный',    'magenta'),
-    'Orange':   ('150,75,0',   'оранжевый',    'orange'),
+    'Yellow':    ('150,150,0',   'желтый',       'yellow'),
+    'Magenta':   ('150,0,150',   'пурпурный',    'magenta'),
+    'Orange':    ('150,75,0',    'оранжевый',    'orange'),
 
-    'Grey':     ('127,127,127', 'серый',        'grey'),
-    'DarkGrey': ('63,63,63',    'темно-серый',  'dark-grey'),
+    'Grey':      ('127,127,127', 'серый',        'grey'),
+    'DarkGrey':  ('63,63,63',    'темно-серый',  'dark-grey'),
 }
 
 priority = 11
@@ -43,7 +44,6 @@ dat_prefix = 'CFG/'
 pkg_prefix = 'DATA/'
 
 
-
 _dats = '_dats/'
 _in = '3_result/'
 _out = '4_output/'
@@ -51,6 +51,8 @@ _out = '4_output/'
 
 special_mods = 'ShuKlissan', 'ExpInfoCenter'
 spec_mod_rgb = '0,150,50'
+mod_rgb = '88,188,192'
+attention_rgb = '249,18,18'
 
 
 def get_module_info_content(color, colors):
@@ -64,39 +66,44 @@ def get_module_info_content(color, colors):
     conflict = [mod_name + c for c in conflict]
     conflict = ','.join(conflict)
     return (f'' +
-    f'Name={mod_name}{color}' + '\n' +
-    f'Author=denball' + '\n' +
-    f'Conflict={conflict}' + '\n' +
-    f'Priority={priority}' + '\n' +
-    f'Dependence=' + '\n' +
-    f'Section={section_rus}' + '\n' +
-    f'SectionEng={section_eng}' + '\n' +
-    f'Languages=Rus,Eng' + '\n' +
-    f'SmallDescription=Перекрашивает интерфейс в <color={rgb}>{text_rus}</color> цвет. <color=0,132,15>(легален)</color>' + '\n' +
-    f'FullDescription=Перекрашивает интерфейс в <color={rgb}>{text_rus}</color> цвет. <color=0,132,15>(легален)</color>' + '\n' +
-
-    f'SmallDescriptionEng=Recolors interface in <color={rgb}>{text_eng}</color> color. <color=0,132,15>(legal)</color>' + '\n' +
-    f'FullDescriptionEng=Recolors interface in <color={rgb}>{text_eng}</color> color. <color=0,132,15>(legal)</color>' + '\n' +
-    f'')
+            f'Name={mod_name}{color}' + '\n' +
+            f'Author=denball' + '\n' +
+            f'Conflict={conflict}' + '\n' +
+            f'Priority={priority}' + '\n' +
+            f'Dependence=' + '\n' +
+            f'Section={section_rus}' + '\n' +
+            f'SectionEng={section_eng}' + '\n' +
+            f'Languages=Rus,Eng' + '\n' +
+            f'SmallDescription=Перекрашивает интерфейс в <color={rgb}>{text_rus}</color> цвет. <color=0,132,15>(легален)</color>' + '\n' +
+            f'FullDescription=Перекрашивает интерфейс в <color={rgb}>{text_rus}</color> цвет. <color=0,132,15>(легален)</color>' + '\n' +
+            f'SmallDescriptionEng=Recolors interface in <color={rgb}>{text_eng}</color> color. <color=0,132,15>(legal)</color>' + '\n' +
+            f'FullDescriptionEng=Recolors interface in <color={rgb}>{text_eng}</color> color. <color=0,132,15>(legal)</color>' + '\n' +
+            f'')
 
 
 def get_special_module_info_content(special_mod_name, colors):
     return (f'' +
-    f'Name={mod_name}_{special_mod_name}' + '\n' +
-    f'Author=denball' + '\n' +
-    f'Conflict=' + '\n' +
-    f'Priority={priority}' + '\n' +
-    f'Dependence={special_mod_name}' + '\n' +
-    f'Section={section_rus}' + '\n' +
-    f'SectionEng={section_eng}' + '\n' +
-    f'Languages=Rus,Eng' + '\n' +
-    f'SmallDescription=Добавляет совместимость с модом <color={spec_mod_rgb}>{special_mod_name}</color>. <color=0,132,15>(легален)</color>' + '\n' +
-    f'FullDescription=Добавляет совместимость с модом <color={spec_mod_rgb}>{special_mod_name}</color>. <color=0,132,15>(легален)</color>' + '\n' +
-
-    f'SmallDescriptionEng=Adds compatibility with <color={spec_mod_rgb}>{special_mod_name}</color> mod. <color=0,132,15>(legal)</color>' + '\n' +
-    f'FullDescriptionEng=Adds compatibility with <color={spec_mod_rgb}>{special_mod_name}</color> mod. <color=0,132,15>(legal)</color>' + '\n' +
-    f'')
-
+            f'Name={mod_name}_{special_mod_name}' + '\n' +
+            f'Author=denball' + '\n' +
+            f'Conflict=' + '\n' +
+            f'Priority={priority}' + '\n' +
+            f'Dependence={special_mod_name}' + '\n' +
+            f'Section={section_rus}' + '\n' +
+            f'SectionEng={section_eng}' + '\n' +
+            f'Languages=Rus,Eng' + '\n' +
+            f'SmallDescription=Добавляет совместимость с модом <color={spec_mod_rgb}>{special_mod_name}</color> для <color={mod_rgb}>{mod_name}</color>. <color=0,132,15>(легален)</color>' + '\n' +
+            f'SmallDescription=<color={attention_rgb}>Внимание! Не включать без мода на перекраску интерфейса</color>' + '\n' +
+            f'FullDescription=Добавляет совместимость с модом <color={spec_mod_rgb}>{special_mod_name}</color> для <color={mod_rgb}>{mod_name}</color>.' + '\n' +
+            f'FullDescription=<color=0,132,15>(легален)</color>' + '\n' +
+            f'FullDescription=<clr><clrEnd>' + '\n' +
+            f'FullDescription=<color={attention_rgb}>Внимание! Не включать без одного из модов на перекраску интерфейса</color> <color={mod_rgb}>UIRecolor</color><color={attention_rgb}>!</color>' + '\n' +
+            f'SmallDescriptionEng=Provides compatibility with <color={spec_mod_rgb}>{special_mod_name}</color> mod for <color={mod_rgb}>{mod_name}</color>. <color=0,132,15>(legal)</color>' + '\n' +
+            f'SmallDescriptionEng=<color={attention_rgb}>Attention! Do not enable without mod for recoloring the interface</color>' + '\n' +
+            f'FullDescriptionEng=Provides compatibility with <color={spec_mod_rgb}>{special_mod_name}</color> mod for <color={mod_rgb}>{mod_name}</color>.' + '\n' +
+            f'FullDescriptionEng=<color=0,132,15>(legal)</color>' + '\n' +
+            f'FullDescriptionEng=<clr><clrEnd>' + '\n' +
+            f'FullDescriptionEng=<color={attention_rgb}>Attention! Do not enable without one of the mods for recoloring the interface</color><color={mod_rgb}>UIRecolor</color><color={attention_rgb}>!</color>' + '\n' +
+            f'')
 
 
 def get_install_content(mod, pkg_postfix=''):
@@ -107,6 +114,7 @@ def get_install_content(mod, pkg_postfix=''):
         '}'
     )
 
+
 def folder_time(folder):
     result = 0.0
     for path, _, files in os.walk(folder):
@@ -116,11 +124,13 @@ def folder_time(folder):
 
     return result
 
+
 def copy_file(src, dest):
     check_dir(dest)
     with open(dest, 'wb') as fout:
         with open(src, 'rb') as fin:
             fout.write(fin.read())
+
 
 def check_dir(path):
     path = path.replace('\\', '/').replace('//', '/')
@@ -137,6 +147,7 @@ def check_dir(path):
             except FileExistsError:
                 pass
 
+
 def process():
     files = [f for f in os.listdir(_in) if os.path.isfile(os.path.join(_in, f))]
     dirs = [f for f in os.listdir(_in) if not os.path.isfile(os.path.join(_in, f))]
@@ -147,7 +158,7 @@ def process():
         outname = _out + mod_path + mod_name + '_' + special_mod_name + '/' + 'ModuleInfo.txt'
         print(outname)
         check_dir(outname)
-        with open(outname, 'wt') as fp:
+        with open(outname, 'wt', encoding='utf16') as fp:
             fp.write(module_info_content)
 
         # Кешдаты доп модов
@@ -157,7 +168,7 @@ def process():
         print(outname)
         check_dir(outname)
         dat = DAT.from_txt(filename)
-        dat.to_dat(outname, 'HDCache', sign=1)
+        dat.to_dat(outname, 'HDCache', sign=True)
 
     print()
 
@@ -172,8 +183,7 @@ def process():
             print(outname)
             check_dir(outname)
             dat = DAT.from_txt(filename)
-            dat.to_dat(outname, 'HDMain', sign=1)
-
+            dat.to_dat(outname, 'HDMain', sign=True)
 
     for directory in dirs:
         for pkg_postfix, install_postfix in [('', ''), ('_Rus', '_RUSSIAN'), ('_Eng', '_ENGLISH')]:
@@ -183,7 +193,7 @@ def process():
                 outname = _out + mod_path + mod_name + directory + '/' + f'INSTALL{install_postfix}.TXT'
                 print(outname)
                 check_dir(outname)
-                with open(outname, 'wt') as fp:
+                with open(outname, 'wt', encoding='utf16') as fp:
                     fp.write(install_content)
 
         # Инфошки основных модов
@@ -191,7 +201,7 @@ def process():
         outname = _out + mod_path + mod_name + directory + '/' + 'ModuleInfo.txt'
         print(outname)
         check_dir(outname)
-        with open(outname, 'wt') as fp:
+        with open(outname, 'wt', encoding='utf16') as fp:
             fp.write(module_info_content)
 
         # Кешдаты основных модов
@@ -200,8 +210,7 @@ def process():
         print(outname)
         check_dir(outname)
         dat = DAT.from_txt(filename)
-        dat.to_dat(outname, 'HDCache', sign=1)
-
+        dat.to_dat(outname, 'HDCache', sign=True)
 
     print()
 
@@ -231,15 +240,16 @@ def process():
 
         try:
             shutil.rmtree(output_dir)
+        except FileNotFoundError:
+            pass
         except Exception as e:
             print(e)
+
         try:
             print(output_dir)
             shutil.copytree(input_dir, output_dir)
         except Exception as e:
             print(e)
-
-
 
 
 if __name__ == '__main__':
@@ -261,6 +271,3 @@ if __name__ == '__main__':
         ps.print_stats()
         with open('logs/time_profiling_3_4.log', 'wt') as file:
             file.write(s.getvalue())
-
-
-
