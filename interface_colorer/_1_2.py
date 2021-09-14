@@ -456,7 +456,7 @@ def process():
             mask = None
             if os.path.isfile(mask_name):
                 mask = Image.open(mask_name).convert('RGBA')
-                print('Applying mask: ' + mask_name)
+                print('Applying mask: ' + mask_name.replace('\\', '/').replace('//', '/'))
                 assert mask.size == img.size
 
             images_items = images.items()

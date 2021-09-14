@@ -15,12 +15,12 @@ from ranger_tools.graphics.gai import GAI
 from ranger_tools.pkg import PKG
 from ranger_tools.dat import DAT
 
-randomize = False
-
 Image.MAX_IMAGE_PIXELS = 4096 ** 2
 
 rewrite = False
-PROFILE = True
+randomize = False
+PROFILE = False
+
 
 gi_type = 2
 gi_bit = 16
