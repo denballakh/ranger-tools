@@ -60,11 +60,8 @@ struct TShip {
     _gap _07A;
     _gap _07B;
     int free_space;
+    int gen_seed;
     int rnd_seed;
-    _gap _084;
-    _gap _085;
-    _gap _086;
-    _gap _087;
     _gap _088;
     _gap _089;
     _gap _08A;
@@ -698,7 +695,7 @@ struct TShip {
     _gap _3A1;
     _gap _3A2;
     _gap _3A3;
-    STR face_;
+    int protoplasm;
     int points;
     int free_points;
     _gap _3B0;
@@ -713,8 +710,8 @@ struct TShip {
     TList* artefacts;
     TList* drop_items;
     TList* _3C4;
+    TList* _3C8;
     TScriptShip* script_ship;
-    _gap_32 _3CC;
     _gap _3D0;
     _gap _3D1;
     _gap _3D2;
@@ -737,7 +734,7 @@ struct TShip {
     TShip* _3F8;
     TShip* partner;
     int contract_days;
-    STR face;
+    int face;
     byte pilot_race;
     _gap _409;
     _gap _40A;

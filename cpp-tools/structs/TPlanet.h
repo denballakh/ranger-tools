@@ -2,22 +2,12 @@
 struct TPlanet {
     VMT cls;
 
-    _gap _004;
-    _gap _005;
-    _gap _006;
-    _gap _007;
-    _gap _008;
-    _gap _009;
-    _gap _00A;
-    _gap _00B;
-    int _00C;
+    uint32_t id;
+    int32_t gen_seed;
+    int32_t rnd_seed;
     int graph_no;
     STR name;
     TStar* star;
-    _gap _01C;
-    _gap _01D;
-    _gap _01E;
-    _gap _01F;
     _pair_double polar_pos;
     _gap _030;
     _gap _031;
@@ -27,28 +17,9 @@ struct TPlanet {
     _gap _035;
     _gap _036;
     _gap _037;
-    int size;
-    _gap _03C;
-    _gap _03D;
-    _gap _03E;
-    _gap _03F;
+    int radius;
     double angle_speed;
-    byte invention_levels[1]; // точное кол-во уровней не знаю, оставлю пока 1
-    _gap _049;
-    _gap _04A;
-    _gap _04B;
-    _gap _04C;
-    _gap _04D;
-    _gap _04E; // тут пропущен байт???
-    int relation_to_player;
-    _gap _053;
-    _gap _054;
-    _gap _055;
-    _gap _056;
-    _gap _057;
-    _gap _058;
-    _gap _059;
-    _gap _05A;
+    byte invention_levels[20];
     byte cur_invention;
     _gap _05B;
     _gap _05D;
@@ -127,7 +98,7 @@ struct TPlanet {
     _gap_32 _160;// UNK size;
     _gap_32 _164;// PTR graph;
     byte no_landing;
-    byte no_shopupdate;
+    byte no_shop_update;
     _gap _16A;
     _gap _16B;
 };

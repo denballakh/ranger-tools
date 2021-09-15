@@ -2,12 +2,9 @@
 struct TStar {
     VMT cls;
 
-    int id;
-    int rnd_seed;
-    _gap _00C;
-    _gap _00D;
-    _gap _00E;
-    _gap _00F;
+    uint32_t id;
+    int32_t gen_seed;
+    int32_t rnd_seed;
     STR name;
     _pair_float pos;
     word _01C;

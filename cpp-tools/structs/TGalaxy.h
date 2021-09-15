@@ -22,8 +22,8 @@ struct TGalaxy {
     int _048;
     int turn;                           ///< текущий ход
     byte diff_levels[8];                ///< сложности партии
-    int rnd;                            ///< сид рандома
-    int rnd_out;                        ///< сид генерации галактики
+    int32_t gen_seed;                   ///< сид генерации галактики
+    int32_t rnd_seed;                   ///< сид рандома
     int rangers_average_capital;        ///< средний капитал рейнджеров
     int _064;
     float rangers_average_strength;     ///< средняя сила рейнджеров
