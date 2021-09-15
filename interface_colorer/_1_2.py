@@ -419,7 +419,7 @@ def process():
 
             path2 = path.replace(_in, '', 1)
 
-            img = Image.open(filename).convert('RGBA')
+            img = None
             mask_name = filename.replace('.png', '_mask.png')
             universal_mask_name = path + '/' + 'universal_mask.png'
             if not os.path.isfile(mask_name) and os.path.isfile(universal_mask_name):
@@ -447,6 +447,8 @@ def process():
                 open(out_name, 'wb').close()
                 print('Writing image: ' + out_name)
 
+                if img is None:
+                    img = Image.open(filename).convert('RGBA')
                 images[rulename] = None  # Just for init
 
             if not images: continue
@@ -454,7 +456,7 @@ def process():
             mask = None
             if os.path.isfile(mask_name):
                 mask = Image.open(mask_name).convert('RGBA')
-                print('Applying mask: ' + mask_name)
+                print('Applying mask: ' + mask_name.replace('\\', '/').replace('//', '/'))
                 assert mask.size == img.size
 
             images_items = images.items()

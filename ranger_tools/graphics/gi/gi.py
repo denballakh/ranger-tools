@@ -274,39 +274,32 @@ def from_image_0(img: Image, fmt, opt=None) -> GI:
     layer.finish_X = width
     layer.finish_Y = height
 
-
     buf = Buffer()
 
+    # RGBA8888
+    data = list(img.getdata())
+
     if opt == 32:
-        # RGBA
-        # 8888gg
+        # ARGB8888
+        header.a_bitmask = 0xFF000000
         header.r_bitmask = 0x00FF0000
         header.g_bitmask = 0x0000FF00
         header.b_bitmask = 0x000000FF
-        header.a_bitmask = 0xFF000000
 
-        for y in range(layer.start_Y, layer.finish_Y):
-            for x in range(layer.start_X, layer.finish_X):
-                r, g, b, a = img.getpixel((x, y))
-                if a == 0:
-                    r, g, b = 0, 255, 0
-                buf.write_byte(b)
-                buf.write_byte(g)
-                buf.write_byte(r)
-                buf.write_byte(a)
+        for index in range(width * height):
+            r, g, b, a = data[index]
+            buf.write(bytes([b, g, r, a]))
 
     elif opt == 16:
-        # RGB16
-        # 5650
+        # RGB565 without alpha
+        header.a_bitmask = 0x0000
         header.r_bitmask = 0xF800
         header.g_bitmask = 0x07E0
         header.b_bitmask = 0x001F
-        header.a_bitmask = 0x0000
 
-        for y in range(layer.start_Y, layer.finish_Y):
-            for x in range(layer.start_X, layer.finish_X):
-                r, g, b, a = img.getpixel((x, y))
-                buf.write(rgb24_to_rgb16((r, g, b)))
+        for index in range(width * height):
+            r, g, b, a = data[index]
+            buf.write(rgb24_to_rgb16((r, g, b)))
 
     else:
         raise ValueError(f'Invalid option value: {opt}')
