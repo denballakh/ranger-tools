@@ -18,6 +18,7 @@ PROFILE = False
 _in = '0_orig/'
 _out = '1_converted/'
 
+
 def check_dir(path):
     path = path.replace('\\', '/').replace('//', '/')
     splitted = path.split('/')[:-1]
@@ -32,6 +33,7 @@ def check_dir(path):
                 os.mkdir(res)
             except FileExistsError:
                 pass
+
 
 def process():
 
@@ -51,7 +53,6 @@ def process():
                 if not rewrite and os.path.isfile(out_name) and os.path.getmtime(out_name) > os.path.getmtime(filename): continue
 
                 gi = GI.from_gi(filename)
-
 
                 # if gi.header.frame_type == 1:
                 #     gi.header.frame_type = 0
@@ -76,7 +77,6 @@ def process():
 
                 continue
 
-
             if filename.endswith('.png'):
                 if os.stat(filename).st_size == 0: continue
 
@@ -93,10 +93,7 @@ def process():
 
                 continue
 
-
             print(f'Unsupported extension: {filename}')
-
-
 
 
 if __name__ == '__main__':
@@ -116,8 +113,11 @@ if __name__ == '__main__':
         sortby = SortKey.TIME  # CALLS CUMULATIVE FILENAME LINE NAME NFL PCALLS STDNAME TIME
         ps = pstats.Stats(pr, stream=s).sort_stats(sortby)
         ps.print_stats()
+
+        if not os.path.isdir('logs'):
+            try:
+                os.mkdir('logs')
+            except FileExistsError:
+                pass
         with open('logs/time_profiling_0_1.log', 'wt') as file:
             file.write(s.getvalue())
-
-
-
