@@ -243,10 +243,6 @@ def _clamp(v):
     return v
 
 
-def _round(v):
-    return int(v + 0.5)
-
-
 def average(c1, c2, ratio=0.5):
     return tuple(y * ratio + x * (1 - ratio) for x, y in zip(c1, c2))
 
