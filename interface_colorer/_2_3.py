@@ -22,11 +22,13 @@ randomize = False
 PROFILE = False
 
 
+# Default GI conversion
 gi_type = 2
 gi_bit = 16
 
 _in = '2_colored/'
 _out = '3_result/'
+
 
 def check_dir(path):
     path = path.replace('\\', '/').replace('//', '/')
@@ -43,6 +45,7 @@ def check_dir(path):
             except FileExistsError:
                 pass
 
+
 def process():
     walk = os.walk(_in)
     if randomize:
@@ -50,8 +53,6 @@ def process():
         walk = sample(walk, k=len(walk))
     for path, _, files in walk:
         path2 = path.replace(_in, '', 1)
-
-
 
         if path.endswith('_gai'):
             out_name = _out + path2.replace('_gai', '.gai')
@@ -133,7 +134,6 @@ def process():
             print(f'Unsupported extension: {filename}')
 
 
-
 if __name__ == '__main__':
     if PROFILE:
         import cProfile
@@ -151,8 +151,11 @@ if __name__ == '__main__':
         sortby = SortKey.TIME  # CALLS CUMULATIVE FILENAME LINE NAME NFL PCALLS STDNAME TIME
         ps = pstats.Stats(pr, stream=s).sort_stats(sortby)
         ps.print_stats()
+
+        if not os.path.isdir('logs'):
+            try:
+                os.mkdir('logs')
+            except FileExistsError:
+                pass
         with open('logs/time_profiling_2_3.log', 'wt') as file:
             file.write(s.getvalue())
-
-
-

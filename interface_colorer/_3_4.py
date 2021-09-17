@@ -269,5 +269,11 @@ if __name__ == '__main__':
         sortby = SortKey.TIME  # CALLS CUMULATIVE FILENAME LINE NAME NFL PCALLS STDNAME TIME
         ps = pstats.Stats(pr, stream=s).sort_stats(sortby)
         ps.print_stats()
+
+        if not os.path.isdir('logs'):
+            try:
+                os.mkdir('logs')
+            except FileExistsError:
+                pass
         with open('logs/time_profiling_3_4.log', 'wt') as file:
             file.write(s.getvalue())

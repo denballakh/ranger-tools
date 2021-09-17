@@ -235,7 +235,7 @@ def my_mul(x, mn, mx, mul):
 
 
 # Clamping to 0, 255
-def clamp(v):
+def _clamp(v):
     if v < 0:
         return 0
     if v > 255:
@@ -365,9 +365,9 @@ def transform(red_angle, green_angle, blue_angle, saturation=1.0, value=1.0, bri
         #     pass
 
         # RGB hue rotation
-        result = clamp(color[0] * matrix[0][0] + color[1] * matrix[0][1] + color[2] * matrix[0][2]), \
-                 clamp(color[0] * matrix[1][0] + color[1] * matrix[1][1] + color[2] * matrix[1][2]), \
-                 clamp(color[0] * matrix[2][0] + color[1] * matrix[2][1] + color[2] * matrix[2][2])
+        result = _clamp(color[0] * matrix[0][0] + color[1] * matrix[0][1] + color[2] * matrix[0][2]), \
+                 _clamp(color[0] * matrix[1][0] + color[1] * matrix[1][1] + color[2] * matrix[1][2]), \
+                 _clamp(color[0] * matrix[2][0] + color[1] * matrix[2][1] + color[2] * matrix[2][2])
 
         if angle == blue_angle:
             ratio = ma / 255
@@ -481,8 +481,8 @@ def process():
                         mask_px = mask_data[i]
 
                     rule = rules[rulename]
-                    color = rule(px, mask_px)  # if mask_px is not None else rule(px)
-                    color = tuple(max(min(255, round(x)), 0) for x in color)
+                    r, g, b, a = rule(px, mask_px)  # if mask_px is not None else rule(px)
+                    color = (_clamp(round(r)), _clamp(round(g)), _clamp(round(b)), a)
                     out_data += color
 
                 out_name = _out + f'{rulename}/{path2}/{file}'
@@ -526,5 +526,11 @@ if __name__ == '__main__':
         sortby = SortKey.TIME  # CALLS CUMULATIVE FILENAME LINE NAME NFL PCALLS STDNAME TIME
         ps = pstats.Stats(pr, stream=s).sort_stats(sortby)
         ps.print_stats()
+
+        if not os.path.isdir('logs'):
+            try:
+                os.mkdir('logs')
+            except FileExistsError:
+                pass
         with open('logs/time_profiling_1_2.log', 'wt') as file:
             file.write(s.getvalue())
