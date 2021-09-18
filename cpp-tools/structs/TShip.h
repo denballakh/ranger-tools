@@ -5,7 +5,7 @@ struct TShip {
     int id;
     STR name;
     WSTR custom_type_name;
-    byte type;  // 1 - TRanger, 3 - TPirate
+    byte type;
     byte owner;
     _gap _012;
     _gap _013;
@@ -13,11 +13,9 @@ struct TShip {
     TPlanet* cur_planet;
     TRuins* cur_ship;
     TStar* cur_star;
-    TStar* _028;  // home_star ?
+    TStar* prev_star;           ///< Звезда, из которой корабль прилетел в текущую (если корабль ещё никуда не слетал, то записана текущая)
     TPlanet* home_planet;
-
     TShipGoodsItem goods[8];
-
     int capital;
     _gap _054;
     _gap _055;
@@ -706,8 +704,8 @@ struct TShip {
     _gap _3B5;
     _gap _3B6;
     _gap _3B7;
-    TList* equipments;
-    TList* artefacts;
+    TList* items;
+    TList* arts;
     TList* drop_items;
     TList* _3C4;
     TList* _3C8;
