@@ -95,7 +95,6 @@ def rgba8888_to_rgb565le(rgba32: tuple) -> bytes:
 
         else:
             # Preventing format from "exploding" color channel values when combined with transparency channel
-            # (Not perfect on lower transparency with pixels that have multiple colors)
             if r > a:
                 r = max(r - (255 - a), a)
 
@@ -105,8 +104,8 @@ def rgba8888_to_rgb565le(rgba32: tuple) -> bytes:
             if b > a:
                 b = max(b - (255 - a), a)
 
-            # White balance color correction
-            g = max(g - 4, 0)
+            # Essentially reducing green channel bit depth for white balance
+            g -= g & 0b00000111
 
         r = r >> 3 << 11
         g = g >> 2 << 5
