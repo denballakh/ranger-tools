@@ -1,7 +1,7 @@
 from typing import Union
 
-from ...io import Buffer
-from ..enums import *
+from ..io import Buffer
+from .enums import *
 
 # __all__ = ['SCR']
 

@@ -1,11 +1,11 @@
 import re
 
-from ..scr import SCR
-from ..svr import SVR
-from ..enums import *
+from .scr import SCR
+from .svr import SVR
+from .enums import *
 
 def scr_to_svr(scr: SCR) -> SVR:
-    tr = []
+    tr: list[tuple[str, str]] = []
     def get_op(svr, text):
         op = svr.add('Top')
         op.type = OP_TYPE.NORMAL
@@ -24,7 +24,7 @@ def scr_to_svr(scr: SCR) -> SVR:
                     tid = '0'
                 else:
                     tid = str(int(tr[-1][0]) + 1)
-                tr.append([tid, s])
+                tr.append((tid, s))
 
         return op
 

@@ -6,13 +6,13 @@ import time
 import enum
 from typing import Optional, Callable, Union, List
 
-from ..dat import DAT
-from ..pkg import PKG
-from ..graphics.gi import GI
-from ..graphics.gai import GAI
-from ..graphics.hai import HAI
-from ..rscript.scr import SCR
-from ..rscript.svr import SVR
+from .dat import DAT
+from .pkg import PKG
+from .graphics.gi import GI
+from .graphics.gai import GAI
+from .graphics.hai import HAI
+from .rscript.scr import SCR
+from .rscript.svr import SVR
 
 
 __all__ = [
@@ -21,42 +21,18 @@ __all__ = [
     'LL'
 ]
 
-##
-# Декоратор для нереализованных функций.
-#
-# При вызове будет брошено исключение `NotImplementedError`.
 def not_implemented(func: Callable):
     def f(*args, **kwargs):
         raise NotImplementedError
     return f
 
-##
-# Декоратор для устаревших функций.
-#
-# При вызове в лог будет выведено сообщение.
-def deprecated(func: Callable):
-    def f(self, *args, **kwargs):
-        self.log(LL.WARNING, f'Function {func!r} is deprecated!')
-        func(self, *args, **kwargs)
-    return f
 
 ##
-# Декоратор для безопасного вызова функций.
-#
-# При возникновении исключения оно будет поймано и выведено в лог.
-def safe_call(func: Callable):
-    def f(self, *args, **kwargs):
-        try:
-            return func(self, *args, **kwargs)
-        except exc:
-            self.log(LL.ERROR, f'Error in function {func!r}: {exc!r}')
-            return None
-    return f
-
+# Уровни логгирования
 @enum.unique
 class LL(enum.Enum):
     ## Дебаговый вывод разного мусора.
-    DEBUG =   float('-inf')
+    DEBUG =    float('-inf')
     ## Подробный вывод всех обрабатываемых файлов.
     VERBOSE =  0
     ## Короткое описание всех выполняемых действий.
@@ -80,13 +56,13 @@ class Logger:
             filename: Optional[str] = '########.log',
             clear_file: bool = False,
     ):
-        self.priority = priority
-        self.filename = filename
-        if filename:
+        self.priority: LL = priority
+        self.filename: Optional[str] = filename
+        if self.filename is not None:
             if clear_file:
-                open(filename, 'wb').close()
-            with open(self.filename, mode='wt+') as f:  # type: ignore[arg-type]
-                print(f'New logger instance. Time: {time.asctime(time.gmtime())}. Local time: {time.ctime()}', file=f)
+                open(self.filename, mode='wb').close()
+            with open(self.filename, mode='wt+') as f:
+                print(f'New logger instance. Time: {time.ctime()}', file=f)
 
     ##
     # Пишет сообщение в консоль и в файл лога (если он есть).
@@ -97,8 +73,8 @@ class Logger:
     # @param args     Будет передано в функцию `print`.
     # @param kwargs   Будет передано в функцию `print`.
     def log(self, priority: LL, *args, **kwargs):
-        if priority._value_ >= self.priority._value_:
-            print(f'[{priority._name_}] ', *args, **kwargs)
+        if priority.value >= self.priority.value:
+            print(f'[{priority.name}] ', *args, **kwargs)
 
             if self.filename:
                 if os.path.isfile(self.filename):
@@ -107,7 +83,7 @@ class Logger:
                     mode = 'wt'
 
                 with open(self.filename, mode=mode) as f:
-                    print(f'[{priority._name_}] ', *args, **kwargs, file=f)
+                    print(f'[{priority.name}] ', *args, **kwargs, file=f)
 
 
 ##
@@ -117,23 +93,30 @@ class Logger:
 #
 class ModBuilder:
     ##
-    # @param build_path      Путь, по которому будут создаваться все файлы.
+    # @param build_path      Путь относительно скрипта, по которому будут создаваться все файлы.
     # @param in_game_path    Путь, по которому будет лежать мод в игре (нужен для подстановки в текстовые значения).
     # @param verbosity_level Уровень подробности вывода.
     # @param log_file        Файл для логгирования.
     def __init__(self, *,
             build_path: str = 'build/',
-            in_game_path: str = 'Mods/UNKNOWNPATH/',
+            in_game_path: str = 'Mods/',
             verbosity_level: LL = LL.INFO,
             log_file: str = '########.log'
         ):
-        self.build_path = build_path + '/'
-        self.in_game_path = in_game_path + '/'
-        self.logger = Logger(verbosity_level, filename=log_file)
+        self.build_path: str = build_path + '/'
+        self.in_game_path: str = in_game_path + '/'
+        self.logger: Logger = Logger(verbosity_level, filename=log_file)
 
-
-    # вспомогательные функции
-    # используются пути относительно скрипта или абсолютные пути
+    ##
+    #
+    def _convert_path(self, path: str) -> str:
+        return (path
+            .replace('$SRC', '/')
+            .replace('$BUILD', f'/{self.build_path}/')
+            .replace('$MOD', f'/{self.in_game_path}/')
+            .replace('\\', '/')
+            .replace('//', '/')
+        )
 
     ##
     # Выводит сообщение в лог.
@@ -152,6 +135,8 @@ class ModBuilder:
     #
     # @param file     Абсолютный путь к файлу.
     def check_dir(self, file: str):
+        file = self._convert_path(file)
+
         path = file
         path = path.replace('\\', '/').replace('//', '/')
         splitted = path.split('/')[:-1]
@@ -175,6 +160,9 @@ class ModBuilder:
     # @param inp  Входной файл.
     # @param outp Результирующий файл.
     def copy_file(self, inp: str, outp: str):
+        inp = self._convert_path(inp)
+        outp = self._convert_path(outp)
+
         self.log(LL.INFO, f'Copying file from {inp} to {outp}')
         with open(inp, 'rb') as _in:
             with open(outp, 'wb') as _out:
@@ -184,12 +172,16 @@ class ModBuilder:
     ##
     # Удаляет файл.
     def del_file(self, file: str):
+        file = self._convert_path(file)
+
         self.log(LL.INFO, f'Deleting file {file}')
         os.remove(file)
 
     ##
     # Удаляет папку.
     def del_dir(self, folder: str):
+        folder = self._convert_path(folder)
+
         self.log(LL.INFO, f'Deleting directory {folder}')
         for root, dirs, files in os.walk(folder, topdown=False):
             for name in files:
@@ -208,6 +200,9 @@ class ModBuilder:
     # @param output_dir Результирующая папка.
     @not_implemented
     def copy_dir(self, input_dir: str, output_dir: str):
+        input_dir = self._convert_path(input_dir)
+        output_dir = self._convert_path(output_dir)
+
         ...
 
 
@@ -215,7 +210,7 @@ class ModBuilder:
     # Очищает папку билда.
     def clean_build(self):
         self.log(LL.INFO, )
-        self.del_dir(self.build_path)
+        self.del_dir('$BUILD/')
 
     ##
     # Создает бэкап текущих исходников.
@@ -229,6 +224,8 @@ class ModBuilder:
             backup_extensions: tuple[str, ...] = ('.txt', '.dat', '.svr', '.scr', '.dll', '.c', '.cpp', '.py', '.json'),
             compression_level: Optional[int] = None,
         ):
+        backup_path = self._convert_path(backup_path)
+
         f = lambda file: '.' + file.split('.')[-1].lower() in backup_extensions
         pkg = PKG.from_dir('./', f=f)
         if compression_level is not None:
@@ -255,6 +252,8 @@ class ModBuilder:
             metadata: bytes = b'',
             f: Callable = lambda _: True
     ):
+        folder_path = self._convert_path(folder_path)
+
         pkg = PKG.from_dir(folder_path, f)
         if compression_level is not None:
             pkg.compress(compression_level)

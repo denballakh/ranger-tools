@@ -1,5 +1,4 @@
 from typing import Union, Iterable, Any, Sized
-# from io import BinaryIO
 import struct
 
 __all__ = [
@@ -38,7 +37,7 @@ class Stack:
     def push(self, value):
         self.data.append(value)
 
-    def pop(self) -> 'Any':
+    def pop(self) -> Any:
         assert self.data, 'Stack underflow'
         return self.data.pop()
 

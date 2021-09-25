@@ -2,7 +2,7 @@
 import zlib
 import random
 
-from ..io import Buffer, AbstractIBuffer
+from .io import Buffer, AbstractIBuffer
 
 try:
     from .dat_sign import get_sign, check_signed

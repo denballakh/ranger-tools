@@ -1,8 +1,8 @@
 from PIL import Image
 import zlib
 
-from ..gi import GI
-from ...io import Buffer
+from .gi import GI
+from ..io import Buffer
 
 __all__ = ['GAI']
 

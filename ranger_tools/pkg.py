@@ -2,8 +2,8 @@ import zlib
 import os
 import time
 
-from ..io import Buffer
-from ..common import check_dir
+from .io import Buffer
+from .common import check_dir
 
 __all__ = [
     'PKG',
