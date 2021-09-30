@@ -59,11 +59,12 @@ def clamp(v, lt, gt):
 
 
 def rgb16_to_rgb24(rgb16: bytes) -> tuple:
-    b, a = rgb16
-    x = a * 0x100 + b
-    r = round((x >> 11 & 0b011111) * (0xff / 0x1f))
-    g = round((x >> 5  & 0b111111) * (0xff / 0x3f))
-    b = round((x       & 0b011111) * (0xff / 0x1f))
+    r =  rgb16[1] & 0b11111000
+    g = (rgb16[0] & 0b11100000) >> 5 | (rgb16[1] & 0b00000111) << 3
+    b =  rgb16[0] & 0b00011111
+
+    g <<= 2
+    b <<= 3
 
     return (r, g, b)
 
