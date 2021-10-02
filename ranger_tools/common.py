@@ -58,7 +58,8 @@ def clamp(v, lt, gt):
     return v
 
 
-def rgb16_to_rgb24(rgb16: bytes) -> tuple:
+def rgb565le_to_rgb888(rgb16: bytes) -> tuple:
+    # Unpack from little endian 2 bytes
     r =  rgb16[1] & 0b11111000
     g = (rgb16[0] & 0b11100000) >> 5 | (rgb16[1] & 0b00000111) << 3
     b =  rgb16[0] & 0b00011111
@@ -67,6 +68,7 @@ def rgb16_to_rgb24(rgb16: bytes) -> tuple:
     b <<= 3
 
     return (r, g, b)
+
 
 def rgb24_to_rgb16(rgb24: tuple) -> bytes:
     r, g, b = rgb24
@@ -83,7 +85,7 @@ def rgb24_to_rgb16(rgb24: tuple) -> bytes:
     return bytes([b, a])
 
 
-def rgba8888_to_rgb565le(rgba32: tuple) -> bytes:
+def rgb888_to_rgb565le(rgba32: tuple) -> bytes:
     r, g, b, a = rgba32
 
     if a == 0:
