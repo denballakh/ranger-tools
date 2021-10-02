@@ -58,7 +58,8 @@ def clamp(v, lt, gt):
     return v
 
 
-def rgb16_to_rgb24(rgb16: bytes) -> tuple:
+def rgb565le_to_rgb888(rgb16: bytes) -> tuple:
+    # Unpack from little endian 2 bytes
     r =  rgb16[1] & 0b11111000
     g = (rgb16[0] & 0b11100000) >> 5 | (rgb16[1] & 0b00000111) << 3
     b =  rgb16[0] & 0b00011111
@@ -67,6 +68,7 @@ def rgb16_to_rgb24(rgb16: bytes) -> tuple:
     b <<= 3
 
     return (r, g, b)
+
 
 def rgb24_to_rgb16(rgb24: tuple) -> bytes:
     r, g, b = rgb24
@@ -83,34 +85,13 @@ def rgb24_to_rgb16(rgb24: tuple) -> bytes:
     return bytes([b, a])
 
 
-def rgba8888_to_rgb565le(rgba32: tuple) -> bytes:
-    r, g, b, a = rgba32
+def rgb888_to_rgb565le(r, g, b) -> bytes:
+    # Essentially reducing green channel bit depth to 5 after reduction for white balance
+    g &= 0b11111011
 
-    if a == 0:
-        return bytes([0, 0])
+    r = r >> 3 << 11
+    g = g >> 2 << 5
+    b = b >> 3
 
-    else:
-        if a == 255:
-            # Essentially reducing green channel bit depth to 5 for white balance
-            g &= 0b11111011
-
-        else:
-            # Preventing format from "exploding" color channel values when combined with transparency channel
-            if r > a:
-                r = max(r - (255 - a), a)
-
-            if g > a:
-                g = max(g - (255 - a), a)
-
-            if b > a:
-                b = max(b - (255 - a), a)
-
-            # Essentially reducing green channel bit depth for white balance
-            g -= g & 0b00000111
-
-        r = r >> 3 << 11
-        g = g >> 2 << 5
-        b = b >> 3
-
-    # Swap to little endian
+    # Pack into little endian 2 bytes
     return bytes([g & 0b11100000 | b, (r | g) >> 8])

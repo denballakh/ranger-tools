@@ -2,11 +2,10 @@ from PIL import Image
 import time
 
 from ..io import Buffer
-from ..common import rgb16_to_rgb24, rgb24_to_rgb16, Point, rgba8888_to_rgb565le
+from ..common import rgb565le_to_rgb888, rgb24_to_rgb16, Point, rgb888_to_rgb565le
 
-__all__ = [
-    'GI',
-]
+__all__ = ['GI']
+
 
 class Layer:
     def __init__(self):
@@ -373,7 +372,7 @@ def from_image_2(img: Image, fmt, opt=None) -> GI:
                     pixels = b''
                 cnt += 1
 
-                pixels += rgba8888_to_rgb565le(data[index])
+                pixels += rgb888_to_rgb565le(data[index][0], data[index][1], data[index][2])
 
                 if cnt >= 127:
                     buf0.write_byte(0x80 + cnt) # read cnt pixels + pixels
@@ -428,7 +427,12 @@ def from_image_2(img: Image, fmt, opt=None) -> GI:
                     pixels2 = b''
                 cnt += 1
 
-                pixels1 += rgba8888_to_rgb565le(data[index])
+                # Premultiplying pixel by alpha for second layer (destructive operation)
+                r = (data[index][0] * data[index][3]) >> 8
+                g = (data[index][1] * data[index][3]) >> 8
+                b = (data[index][2] * data[index][3]) >> 8
+
+                pixels1 += rgb888_to_rgb565le(r, g, b)
                 pixels2 += bytes([(255 - data[index][3]) >> 2])
 
                 if cnt >= 127:
@@ -534,7 +538,6 @@ def to_image_0(gi: GI) -> Image:
     width = header.finish_X - header.start_X
     height = header.finish_Y - header.start_Y
 
-
     if (header.a_bitmask, header.r_bitmask, header.g_bitmask, header.b_bitmask) == (0xFF000000, 0xFF0000, 0xFF00, 0xFF):
         img = Image.new('RGBA', (width, height), (0, 0, 0, 0))
 
@@ -544,8 +547,6 @@ def to_image_0(gi: GI) -> Image:
                 b, g, r, a = buf.read(4)
                 img.putpixel((x - header.start_X, y - header.start_Y), (r, g, b, a))
 
-
-
     elif (header.r_bitmask, header.g_bitmask, header.b_bitmask) == (0xF800, 0x7E0, 0x1F):
         img = Image.new('RGB', (width, height), (0, 0, 0))
 
@@ -553,8 +554,7 @@ def to_image_0(gi: GI) -> Image:
         for y in range(layer.start_Y, layer.finish_Y):
             for x in range(layer.start_X, layer.finish_X):
                 rgb16 = buf.read(2)
-                img.putpixel((x - header.start_X, y - header.start_Y), rgb16_to_rgb24(rgb16))
-
+                img.putpixel((x - header.start_X, y - header.start_Y), rgb565le_to_rgb888(rgb16))
 
     else:
         raise ValueError(f'Invalid bitmask: {(header.r_bitmask, header.g_bitmask, header.b_bitmask)}')
@@ -577,8 +577,7 @@ def to_image_2(gi: GI) -> Image:
     width = header.finish_X - header.start_X
     height = header.finish_Y - header.start_Y
 
-    result = Image.new('RGBA', (width, height), (0, 0, 0, 0))
-
+    out_data = [0] * ((width * height) * 4)
 
     for li in range(3):
         layer = gi.layers[li]
@@ -592,6 +591,9 @@ def to_image_2(gi: GI) -> Image:
         assert height == layer.finish_Y - layer.start_Y
         _0 = buf.read_uint()
         assert _0 == 0, _0
+
+        start_X = layer.start_X - header.start_X
+        start_Y = layer.start_Y - header.start_Y
 
         pos = Point(0, 0)
 
@@ -608,18 +610,31 @@ def to_image_2(gi: GI) -> Image:
                 cnt = byte & 0x7f
                 size -= cnt * (1 if li == 2 else 2)
 
+                pos_add = (pos.y + start_Y) * width + start_X
+
                 while cnt:
+                    index = (pos.x + pos_add) * 4
+
                     if li in (0, 1):
-                        r, g, b = rgb16_to_rgb24(buf.read(2))
-                        res = (r, g, b, 255)
+                        r, g, b = rgb565le_to_rgb888(buf.read(2))
+                        a = 255
                     else:
-                        r, g, b, _ = result.getpixel((pos.x + layer.start_X - header.start_X, pos.y + layer.start_Y - header.start_Y))
-                        alpha = buf.read_byte()
-                        alpha = 4 * (63 - alpha)
-                        res = (r, g, b, alpha)
+                        a = (63 - buf.read_byte()) << 2
 
-                    result.putpixel((pos.x + layer.start_X - header.start_X, pos.y + layer.start_Y - header.start_Y), res)
+                        r = out_data[index]
+                        g = out_data[index+1]
+                        b = out_data[index+2]
 
+                        if a not in (0, 255):
+                            # Retrieveing second layer pixel value from premultiplied alpha (destructive operation)
+                            r = round((r / a) * 63) << 2
+                            g = round((g / a) * 63) << 2
+                            b = round((b / a) * 63) << 2
+
+                    out_data[index]   = r
+                    out_data[index+1] = g
+                    out_data[index+2] = b
+                    out_data[index+3] = a
 
                     pos.x += 1
                     cnt -= 1
@@ -628,8 +643,7 @@ def to_image_2(gi: GI) -> Image:
                 # shift to right
                 pos.x += byte
 
-
-    return result
+    return Image.frombytes('RGBA', (width, height), bytes(out_data))
 
 # Two layers: Indexed RGB colors, Indexed Alpha
 def to_image_3(gi: GI) -> Image:
