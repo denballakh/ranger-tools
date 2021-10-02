@@ -427,7 +427,7 @@ def from_image_2(img: Image, fmt, opt=None) -> GI:
                     pixels2 = b''
                 cnt += 1
 
-                # Premultiplying pixel by alpha for second layer (desctructive operation)
+                # Premultiplying pixel by alpha for second layer (destructive operation)
                 r = (data[index][0] * data[index][3]) >> 8
                 g = (data[index][1] * data[index][3]) >> 8
                 b = (data[index][2] * data[index][3]) >> 8
@@ -626,7 +626,7 @@ def to_image_2(gi: GI) -> Image:
                         b = out_data[index+2]
 
                         if a not in (0, 255):
-                            # Retrieveing second layer pixel value from premultiplied alpha (desctructive operation)
+                            # Retrieveing second layer pixel value from premultiplied alpha (destructive operation)
                             r = round((r / a) * 63) << 2
                             g = round((g / a) * 63) << 2
                             b = round((b / a) * 63) << 2
