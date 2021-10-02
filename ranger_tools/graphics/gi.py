@@ -372,7 +372,7 @@ def from_image_2(img: Image, fmt, opt=None) -> GI:
                     pixels = b''
                 cnt += 1
 
-                pixels += rgb888_to_rgb565le(data[index])
+                pixels += rgb888_to_rgb565le(data[index][0], data[index][1], data[index][2])
 
                 if cnt >= 127:
                     buf0.write_byte(0x80 + cnt) # read cnt pixels + pixels
@@ -427,7 +427,12 @@ def from_image_2(img: Image, fmt, opt=None) -> GI:
                     pixels2 = b''
                 cnt += 1
 
-                pixels1 += rgb888_to_rgb565le(data[index])
+                # Premultiplying pixel by alpha for second layer (desctructive operation)
+                r = (data[index][0] * data[index][3]) >> 8
+                g = (data[index][1] * data[index][3]) >> 8
+                b = (data[index][2] * data[index][3]) >> 8
+
+                pixels1 += rgb888_to_rgb565le(r, g, b)
                 pixels2 += bytes([(255 - data[index][3]) >> 2])
 
                 if cnt >= 127:
@@ -533,7 +538,6 @@ def to_image_0(gi: GI) -> Image:
     width = header.finish_X - header.start_X
     height = header.finish_Y - header.start_Y
 
-
     if (header.a_bitmask, header.r_bitmask, header.g_bitmask, header.b_bitmask) == (0xFF000000, 0xFF0000, 0xFF00, 0xFF):
         img = Image.new('RGBA', (width, height), (0, 0, 0, 0))
 
@@ -542,8 +546,6 @@ def to_image_0(gi: GI) -> Image:
             for x in range(layer.start_X, layer.finish_X):
                 b, g, r, a = buf.read(4)
                 img.putpixel((x - header.start_X, y - header.start_Y), (r, g, b, a))
-
-
 
     elif (header.r_bitmask, header.g_bitmask, header.b_bitmask) == (0xF800, 0x7E0, 0x1F):
         img = Image.new('RGB', (width, height), (0, 0, 0))
@@ -611,10 +613,17 @@ def to_image_2(gi: GI) -> Image:
                         r, g, b = rgb565le_to_rgb888(buf.read(2))
                         res = (r, g, b, 255)
                     else:
-                        r, g, b, _ = result.getpixel((pos.x + layer.start_X - header.start_X, pos.y + layer.start_Y - header.start_Y))
-                        alpha = buf.read_byte()
-                        alpha = 4 * (63 - alpha)
-                        res = (r, g, b, alpha)
+                        a = (63 - buf.read_byte()) << 2
+
+						r, g, b, _ = result.getpixel((pos.x + layer.start_X - header.start_X, pos.y + layer.start_Y - header.start_Y))
+
+                        if a not in (0, 255):
+                            # Retrieveing second layer pixel value from premultiplied alpha (desctructive operation)
+                            r = round((r / a) * 63) << 2
+                            g = round((g / a) * 63) << 2
+                            b = round((b / a) * 63) << 2
+
+                        res = (r, g, b, a)
 
                     result.putpixel((pos.x + layer.start_X - header.start_X, pos.y + layer.start_Y - header.start_Y), res)
 
