@@ -577,8 +577,7 @@ def to_image_2(gi: GI) -> Image:
     width = header.finish_X - header.start_X
     height = header.finish_Y - header.start_Y
 
-    result = Image.new('RGBA', (width, height), (0, 0, 0, 0))
-
+    out_data = [0] * ((width * height) * 4)
 
     for li in range(3):
         layer = gi.layers[li]
@@ -592,6 +591,9 @@ def to_image_2(gi: GI) -> Image:
         assert height == layer.finish_Y - layer.start_Y
         _0 = buf.read_uint()
         assert _0 == 0, _0
+
+        start_X = layer.start_X - header.start_X
+        start_Y = layer.start_Y - header.start_Y
 
         pos = Point(0, 0)
 
@@ -608,14 +610,20 @@ def to_image_2(gi: GI) -> Image:
                 cnt = byte & 0x7f
                 size -= cnt * (1 if li == 2 else 2)
 
+                pos_add = (pos.y + start_Y) * width + start_X
+
                 while cnt:
+                    index = (pos.x + pos_add) * 4
+
                     if li in (0, 1):
                         r, g, b = rgb565le_to_rgb888(buf.read(2))
-                        res = (r, g, b, 255)
+                        a = 255
                     else:
                         a = (63 - buf.read_byte()) << 2
 
-                        r, g, b, _ = result.getpixel((pos.x + layer.start_X - header.start_X, pos.y + layer.start_Y - header.start_Y))
+                        r = out_data[index]
+                        g = out_data[index+1]
+                        b = out_data[index+2]
 
                         if a not in (0, 255):
                             # Retrieveing second layer pixel value from premultiplied alpha (desctructive operation)
@@ -623,10 +631,10 @@ def to_image_2(gi: GI) -> Image:
                             g = round((g / a) * 63) << 2
                             b = round((b / a) * 63) << 2
 
-                        res = (r, g, b, a)
-
-                    result.putpixel((pos.x + layer.start_X - header.start_X, pos.y + layer.start_Y - header.start_Y), res)
-
+                    out_data[index]   = r
+                    out_data[index+1] = g
+                    out_data[index+2] = b
+                    out_data[index+3] = a
 
                     pos.x += 1
                     cnt -= 1
@@ -635,8 +643,7 @@ def to_image_2(gi: GI) -> Image:
                 # shift to right
                 pos.x += byte
 
-
-    return result
+    return Image.frombytes('RGBA', (width, height), bytes(out_data))
 
 # Two layers: Indexed RGB colors, Indexed Alpha
 def to_image_3(gi: GI) -> Image:
