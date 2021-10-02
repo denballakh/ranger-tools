@@ -615,7 +615,7 @@ def to_image_2(gi: GI) -> Image:
                     else:
                         a = (63 - buf.read_byte()) << 2
 
-						r, g, b, _ = result.getpixel((pos.x + layer.start_X - header.start_X, pos.y + layer.start_Y - header.start_Y))
+                        r, g, b, _ = result.getpixel((pos.x + layer.start_X - header.start_X, pos.y + layer.start_Y - header.start_Y))
 
                         if a not in (0, 255):
                             # Retrieveing second layer pixel value from premultiplied alpha (desctructive operation)
