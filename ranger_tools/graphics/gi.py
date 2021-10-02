@@ -2,11 +2,10 @@ from PIL import Image
 import time
 
 from ..io import Buffer
-from ..common import rgb16_to_rgb24, rgb24_to_rgb16, Point, rgba8888_to_rgb565le
+from ..common import rgb565le_to_rgb888, rgb24_to_rgb16, Point, rgb888_to_rgb565le
 
-__all__ = [
-    'GI',
-]
+__all__ = ['GI']
+
 
 class Layer:
     def __init__(self):
@@ -373,7 +372,7 @@ def from_image_2(img: Image, fmt, opt=None) -> GI:
                     pixels = b''
                 cnt += 1
 
-                pixels += rgba8888_to_rgb565le(data[index])
+                pixels += rgb888_to_rgb565le(data[index])
 
                 if cnt >= 127:
                     buf0.write_byte(0x80 + cnt) # read cnt pixels + pixels
@@ -428,7 +427,7 @@ def from_image_2(img: Image, fmt, opt=None) -> GI:
                     pixels2 = b''
                 cnt += 1
 
-                pixels1 += rgba8888_to_rgb565le(data[index])
+                pixels1 += rgb888_to_rgb565le(data[index])
                 pixels2 += bytes([(255 - data[index][3]) >> 2])
 
                 if cnt >= 127:
@@ -553,8 +552,7 @@ def to_image_0(gi: GI) -> Image:
         for y in range(layer.start_Y, layer.finish_Y):
             for x in range(layer.start_X, layer.finish_X):
                 rgb16 = buf.read(2)
-                img.putpixel((x - header.start_X, y - header.start_Y), rgb16_to_rgb24(rgb16))
-
+                img.putpixel((x - header.start_X, y - header.start_Y), rgb565le_to_rgb888(rgb16))
 
     else:
         raise ValueError(f'Invalid bitmask: {(header.r_bitmask, header.g_bitmask, header.b_bitmask)}')
@@ -610,7 +608,7 @@ def to_image_2(gi: GI) -> Image:
 
                 while cnt:
                     if li in (0, 1):
-                        r, g, b = rgb16_to_rgb24(buf.read(2))
+                        r, g, b = rgb565le_to_rgb888(buf.read(2))
                         res = (r, g, b, 255)
                     else:
                         r, g, b, _ = result.getpixel((pos.x + layer.start_X - header.start_X, pos.y + layer.start_Y - header.start_Y))
