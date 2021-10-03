@@ -583,6 +583,8 @@ def to_image_2(gi: GI) -> Image:
         layer = gi.layers[li]
         buf = Buffer(layer.data)
 
+        if buf.bytes_remains() == 0:
+            continue
         size = buf.read_uint()
         assert size == len(layer.data) - 16
         layer_width = buf.read_uint()
