@@ -1,11 +1,12 @@
 // bit=32
+#include <stddef.h>
 #include <string>
 #include <iostream>
 #include <cstdint>
-#include <stddef.h>
 
 #include "../cpp-tools/structs/include.h"
 #include "../cpp-tools/wrapped-classes/include.h"
+#include "../cpp-tools/buffer.cpp"
 
 using namespace std;
 
@@ -17,7 +18,6 @@ using namespace std;
 
 
 int main() {
-
     ASSERT_EQ(sizeof(byte),    1);
     ASSERT_EQ(sizeof(word),    2);
     ASSERT_EQ(sizeof(dword),   4);
