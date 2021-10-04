@@ -13,9 +13,8 @@ try:
     exec(zlib.decompress(open('obfuscated_code', 'rb').read()).decode())
 except FileNotFoundError as e:
     print(f'No required code')
-    raise e
-except Exception as e:
-    raise e
+    raise
+
 
 def check_dir(path):
     path = path.replace('\\', '/').replace('//', '/')
@@ -36,14 +35,14 @@ for path, _, files in os.walk(_in):
     path2 = path.replace(_in, '', 1).replace('\\', '/').replace('//', '/')
 
     for file in files:
-        filename = '/'.join([path, file]).replace('\\', '/').replace('//', '/')
+        filename: str = '/'.join([path, file]).replace('\\', '/').replace('//', '/')
         try:
             if filename.endswith('.dat'):
                 out_name = f'{_out}{path2}/{file}'
 
                 print(f'{filename} -> {out_name}')
 
-                with open(filename,'rb') as file:
+                with open(filename, 'rb') as file:
                     data = file.read()
 
                 if is_signed(data):
