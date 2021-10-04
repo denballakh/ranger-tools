@@ -1,18 +1,14 @@
 '''
 Создает папки модов, готовых к использованию к игре
-
-Нужно сделать вручную:
-Создать папки модов для совместимости с ExpInfoCenter и ShuKlissan
-Сконвертировать Main.txt в Main.dat в каждом моде
-Положить в каждый мод CacheData.dat
 '''
 
 import os
 import time
 import shutil
 
+
 from ranger_tools.pkg import PKG
-from ranger_tools.dat import DAT
+from ranger_tools.dat import DAT, DAT_SIGN_AVAILABLE
 
 COMPRESS_PKG = True
 PROFILE = False
@@ -25,12 +21,12 @@ color_texts = {
     'Green':     ('0,150,0',     'зеленый',        'green'),
     'LightPink': ('188,134,162', 'светло-розовый', 'light pink'),
 
-    'Yellow':    ('150,150,0',   'желтый',       'yellow'),
-    'Magenta':   ('150,0,150',   'пурпурный',    'magenta'),
-    'Orange':    ('150,75,0',    'оранжевый',    'orange'),
+    'Yellow':    ('150,150,0',   'желтый',         'yellow'),
+    'Magenta':   ('150,0,150',   'пурпурный',      'magenta'),
+    'Orange':    ('150,75,0',    'оранжевый',      'orange'),
 
-    'Grey':      ('127,127,127', 'серый',        'grey'),
-    'DarkGrey':  ('63,63,63',    'темно-серый',  'dark-grey'),
+    'Grey':      ('127,127,127', 'серый',          'grey'),
+    'DarkGrey':  ('63,63,63',    'темно-серый',    'dark-grey'),
 }
 
 priority = 11
@@ -49,15 +45,41 @@ _in = '3_result/'
 _out = '4_output/'
 
 
-special_mods = 'ShuKlissan', 'ExpInfoCenter'
+special_mods = {
+    # name: priority
+    'ShuKlissan': 5,
+    'ExpInfoCenter': 1,
+}
+
 spec_mod_rgb = '0,150,50'
 mod_rgb = '88,188,192'
 attention_rgb = '249,18,18'
 
 
+if DAT_SIGN_AVAILABLE:
+    legal_rgb = '0,132,15'
+    legal_rus = 'легален'
+    legal_eng = 'legal'
+else:
+    legal_rgb = '255,0,0'
+    legal_rus = 'не легален'
+    legal_eng = 'non legal'
+
+legal_mod_rus = f'<color={legal_rgb}>({legal_rus})</color>'
+legal_mod_rus_short = legal_mod_rus
+
+legal_mod_eng = f'<color={legal_rgb}>({legal_rus})</color>'
+legal_mod_eng_short = legal_mod_eng
+
+
 def get_module_info_content(color, colors):
-    assert color in color_texts, color
-    assert color in colors
+    if color not in color_texts:
+        print(f'Color {color} not in known colors: {list(color_texts)}')
+        return None
+
+    if color not in colors:
+        print(f'Color {color} not in list of mods colors: {colors}')
+        return None
 
     rgb, text_rus, text_eng = color_texts[color]
 
@@ -65,6 +87,7 @@ def get_module_info_content(color, colors):
     assert color not in conflict
     conflict = [mod_name + c for c in conflict]
     conflict = ','.join(conflict)
+
     return (f'' +
             f'Name={mod_name}{color}' + '\n' +
             f'Author=denball, Killi' + '\n' +
@@ -74,35 +97,43 @@ def get_module_info_content(color, colors):
             f'Section={section_rus}' + '\n' +
             f'SectionEng={section_eng}' + '\n' +
             f'Languages=Rus,Eng' + '\n' +
-            f'SmallDescription=Перекрашивает интерфейс в <color={rgb}>{text_rus}</color> цвет. <color=0,132,15>(легален)</color>' + '\n' +
-            f'FullDescription=Перекрашивает интерфейс в <color={rgb}>{text_rus}</color> цвет. <color=0,132,15>(легален)</color>' + '\n' +
-            f'SmallDescriptionEng=Recolors interface in <color={rgb}>{text_eng}</color> color. <color=0,132,15>(legal)</color>' + '\n' +
-            f'FullDescriptionEng=Recolors interface in <color={rgb}>{text_eng}</color> color. <color=0,132,15>(legal)</color>' + '\n' +
+
+            f'SmallDescription=Перекрашивает интерфейс в <color={rgb}>{text_rus}</color> цвет. {legal_mod_rus_short}' + '\n' +
+            f'FullDescription=Перекрашивает интерфейс в <color={rgb}>{text_rus}</color> цвет. {legal_mod_rus}' + '\n' +
+
+            f'SmallDescriptionEng=Recolors interface in <color={rgb}>{text_eng}</color> color. {legal_mod_eng_short}' + '\n' +
+            f'FullDescriptionEng=Recolors interface in <color={rgb}>{text_eng}</color> color. {legal_mod_eng}' + '\n' +
             f'')
 
 
 def get_special_module_info_content(special_mod_name, colors):
+    if special_mod_name not in special_mods:
+        print(f'Special mod name {special_mod_name} not in known special mods: {list(special_mods)}')
+        return None
+
     return (f'' +
             f'Name={mod_name}_{special_mod_name}' + '\n' +
             f'Author=denball' + '\n' +
             f'Conflict=' + '\n' +
-            f'Priority={priority}' + '\n' +
+            f'Priority={special_mods[special_mod_name] + 1}' + '\n' +
             f'Dependence={special_mod_name}' + '\n' +
             f'Section={section_rus}' + '\n' +
             f'SectionEng={section_eng}' + '\n' +
             f'Languages=Rus,Eng' + '\n' +
-            f'SmallDescription=Добавляет совместимость с модом <color={spec_mod_rgb}>{special_mod_name}</color> для <color={mod_rgb}>{mod_name}</color>. <color=0,132,15>(легален)</color>' + '\n' +
+
+            f'SmallDescription=Добавляет совместимость с модом <color={spec_mod_rgb}>{special_mod_name}</color> для <color={mod_rgb}>{mod_name}</color>. {legal_mod_rus_short}' + '\n' +
             f'SmallDescription=<color={attention_rgb}>Внимание! Не включать без мода на перекраску интерфейса</color>' + '\n' +
             f'FullDescription=Добавляет совместимость с модом <color={spec_mod_rgb}>{special_mod_name}</color> для <color={mod_rgb}>{mod_name}</color>.' + '\n' +
-            f'FullDescription=<color=0,132,15>(легален)</color>' + '\n' +
+            f'FullDescription={legal_mod_rus}' + '\n' +
             f'FullDescription=<clr><clrEnd>' + '\n' +
             f'FullDescription=<color={attention_rgb}>Внимание! Не включать без одного из модов на перекраску интерфейса</color> <color={mod_rgb}>UIRecolor</color><color={attention_rgb}>!</color>' + '\n' +
-            f'SmallDescriptionEng=Provides compatibility with <color={spec_mod_rgb}>{special_mod_name}</color> mod for <color={mod_rgb}>{mod_name}</color>. <color=0,132,15>(legal)</color>' + '\n' +
+
+            f'SmallDescriptionEng=Provides compatibility with <color={spec_mod_rgb}>{special_mod_name}</color> mod for <color={mod_rgb}>{mod_name}</color>. {legal_mod_eng_short}' + '\n' +
             f'SmallDescriptionEng=<color={attention_rgb}>Attention! Do not enable without mod for recoloring the interface</color>' + '\n' +
             f'FullDescriptionEng=Provides compatibility with <color={spec_mod_rgb}>{special_mod_name}</color> mod for <color={mod_rgb}>{mod_name}</color>.' + '\n' +
-            f'FullDescriptionEng=<color=0,132,15>(legal)</color>' + '\n' +
+            f'FullDescriptionEng={legal_mod_eng}' + '\n' +
             f'FullDescriptionEng=<clr><clrEnd>' + '\n' +
-            f'FullDescriptionEng=<color={attention_rgb}>Attention! Do not enable without one of the mods for recoloring the interface</color><color={mod_rgb}>UIRecolor</color><color={attention_rgb}>!</color>' + '\n' +
+            f'FullDescriptionEng=<color={attention_rgb}>Attention! Do not enable without one of the mods for recoloring the interface</color> <color={mod_rgb}>UIRecolor</color><color={attention_rgb}>!</color>' + '\n' +
             f'')
 
 
@@ -155,11 +186,12 @@ def process():
     for special_mod_name in special_mods:
         # Инфошки доп модов
         module_info_content = get_special_module_info_content(special_mod_name, dirs)
-        outname = _out + mod_path + mod_name + '_' + special_mod_name + '/' + 'ModuleInfo.txt'
-        print(outname)
-        check_dir(outname)
-        with open(outname, 'wt', encoding='utf16') as fp:
-            fp.write(module_info_content)
+        if module_info_content is not None:
+            outname = _out + mod_path + mod_name + '_' + special_mod_name + '/' + 'ModuleInfo.txt'
+            print(outname)
+            check_dir(outname)
+            with open(outname, 'wt', encoding='utf16') as fp:
+                fp.write(module_info_content)
 
         # Кешдаты доп модов
         filename = _dats + f'CacheData_{special_mod_name}.txt'
@@ -198,11 +230,12 @@ def process():
 
         # Инфошки основных модов
         module_info_content = get_module_info_content(directory, dirs)
-        outname = _out + mod_path + mod_name + directory + '/' + 'ModuleInfo.txt'
-        print(outname)
-        check_dir(outname)
-        with open(outname, 'wt', encoding='utf16') as fp:
-            fp.write(module_info_content)
+        if module_info_content is not None:
+            outname = _out + mod_path + mod_name + directory + '/' + 'ModuleInfo.txt'
+            print(outname)
+            check_dir(outname)
+            with open(outname, 'wt', encoding='utf16') as fp:
+                fp.write(module_info_content)
 
         # Кешдаты основных модов
         filename = _dats + 'CacheData.txt'
