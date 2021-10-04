@@ -212,9 +212,9 @@ struct TShip {
     _gap _151;
     _gap _152;
     _gap _153;
+    UNK __fly_to_star;
     _gap _154;
     _gap _155;
-    UNK fly_to_star;
     _gap _15A;
     _gap _15B;
     _gap _15C;

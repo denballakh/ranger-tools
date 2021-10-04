@@ -4,13 +4,14 @@ struct TCodeUnitEC {
 
     TCodeUnitEC* prev;
     TCodeUnitEC* next;
-    int type;
-    TExpressionEC* expr;
+    byte type;
+    _gap _1[3];
+    TCodeUnitEC* expr;
     TCodeUnitEC* jump;
     TVarEC* var;
     int sme, len, unit;
     bool BP;
-    _gap _[3];
+    _gap _2[3];
 };
 
 
@@ -35,10 +36,10 @@ struct TCodeEC {
 struct TBufEC {
     VMT cls;
 
-    int count;        // количество записанных байт
-    int capacity;     // размер выделенной памяти
-    int index;        // указатель доступа
-    byte* data_p;     // указатель на данные
+    int count;        ///< количество записанных байт
+    int capacity;     ///< размер выделенной памяти
+    int index;        ///< указатель доступа
+    byte* data_p;     ///< указатель на данные
 };
 
 struct TCacheDataEC {

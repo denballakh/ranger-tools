@@ -43,7 +43,7 @@ struct TPlanet {
     byte race;
     byte gov;
     TGoodsShopItem goods[8];
-    _gap _073;
+    // _gap _073;
     _gap_32 _078;
     _gap _07C;
     _gap _07D;
@@ -101,5 +101,7 @@ struct TPlanet {
     byte no_shop_update;
     _gap _16A;
     _gap _16B;
+
+    _gap __fix[8];
 };
 
