@@ -591,12 +591,16 @@ def to_image_2(gi: GI) -> Image:
         layer = gi.layers[li]
         buf = Buffer(layer.data)
 
+        if buf.bytes_remains() == 0:
+            continue
         size = buf.read_uint()
         assert size == len(layer.data) - 16
-        width_ = buf.read_uint()
-        height_ = buf.read_uint()
-        assert width_ == layer.finish_X - layer.start_X
-        assert height_ == layer.finish_Y - layer.start_Y
+        
+        layer_width = buf.read_uint()
+        layer_height = buf.read_uint()
+        assert layer_width == layer.finish_X - layer.start_X
+        assert layer_height == layer.finish_Y - layer.start_Y
+        
         _0 = buf.read_uint()
         assert _0 == 0, _0
 
