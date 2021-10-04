@@ -29,7 +29,7 @@ SEPARATE_MEMBER_PAGES  = NO
 TAB_SIZE               = 4
 ALIASES                =
 OPTIMIZE_OUTPUT_FOR_C  = NO
-OPTIMIZE_OUTPUT_JAVA   = NO
+OPTIMIZE_OUTPUT_JAVA   = YES
 OPTIMIZE_FOR_FORTRAN   = NO
 OPTIMIZE_OUTPUT_VHDL   = NO
 OPTIMIZE_OUTPUT_SLICE  = NO
@@ -117,10 +117,9 @@ INPUT_ENCODING         = UTF-8
 FILE_PATTERNS          = *.py
 RECURSIVE              = YES
 EXCLUDE                = ../ranger_tools/_test \
+                         ../ranger_tools/_idea \
                          ../ranger_tools/_dats \
-                         ../ranger_tools/dat/dat_sign.py \
-                         ../ranger_tools/sav \
-                         ../ranger_tools/score
+                         ../ranger_tools/dat/dat_sign.py
 EXCLUDE_SYMLINKS       = NO
 EXCLUDE_PATTERNS       =
 EXCLUDE_SYMBOLS        =
@@ -132,7 +131,7 @@ EXAMPLE_RECURSIVE      = YES
 IMAGE_PATH             =
 
 INPUT_FILTER           =
-FILTER_PATTERNS        =
+FILTER_PATTERNS        = #*.py=py_filter
 FILTER_SOURCE_FILES    = NO
 FILTER_SOURCE_PATTERNS =
 
@@ -142,7 +141,7 @@ SOURCE_BROWSER         = YES
 INLINE_SOURCES         = NO
 STRIP_CODE_COMMENTS    = YES
 
-REFERENCED_BY_RELATION = NO
+REFERENCED_BY_RELATION = YES
 REFERENCES_RELATION    = NO
 REFERENCES_LINK_SOURCE = YES
 SOURCE_TOOLTIPS        = YES

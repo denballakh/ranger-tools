@@ -163,11 +163,11 @@ def load_score(score_name: str) -> SCORE:
     dword_0 = buf.read_uint(); print(f'{dword_0 = }')
     byte_2 = buf.read_byte(); print(f'{byte_2 = }')
 
-    pirates_killed = buf.read_word(); print(f'{pirates_killed = }')
-    transports_killed = buf.read_word(); print(f'{transports_killed = }')
-    dominators_killed = buf.read_word(); print(f'{dominators_killed = }')
-    system_captured = buf.read_word(); print(f'{system_captured = }')
-    word_4 = buf.read_word(); print(f'{word_4 = }')
+    pirates_killed = buf.read_ushort(); print(f'{pirates_killed = }')
+    transports_killed = buf.read_ushort(); print(f'{transports_killed = }')
+    dominators_killed = buf.read_ushort(); print(f'{dominators_killed = }')
+    system_captured = buf.read_ushort(); print(f'{system_captured = }')
+    word_4 = buf.read_ushort(); print(f'{word_4 = }')
 
     dword_1 = buf.read_uint(); print(f'{dword_1 = }')
     dword_2 = buf.read_uint(); print(f'{dword_2 = }')
@@ -198,13 +198,13 @@ def load_score(score_name: str) -> SCORE:
 
     # byte_4 = buf.read_byte(); print(f'{byte_4 = }')
 
-    dword_6 = buf.read_word(); print(f'{dword_6 = }')
+    dword_6 = buf.read_ushort(); print(f'{dword_6 = }')
     data_1 = buf.read(dword_6); print('data_1 =', data_1[:100], ',', len(data_1))
 
     dword_7 = buf.read_uint(); print(f'{dword_7 = }')
 
 
-    dword_8 = buf.read_word(); print(f'{dword_8 = }')
+    dword_8 = buf.read_ushort(); print(f'{dword_8 = }')
     data_2 = buf.read(dword_8 * 3); print('data_2 =', data_2[:100], ',', len(data_2))
 
     dword_9 = buf.read_uint(); print(f'{dword_9 = }')
@@ -214,7 +214,7 @@ def load_score(score_name: str) -> SCORE:
     byte_6 = buf.read_byte(); print(f'{byte_6 = }')
 
 
-    dword_10 = buf.read_word(); print(f'{dword_10 = }')
+    dword_10 = buf.read_ushort(); print(f'{dword_10 = }')
     data_3 = buf.read(); print('data_3 =', data_3[:100], ',', len(data_3))
 
 

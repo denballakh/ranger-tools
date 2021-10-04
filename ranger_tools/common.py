@@ -1,40 +1,26 @@
 import os
 
-class Point:
-    __slots__ = ['x', 'y']
-    def __repr__(self) -> str:
-        return f'<Point: x={self.x!r} y={self.y!r}>'
 
-    def __init__(self, x, y):
-        self.x = x
-        self.y = y
-
-
-def bytes_to_int(b: bytes) -> int:
-    return int.from_bytes(b, 'little', signed=True)
-
-def bytes_to_uint(b: bytes) -> int:
-    return int.from_bytes(b, 'little', signed=False)
-
-def uint_to_bytes(n: int) -> bytes:
-    return n.to_bytes(4, 'little', signed=False)
-
-def int_to_bytes(n: int) -> bytes:
-    return n.to_bytes(4, 'little', signed=True)
+def sizeof_fmt(num, suffix="B"):
+    for unit in ["", "K", "M", "G", "T", "P", "E", "Z", "Y"]:
+        if abs(num) < 1024.0:
+            if isinstance(num, int):
+                return f"{num} {unit}{suffix}"
+            return f"{num:3.1f} {unit}{suffix}"
+        num /= 1024.0
+    return f"{num:.1f} {unit}{suffix}"
 
 
-def bytes_xor(bytes1: bytes, bytes2: bytes) -> bytes:
-    assert len(bytes1) == len(bytes2)
-    return bytes(b1 ^ b2 for b1, b2 in zip(bytes1, bytes2))
+def pretty_size(n, pow=0, b=1024, u='B', pre=[''] + [p + 'i' for p in 'KMGTPEZY']):
+    from math import log
+
+    pow, n = min(int(log(max(n * b ** pow, 1), b)), len(pre) - 1), n * b ** pow
+    return "%%.%if %%s%%s" % abs(pow % (-pow - 1)) % (n / b ** float(pow), pre[pow], u)
 
 
-def bytes_to_str(b: bytes) -> str:
-    return ''.join([chr(x) for x in b])
-
-def str_to_bytes(s: str, l: int = 63) -> bytes:
-    result = bytes(ord(c) for c in s)
-    result = result + b'\0' * (l - len(result))
-    return result
+def prettier_size(n, pow=0, b=1024, u='B', pre=[''] + [p + 'i' for p in 'KMGTPEZY']):
+    r, f = min(int(log(max(n * b ** pow, 1), b)), len(pre) - 1), '{:,.%if} %s%s'
+    return (f % (abs(r % (-r - 1)), pre[r], u)).format(n * b ** pow / b ** float(r))
 
 
 def check_dir(path):
@@ -44,40 +30,40 @@ def check_dir(path):
     splitted = [name for name in splitted if name != '']
     splitted = [name + '/' for name in splitted]
     res = './'
-    for _, item in enumerate(splitted):
+    for item in splitted:
         res += item
         if not os.path.isdir(res):
             os.mkdir(res)
 
 
 def clamp(v, lt, gt):
-    if(v <= lt):
+    if v <= lt:
         return lt
-    if(v >= gt):
+    if v >= gt:
         return gt
     return v
 
 
 def rgb565le_to_rgb888(rgb16: bytes) -> tuple:
     # Unpack from little endian 2 bytes
-    r =  rgb16[1] & 0b11111000
+    r = rgb16[1] & 0b11111000
     g = (rgb16[0] & 0b11100000) >> 5 | (rgb16[1] & 0b00000111) << 3
-    b =  rgb16[0] & 0b00011111
+    b = rgb16[0] & 0b00011111
 
     g <<= 2
     b <<= 3
 
-    return (r, g, b)
+    return r, g, b
 
 
 def rgb24_to_rgb16(rgb24: tuple) -> bytes:
     r, g, b = rgb24
 
-    r = round(r / 0xff * 0x1f) << 11
-    g = round(g / 0xff * 0x3f) << 5
-    b = round(b / 0xff * 0x1f)
+    r = round(r / 0xFF * 0x1F) << 11
+    g = round(g / 0xFF * 0x3F) << 5
+    b = round(b / 0xFF * 0x1F)
 
-    if r | g | b > 0xffff:
+    if r | g | b > 0xFFFF:
         raise ValueError
 
     a, b = divmod(r | g | b, 0x100)

@@ -36,7 +36,7 @@ class PKGItem:
         s = '' + \
         'Package item:' + '\n' + \
         f' Name: {self.name!r}' + '\n' + \
-        f' Type: {self.type} ({["raw file", "compressed file", "directory"][self.type]})' + '\n' + \
+        f' Type: {self.type} ({["raw file", "compressed file", "directory"][self.type - 1]})' + '\n' + \
         f' Size: {len(self.data)} b' + '\n' + \
         f' Number of childs: {len(self.childs)}' + '\n' + \
         f' Childs names: {[child.name for child in self.childs]!r}' + '\n' + \
@@ -85,8 +85,8 @@ class PKGItem:
 
     def decompressed_size(self):
         if self.type == PKG_DATATYPE_ZLIB:
+            result = 158
             din = Buffer(self.data)
-            result = 0
             while din:
                 bufsize = din.read_uint()
                 din.read(4)
@@ -95,10 +95,10 @@ class PKGItem:
             return result
 
         if self.type == PKG_DATATYPE_RAW:
-            return len(self.data)
+            return len(self.data) + 158
 
         if self.type == PKG_DATATYPE_DIR:
-            return 0
+            return 158
 
         raise TypeError(f'Unknown item type: {self.type}')
 
@@ -316,7 +316,7 @@ class PKG:
         for child in root.childs:
             child.parent = root
 
-        pkg = cls(root, metadata)
+        pkg = cls(root, metadata=metadata)
         return pkg
 
     def to_pkg(self, filename: str):
@@ -389,7 +389,8 @@ class PKG:
             filename = path + '/' + item.full_path()
             check_dir(filename)
             if item.type == PKG_DATATYPE_DIR:
-                os.mkdir(filename)
+                if not os.path.isdir(filename):
+                    os.mkdir(filename)
             else:
                 with open(filename, 'wb') as fp:
                     fp.write(item.data)

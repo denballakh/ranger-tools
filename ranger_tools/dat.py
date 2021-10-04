@@ -6,9 +6,12 @@ from .io import Buffer, AbstractIBuffer
 
 try:
     from .dat_sign import get_sign, check_signed
+    DAT_SIGN_AVAILABLE = True
+
 except ImportError as e:
     def get_sign(_: bytes) -> bytes: return b''
     def check_signed(_: bytes) -> bool: return False
+    DAT_SIGN_AVAILABLE = False
 
 
 # __all__ = [

@@ -9,6 +9,6 @@
 #define NOT_IDA
 
 #pragma pack(push)
-#pragma pack(1)
+#pragma pack(4)
 #include "_all.h"
 #pragma pack(pop)

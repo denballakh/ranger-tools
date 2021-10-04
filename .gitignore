@@ -1,12 +1,7 @@
 *.exe
-dat_sign.py
-doxygen/doc/
-_test/
-_dats/
-sav
-score
 
-.idea
+.pytype/
+.idea/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

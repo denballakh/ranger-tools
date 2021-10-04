@@ -1,13 +1,12 @@
 """
 Перекрашивает .png и .txt в соответствии с правилами
 """
-from math import cos, sin, radians, sqrt, pow
-
-from PIL import Image
+from math import cos, sin, radians, sqrt
 from random import sample
 import os
 import time
 
+from PIL import Image
 
 Image.MAX_IMAGE_PIXELS = 4096 ** 2
 
@@ -26,12 +25,25 @@ _dats = '_dats/'
 
 dat_file = 'Main.txt'
 
-modified_rules = []
+modified_rules: list[str] = []
 dat_rule_mod = 0
 
 
 def get_rules():
-    rules = {}
+    # transform(red_angle, green_angle, blue_angle, saturation=1.0, value=1.0, brightness=0.0, bias=1.0, gamma=2.2):
+
+    rules = {
+        'Red':      transform(-90, 0, 160, saturation=1.08, value=0.98),
+        'Green':    transform(0, 90, 280),
+        'Blue':     transform(0, 0, 40),
+
+        'Yellow':   transform(0, 0, 220),
+        'Cyan':     transform(0, 0, 340),
+        'Magenta':  transform(0, 0, 100),
+
+        'Grey':     to_grey(brightness=0.42),
+        'DarkGrey': to_grey(brightness=6.00, bias=1.03)
+    }
     return rules
 
 dat_colors = [
@@ -233,7 +245,7 @@ def my_mul(x, mn, mx, mul):
         result = x
     return min(max(result, mn), mx)
 
-
+##
 # Clamping to 0, 255
 def _clamp(v):
     if v < 0:
@@ -246,13 +258,13 @@ def _clamp(v):
 def average(c1, c2, ratio=0.5):
     return tuple(y * ratio + x * (1 - ratio) for x, y in zip(c1, c2))
 
-
-# Degree of non-linearity expressed in values [-∞, -0.0…1] ∪ [0.0…1, ∞]. Non-linearity increases when approaching 0
-# Bias is neutral at 1.0.
-# Lowering value shifts bias of the non-linearity towards 0 on the x scale, raising shifts bias towards max
+##
+# Degree of non-linearity expressed in values `(-∞, +∞)\{0}`. Non-linearity increases when approaching `0`
+# Bias is neutral at `1.0`.
+# Lowering value shifts bias of the non-linearity towards `0` on the x scale, raising shifts bias towards max
 def nonlinear_brightness(dn, bias=1.0):
     assert bias > 0, f'Value for bias should be higher than 0: bias = {bias}'
-    assert dn != 0, f'Value for dn cannot be equal to 0'
+    assert dn != 0, 'Value for dn cannot be equal to 0'
 
     # To reflect behavior of positive dn values
     if dn < 0:
