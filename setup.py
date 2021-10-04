@@ -12,9 +12,10 @@ setuptools.setup(
     # long_description_content_type="text/markdown",
     url="https://github.com/denballakh/ranger-tools",
     packages=setuptools.find_packages(),
-    python_requires='>=3.9',
+    python_requires='>=3.10',
     install_requires=[
         'pillow',
         'msl-loadlib',
+        'pyyaml'
     ]
 )

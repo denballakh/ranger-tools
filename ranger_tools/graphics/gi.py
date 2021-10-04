@@ -1,11 +1,19 @@
-from PIL import Image
 import time
+# from collections import namedtuple
+
+from PIL import Image
 
 from ..io import Buffer
-from ..common import rgb565le_to_rgb888, rgb24_to_rgb16, Point, rgb888_to_rgb565le
+from ..common import rgb565le_to_rgb888, rgb24_to_rgb16, rgb888_to_rgb565le
 
 __all__ = ['GI']
 
+
+class Point:
+    __slots__ = ('x', 'y')
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
 
 class Layer:
     def __init__(self):
@@ -585,10 +593,10 @@ def to_image_2(gi: GI) -> Image:
 
         size = buf.read_uint()
         assert size == len(layer.data) - 16
-        width = buf.read_uint()
-        height = buf.read_uint()
-        assert width == layer.finish_X - layer.start_X
-        assert height == layer.finish_Y - layer.start_Y
+        width_ = buf.read_uint()
+        height_ = buf.read_uint()
+        assert width_ == layer.finish_X - layer.start_X
+        assert height_ == layer.finish_Y - layer.start_Y
         _0 = buf.read_uint()
         assert _0 == 0, _0
 

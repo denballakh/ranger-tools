@@ -1,4 +1,7 @@
-## @file
+"""!
+@file
+@brief Реализует работу с игровыми датниками
+"""
 
 import os
 import time
@@ -21,16 +24,21 @@ __all__ = [
     'LL'
 ]
 
+GAME_ENCODING = 'utf16'
+LOGGER_ENCODING = 'utf8'
+
 def not_implemented(func: Callable):
     def f(*args, **kwargs):
         raise NotImplementedError
     return f
 
 
-##
-# Уровни логгирования
 @enum.unique
 class LL(enum.Enum):
+    """!
+    Уровни логгирования
+    """
+
     ## Дебаговый вывод разного мусора.
     DEBUG =    float('-inf')
     ## Подробный вывод всех обрабатываемых файлов.
@@ -44,35 +52,40 @@ class LL(enum.Enum):
     ## Отключение любого вывода.
     NONE =     float('+inf')
 
-##
-# Класс для логгирования сообщений.
 class Logger:
-    ##
-    # @param priority   Уровень подробности логгирования.
-    # @param filename   Файл лога.
-    # @param clear_file Если `True`, то файл лога будет очищен.
+    """!
+    Класс для логгирования сообщений.
+    """
     def __init__(self,
             priority: LL,
             filename: Optional[str] = '########.log',
             clear_file: bool = False,
     ):
+        """!
+        @param priority   Уровень подробности логгирования.
+        @param filename   Файл лога.
+        @param clear_file Если `True`, то файл лога будет очищен.
+        """
+
         self.priority: LL = priority
         self.filename: Optional[str] = filename
         if self.filename is not None:
             if clear_file:
                 open(self.filename, mode='wb').close()
-            with open(self.filename, mode='wt+') as f:
+            with open(self.filename, mode='wt+', encoding=LOGGER_ENCODING) as f:
                 print(f'New logger instance. Time: {time.ctime()}', file=f)
 
-    ##
-    # Пишет сообщение в консоль и в файл лога (если он есть).
-    #
-    # Если файла лога нет, то он будет создан.
-    #
-    # @param priority Уровень логгирования.
-    # @param args     Будет передано в функцию `print`.
-    # @param kwargs   Будет передано в функцию `print`.
     def log(self, priority: LL, *args, **kwargs):
+        """!
+        Пишет сообщение в консоль и в файл лога (если он есть).
+
+        Если файла лога нет, то он будет создан.
+
+        @param priority Уровень логгирования.
+        @param args     Будет передано в функцию `print`.
+        @param kwargs   Будет передано в функцию `print`.
+        """
+
         if priority.value >= self.priority.value:
             print(f'[{priority.name}] ', *args, **kwargs)
 
@@ -82,34 +95,38 @@ class Logger:
                 else:
                     mode = 'wt'
 
-                with open(self.filename, mode=mode) as f:
+                with open(self.filename, mode=mode, encoding=LOGGER_ENCODING) as f:
                     print(f'[{priority.name}] ', *args, **kwargs, file=f)
 
 
-##
-# Класс для сборки модов.
-#
-# Пути output в функциях указаны относительно пути ModBuilder.build_path, если не указано иного.
-#
 class ModBuilder:
-    ##
-    # @param build_path      Путь относительно скрипта, по которому будут создаваться все файлы.
-    # @param in_game_path    Путь, по которому будет лежать мод в игре (нужен для подстановки в текстовые значения).
-    # @param verbosity_level Уровень подробности вывода.
-    # @param log_file        Файл для логгирования.
+    """!
+    Класс для сборки модов.
+
+    Пути output в функциях указаны относительно пути ModBuilder.build_path, если не указано иного.
+    """
+
     def __init__(self, *,
             build_path: str = 'build/',
             in_game_path: str = 'Mods/',
             verbosity_level: LL = LL.INFO,
             log_file: str = '########.log'
         ):
+        """!
+        @param build_path      Путь относительно скрипта, по которому будут создаваться все файлы.
+        @param in_game_path    Путь, по которому будет лежать мод в игре (нужен для подстановки в текстовые значения).
+        @param verbosity_level Уровень подробности вывода.
+        @param log_file        Файл для логгирования.
+        """
+
         self.build_path: str = build_path + '/'
         self.in_game_path: str = in_game_path + '/'
         self.logger: Logger = Logger(verbosity_level, filename=log_file)
 
-    ##
-    #
+
     def _convert_path(self, path: str) -> str:
+        """!"""
+
         return (path
             .replace('$SRC', '/')
             .replace('$BUILD', f'/{self.build_path}/')
@@ -118,23 +135,27 @@ class ModBuilder:
             .replace('//', '/')
         )
 
-    ##
-    # Выводит сообщение в лог.
-    #
-    # @param priority Уровень логгирования.
-    # @param args     Будет передано в функцию `print`.
-    # @param kwargs   Будет передано в функцию `print`.
     def log(self, priority: LL, *args, **kwargs):
+        """!
+        Выводит сообщение в лог.
+
+        @param priority Уровень логгирования.
+        @param args     Будет передано в функцию `print`.
+        @param kwargs   Будет передано в функцию `print`.
+        """
+
         self.logger.log(priority, *args, **kwargs)
 
-    ##
-    # Создаст папку, если такой не существует.
-    #
-    # Создаст любой необходимый уровень вложенности.
-    # Используется перед каждой записью файла для избежания ошибок отсутствующих папок.
-    #
-    # @param file     Абсолютный путь к файлу.
     def check_dir(self, file: str):
+        """!
+        Создаст папку, если такой не существует.
+
+        Создаст любой необходимый уровень вложенности.
+        Используется перед каждой записью файла для избежания ошибок отсутствующих папок.
+
+        @param file     Абсолютный путь к файлу.
+        """
+
         file = self._convert_path(file)
 
         path = file
@@ -154,12 +175,14 @@ class ModBuilder:
                     self.log(LL.ERROR, f'Directory already exists O_o: {res}. '
                         'Maybe a lot of scripts are running at the same time and trying to make this directory')
 
-    ##
-    # Копирует файл из одного места в другое.
-    #
-    # @param inp  Входной файл.
-    # @param outp Результирующий файл.
     def copy_file(self, inp: str, outp: str):
+        """!
+        Копирует файл из одного места в другое.
+
+        @param inp  Входной файл.
+        @param outp Результирующий файл.
+        """
+
         inp = self._convert_path(inp)
         outp = self._convert_path(outp)
 
@@ -169,17 +192,18 @@ class ModBuilder:
                 _out.write(_in.read())
 
 
-    ##
-    # Удаляет файл.
     def del_file(self, file: str):
+        """! Удаляет файл. """
+
         file = self._convert_path(file)
 
         self.log(LL.INFO, f'Deleting file {file}')
         os.remove(file)
 
-    ##
-    # Удаляет папку.
+
     def del_dir(self, folder: str):
+        """! Удаляет папку. """
+
         folder = self._convert_path(folder)
 
         self.log(LL.INFO, f'Deleting directory {folder}')
@@ -190,40 +214,46 @@ class ModBuilder:
                 os.rmdir(os.path.join(root, name))
 
 
-    ##
-    # Копирует папку из одного места в другое.
-    #
-    # Сохраняет структуру папки, работает с любым уровнем вложенности.
-    # Перезапишет существующие папки.
-    #
-    # @param input_dir  Входная папка.
-    # @param output_dir Результирующая папка.
+
     @not_implemented
     def copy_dir(self, input_dir: str, output_dir: str):
+        """!
+        Копирует папку из одного места в другое.
+
+        Сохраняет структуру папки, работает с любым уровнем вложенности.
+        Перезапишет существующие папки.
+
+        @param input_dir  Входная папка.
+        @param output_dir Результирующая папка.
+        """
+
         input_dir = self._convert_path(input_dir)
         output_dir = self._convert_path(output_dir)
 
         ...
 
 
-    ##
-    # Очищает папку билда.
     def clean_build(self):
+        """! Очищает папку билда. """
+
         self.log(LL.INFO, )
         self.del_dir('$BUILD/')
 
-    ##
-    # Создает бэкап текущих исходников.
-    #
-    # @param backup_path         Путь для создания бэкапов.
-    #    Перед каждым билдом будет создан бэкап по этому пути.
-    #    Файл бэкапа - пакет (.pkg) без сжатия.
-    # @param backup_extensions   Расширения файлов, которые будут сохранены в бэкапе.
+
     def backup(self,
             backup_path: str, *,
             backup_extensions: tuple[str, ...] = ('.txt', '.dat', '.svr', '.scr', '.dll', '.c', '.cpp', '.py', '.json'),
             compression_level: Optional[int] = None,
         ):
+        """!
+        Создает бэкап текущих исходников.
+
+        @param backup_path         Путь для создания бэкапов.
+            Перед каждым билдом будет создан бэкап по этому пути.
+            Файл бэкапа - пакет (.pkg) без сжатия.
+        @param backup_extensions   Расширения файлов, которые будут сохранены в бэкапе.
+        """
+
         backup_path = self._convert_path(backup_path)
 
         f = lambda file: '.' + file.split('.')[-1].lower() in backup_extensions
@@ -237,14 +267,7 @@ class ModBuilder:
         pkg.to_pkg(filename)
 
 
-    ##
-    # Упаковывает папку в пакет.
-    #
-    # @param folder_path - папка, содержимое которой нужно упаковать.
-    # @param output - результирующий пакет.
-    # @param compression_level - уровень сжатия пакета.
-    # @param metadata - метаданные, которые нужно прописать в пакет.
-    # @param f - функция `filename: str -> bool`, определяющая, нужно ли добавлять файл в пакет.
+
     def pack_folder(self,
             folder_path: str,
             output: str, *,
@@ -252,6 +275,16 @@ class ModBuilder:
             metadata: bytes = b'',
             f: Callable = lambda _: True
     ):
+        """!
+        Упаковывает папку в пакет.
+
+        @param folder_path - папка, содержимое которой нужно упаковать.
+        @param output - результирующий пакет.
+        @param compression_level - уровень сжатия пакета.
+        @param metadata - метаданные, которые нужно прописать в пакет.
+        @param f - функция `filename: str -> bool`, определяющая, нужно ли добавлять файл в пакет.
+        """
+
         folder_path = self._convert_path(folder_path)
 
         pkg = PKG.from_dir(folder_path, f)
@@ -269,18 +302,20 @@ class ModBuilder:
         pkg.to_pkg(output)
 
 
-    ##
-    # Конвертирует несколько датников в один.
-    #
-    # @param inputs - список входных файлов или один файл.
-    #    файлы могут иметь расширение .txt и .dat.
-    #    формат распознается автоматически.
-    # @param output - файл результата.
-    # @param fmt - формат шифрования результирующего файла.
-    #    возможные значения: `Auto`, `HDMain`, `HDCache`, `ReloadMain`, `ReloadCache`, `SR1`.
-    #    'Auto' - формат распознается автоматически на основе названия файла.
-    # @param sign - подписать ли результирующий датник.
+
     def convert_dats(self, inputs: Union[str, list[str]], output: str, *, fmt: str = 'Auto', sign: bool = False):
+        """!
+        Конвертирует несколько датников в один.
+
+        @param inputs - список входных файлов или один файл.
+            файлы могут иметь расширение .txt и .dat.
+            формат распознается автоматически.
+        @param output - файл результата.
+        @param fmt - формат шифрования результирующего файла.
+            возможные значения: `Auto`, `HDMain`, `HDCache`, `ReloadMain`, `ReloadCache`, `SR1`.
+            'Auto' - формат распознается автоматически на основе названия файла.
+        @param sign - подписать ли результирующий датник.
+        """
 
         if not isinstance(inputs, list):
             inputs = [inputs]
@@ -327,30 +362,32 @@ class ModBuilder:
             result.to_dat(output, fmt=fmt, sign=sign)
 
 
-    ##
-    #
     def convert_lang(self, inputs: Union[str, list[str]], *, lang: str = 'Rus', sign: bool = False):
+        """!"""
         self.convert_dats(inputs, f'CFG/{lang}/Lang.dat', fmt='HDMain', sign=sign)
 
-    ##
-    #
+
     def convert_main(self, inputs: Union[str, list[str]], *, sign: bool = False):
+        """!"""
         self.convert_dats(inputs, 'CFG/Main.dat', fmt='HDMain', sign=sign)
 
-    ##
-    #
+
     def convert_cachedata(self, inputs: Union[str, list[str]], *, sign: bool = False):
+        """!"""
         self.convert_dats(inputs, 'CFG/CacheData.dat', fmt='HDCache', sign=sign)
 
-    ##
-    # Создает файл информации о моде.
-    #
-    # @param data - словарь к информацией о моде.
-    #    значения `Name`, `Section` и `SectionEng` могут вычислиться автоматически на основе ```ModBuilder.in_game_path```.
-    #    все остальные значения получат стандартное значение, если не указаны.
-    #
-    # @param filename - файл результата.
+
     def write_moduleinfo(self, data: Optional[dict[str, str]] = None, *, filename: str = 'ModuleInfo.txt'):
+        """!
+        Создает файл информации о моде.
+
+        @param data - словарь к информацией о моде.
+            значения `Name`, `Section` и `SectionEng` могут вычислиться автоматически на основе ```ModBuilder.in_game_path```.
+            все остальные значения получат стандартное значение, если не указаны.
+
+        @param filename - файл результата.
+        """
+
         try:
             module_name = self.in_game_path.replace('\\', '/').split('/')[-1]
         except KeyError:
@@ -408,21 +445,23 @@ class ModBuilder:
         self.log(LL.INFO, f'Saving module info to {filename}')
         filename = self.build_path + filename
         self.check_dir(filename)
-        with open(filename, 'wt') as file:
+        with open(filename, 'wt', encoding=GAME_ENCODING) as file:
             file.write(content)
 
-    ##
-    # Создает файл с путями к пакетам.
-    #
-    # @param pkgs - список пакетов.
-    #
-    # @param filename - файл результата.
-    #     по умолчанию `INSTALL.TXT`.
-    # @param lang - строка языка.
-    #     по умолчанию пустая строка.
-    #     значение `RUSSIAN` изменит название файла на `INSTALL_RUSSIAN.TXT`.
-    #     не применяется, если указано значение `filename`.
+
     def write_install(self, pkgs: Union[str, list[str]], *, filename=None, lang=None):
+        """!
+        Создает файл с путями к пакетам.
+
+        @param pkgs - список пакетов.
+
+        @param filename - файл результата.
+            по умолчанию `INSTALL.TXT`.
+        @param lang - строка языка.
+            по умолчанию пустая строка.
+            значение `RUSSIAN` изменит название файла на `INSTALL_RUSSIAN.TXT`.
+            не применяется, если указано значение `filename`.
+        """
 
         if not isinstance(pkgs, list):
             pkgs = [pkgs]
@@ -447,76 +486,87 @@ class ModBuilder:
         filename = self.build_path + filename
         self.log(LL.INFO, f'Saving install info to {filename}')
         self.check_dir(filename)
-        with open(filename, 'wt') as file:
+        with open(filename, 'wt', encoding=GAME_ENCODING) as file:
             file.write(content)
 
-    ##
-    # Конвертирует изображения.
-    #
-    # @param inputs - список входных файлов или один файл.
-    #     файлы могут иметь расширения `png` и `gi`.
-    #     если файл один, то произойдет конвертация в `gi`.
-    #     иначе произойдет сборка `gai`.
-    # @param output - файл результата.
-    #
-    # @param opt - опции создания ресурсов, имеет разное значение в зависимости от ситуации.
-    # @param cache_data_path - пропишет ресурс в кешдату по указанному пути.
-    #     эти правки потом будет необходимо применить функцией ```ModBuilder.apply_dat_changes```.
-    # @param metadata - метаданные, которые нужно прописать в пакет.
+
     @not_implemented
     def convert_img(self, inputs: Union[str, list[str]], output: str, *, opt: object = None, cache_data_path: str = '', metadata: bytes = b''):
-        ...
+        """!
+        Конвертирует изображения.
+
+        @param inputs - список входных файлов или один файл.
+            файлы могут иметь расширения `png` и `gi`.
+            если файл один, то произойдет конвертация в `gi`.
+            иначе произойдет сборка `gai`.
+        @param output - файл результата.
+
+        @param opt - опции создания ресурсов, имеет разное значение в зависимости от ситуации.
+        @param cache_data_path - пропишет ресурс в кешдату по указанному пути.
+            эти правки потом будет необходимо применить функцией ```ModBuilder.apply_dat_changes```.
+        @param metadata - метаданные, которые нужно прописать в пакет.
+        """
+
 
     def convert_gai(self, input_dir: str, output: str, **kwargs):
+        """!"""
         files = os.listdir(input_dir)
         self.convert_img([input_dir + file for file in files], output, **kwargs)
 
     def convert_gis(self, input_dir: str, output_dir: str, **kwargs):
+        """!"""
         files = os.listdir(input_dir)
         for file in files:
             out_file = '.'.join(file.split('.')[:-1]) + '.gi'
             self.convert_img(input_dir + file, output_dir + out_file, **kwargs)
 
-    ##
-    # Собирает скрипт из исходников.
-    #
-    # @param input - файл исходника.
-    # @param output - файл скомпилированного скрипта.
-    #
-    # @param add_to_dats - пропишет скрипт в мейн и кешдату.
-    #     эти правки потом будет необходимо применить функцией ```ModBuilder.apply_dat_changes```.
-    # @param add_text_to_lang - пропишет строки из скрипта в ланг.
-    #     эти правки потом будет необходимо применить функцией ```ModBuilder.apply_dat_changes```.
+
     @not_implemented
     def build_script(self, input: str, output: str, *, text=None, add_to_dats=False, add_text_to_lang=False):
-        ...
+        """!
+        Собирает скрипт из исходников.
 
-    ##
-    # Копирует библиотеку в папку билда.
-    #
-    # @param input - входной файл.
-    # @param output - результирующий файл.
-    #
-    # @param add_to_main - пропишет библиотеку в мейн.
-    #     эти правки потом будет необходимо применить функцией ```ModBuilder.apply_dat_changes```.
-    # @param functions - файл со списком сигнатур функций.
-    #     эти правки потом будет необходимо применить функцией ```ModBuilder.apply_dat_changes```.
+        @param input - файл исходника.
+        @param output - файл скомпилированного скрипта.
+
+        @param add_to_dats - пропишет скрипт в мейн и кешдату.
+            эти правки потом будет необходимо применить функцией ```ModBuilder.apply_dat_changes```.
+        @param add_text_to_lang - пропишет строки из скрипта в ланг.
+            эти правки потом будет необходимо применить функцией ```ModBuilder.apply_dat_changes```.
+        """
+
+
+
     @not_implemented
     def copy_library(self, input: str, output: str, *, add_to_main: bool = False, functions: Optional[str] = None):
-        ...
+        """!
+        Копирует библиотеку в папку билда.
+
+        @param input - входной файл.
+        @param output - результирующий файл.
+
+        @param add_to_main - пропишет библиотеку в мейн.
+            эти правки потом будет необходимо применить функцией ```ModBuilder.apply_dat_changes```.
+        @param functions - файл со списком сигнатур функций.
+            эти правки потом будет необходимо применить функцией ```ModBuilder.apply_dat_changes```.
+        """
 
 
-    ##
-    # Применит сделанные правки в датниках.
-    # И пропишет пакеты в инсталлы.
-    #
-    # @param sign - `True`/`False`/`"Keep"`.
-    #     подписывать ли измененные датники.
-    #     `Keep` - оставить состояние подписи в том же виде.
-    # @param paths - словарь с ключами `"Lang"`, `"Main"`, `"CacheData"`.
-    #     пути датников для изменения
+
+
     @not_implemented
     def apply_changes(self, paths: Optional[dict[str, str]] = None, sign: Union[bool, str] = 'Keep'):
+        """!
+        Применит сделанные правки в датниках.
+        И пропишет пакеты в инсталлы.
+
+        @param sign - `True`/`False`/`"Keep"`.
+            подписывать ли измененные датники.
+            `Keep` - оставить состояние подписи в том же виде.
+        @param paths - словарь с ключами `"Lang"`, `"Main"`, `"CacheData"`.
+            пути датников для изменения
+        """
+
         default_paths = {
             'Lang': 'CFG/Rus/Lang.dat',
             'Main': 'CFG/Main.dat',
@@ -525,37 +575,37 @@ class ModBuilder:
             'ENGLISH': 'INSTALL_ENGLISH.TXT',
             'COMMON': 'inSTALL.TXT',
         }
-        ...
 
-    ##
-    #
+
     @not_implemented
     def automatic_build(self, *args, **kwargs):
-        ...
+        """!"""
 
-    ##
-    #
+
     @not_implemented
     def autoconvert_dir(self, *args, **kwargs):
-        ...
+        """!"""
 
 
 
 
-##
-# Функция для рекурсивного билда сборок модов
-#
-# В корне сборки нужно создать файл с этими строками:
-#
-# ```py
-# from ranger_tools.modding import build_sub_mods
-# build_sub_mods()
-# ```
-#
-# Автоматически распознаются только `bat`-файлы и `py`-скрипты с именами: `%%_build`, `build_%%`, `%%`, `build`,
-# где `%%` - имя папки.
-# Приоритет `bat`-файлов выше, чем у `py`-скриптов. Порядок перебора имен написан выше.
+
 def build_sub_mods():
+    """!
+    Функция для рекурсивного билда сборок модов
+
+    В корне сборки нужно создать файл с этими строками:
+
+    ```py
+    from ranger_tools.modding import build_sub_mods
+    build_sub_mods()
+    ```
+
+    Автоматически распознаются только `bat`-файлы и `py`-скрипты с именами: `%%_build`, `build_%%`, `%%`, `build`,
+    где `%%` - имя папки.
+    Приоритет `bat`-файлов выше, чем у `py`-скриптов. Порядок перебора имен написан выше.
+    """
+
     for mod in os.listdir('./'):
         for bat_file in (
                 f'{mod}/{mod}_build.bat',
