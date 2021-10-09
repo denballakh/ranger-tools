@@ -57,11 +57,11 @@ struct TPlanet {
     _gap _105;
     _gap _106;
     _gap _107;
+    _gap _118;
     TList* relation_to_rangers;
-    _gap_32 _114;
+    TList* shop_items;
     TList* warriors;
     TList* prison_ships;
-    _gap _118;
     _gap _119;
     _gap _11A;
     _gap _11B;

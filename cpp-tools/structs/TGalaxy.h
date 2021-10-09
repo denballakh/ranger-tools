@@ -58,10 +58,10 @@ struct TGalaxy {
     _gap _0F2;
     _gap _0F3;
     int _0F8;
-    int _0FC;
-    int _0FD;
-
-    int _100;
+    int klings_delta_win;
+    int pirates_delta_win;
+    // +0x100
+    int normals_delta_win;
     int _104;
     int _108;
     int _10C;
@@ -92,12 +92,15 @@ struct TGalaxy {
     _gap_32 _170;
     _gap_32 _174;
     _gap_32 _178;
-    _gap_32 _17C;  // сет читов?
+    _gap _17C;
+    _gap _17D;
+    _gap _17E;
+    _gap _17F;
     _gap _180;
     _gap _181;
     bool zawarudo;                      ///< флаг от чита ZAWARUDO
     byte _183;
-    STR _184;
+    STR finalization_name;
 
     // Тонкие настройки:
     bool AA_enabled;                    ///< флаг тонких настроек

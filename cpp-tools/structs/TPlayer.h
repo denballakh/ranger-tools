@@ -293,7 +293,7 @@ struct TPlayer: public TRanger {
     _gap _6A9;
     _gap _6AA;
     _gap _6AB;
-    _gap _6AC;
+    bool reject_PB;
     _gap _6AD;
     _gap _6AE;
     _gap _6AF;
@@ -987,8 +987,8 @@ struct TPlayer: public TRanger {
     _gap _971;
     _gap _972;
     _gap _973;
-    TRuins* _974;
-    TShip* bridge_cur_ship;
+    TRuins* bridge;
+    TRuins* bridge_cur_ship;
     TPlanet* bridge_cur_planet;
     _gap _980;
     _gap _981;
@@ -998,10 +998,7 @@ struct TPlayer: public TRanger {
     _gap _985;
     _gap _986;
     _gap _987;
-    _gap _988;
-    _gap _989;
-    _gap _98A;
-    _gap _98B;
+    _gap_32 _988;
     _gap _98C;
     _gap _98D;
     _gap _98E;
