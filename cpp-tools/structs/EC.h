@@ -251,9 +251,9 @@ struct TExpressionEC {
     VMT cls;
 
     int var_count;
-    PTR var;
+    TVarEC** var;
     int instr_count;
-    PTR instr;
+    TExpressionInstrEC** instr;
     bool instr_extern;
     byte __gap[3];
     int ret;
@@ -262,7 +262,8 @@ struct TExpressionEC {
 struct TExpressionInstrEC {
     VMT cls;
 
-    int type;
+    byte type;
+    _gap _[3];
     int count;
     int* index;
 };

@@ -94,11 +94,11 @@ struct TGalaxy {
     _gap_32 _178;
     _gap _17C;
     _gap _17D;
-    _gap _17E;
+    bool technic;                       ///< флаг от чита `TECHNIC`
     _gap _17F;
     _gap _180;
-    _gap _181;
-    bool zawarudo;                      ///< флаг от чита ZAWARUDO
+    bool ultrascan;                     ///< флаг от чита `ULTRASCAN`
+    bool zawarudo;                      ///< флаг от чита `ZAWARUDO`
     byte _183;
     STR finalization_name;
 
@@ -122,67 +122,23 @@ struct TGalaxy {
     byte AA_extra_rangers;
     byte AA_AB_hitpoints_mod;
     byte AA_AB_damage_mod;
-    byte AA_AI_tolerate_junk;
-    byte AA_rnd_chaotic;
-    byte AA_eq_knowledge_restricted;
-    byte AA_ruins_near_stars;
-    byte AA_ruins_targetting_full;
-    byte AA_special_ships_in_game;
-    byte AA_zero_start_exp;
-    byte AA_AB_battle_royale;
-    byte AA_kling_racial_weapons;
-    byte AA_start_center;
-    byte AA_max_range_missiles;
-    byte AA_old_hyper;
-    byte AA_pirate_nodes;
-    byte AA_AI_use_shops;
-    byte AA_ruins_use_shops;
-    byte AA_duplicate_arts;
+    bool AA_AI_tolerate_junk;
+    bool AA_rnd_chaotic;
+    bool AA_eq_knowledge_restricted;
+    bool AA_ruins_near_stars;
+    bool AA_ruins_targetting_full;
+    bool AA_special_ships_in_game;
+    bool AA_zero_start_exp;
+    bool AA_AB_battle_royale;
+    bool AA_kling_racial_weapons;
+    bool AA_start_center;
+    bool AA_max_range_missiles;
+    bool AA_old_hyper;
+    bool AA_pirate_nodes;
+    bool AA_AI_use_shops;
+    bool AA_ruins_use_shops;
+    bool AA_duplicate_arts;
     byte AA_hull_growth;
-
-    // FCustomRules: boolean;
-
-    // FCustomKlingStr: byte;
-    // FCustomKlingAggro: byte;
-    // FCustomKlingSpawn: byte;
-    // FCustomPirateAggro:byte;
-    // FCustomCoalAggro: byte;
-    // FCustomAsteroidMod:byte;
-    // FCustomSunDamageMod:byte;
-    // FCustomExtraInventions: byte;
-    // FCustomAkrinMod: byte;
-
-    // FCustomNodeDropMod: byte;
-    // FCustomABDropValueMod: byte;
-    // FCustomDropValueMod: byte;
-    // FCustomAgPlanets: byte;
-    // FCustomMiPlanets: byte;
-    // FCustomInPlanets: byte;
-    // FCustomExtraRangers: byte;
-    // FCustomABHitpointsMod: byte;
-    // FCustomABDamageMod: byte;
-    // FCustomAITolerateJunk: byte;
-
-    // FCustomRuleRnd: boolean;
-    // FCustomRuleTechKnowledge: boolean;
-    // FCustomRuleRuinsPos: boolean;
-    // FCustomRuleRuinsTargetting: boolean;
-    // FCustomRuleSpecilShips:boolean;
-
-    // FCustomRuleZeroExp: boolean;
-    // FCustomRuleABattleRoyale: boolean;
-    // FCustomRuleKlingRacialWeapons: boolean;
-    // FCustomRuleStartCenter: boolean;
-    // FCustomRuleMaxRangeMissiles: boolean;
-
-    // FCustomRuleOldHyper: boolean;
-    // FCustomRulePirateNodes: boolean;
-
-    // FCustomRuleAIBuysEqFromShops: boolean;
-    // FCustomRuleRuinsUsingShop: boolean;
-    // FCustomRuleDuplicateArtsAllowed:boolean;
-
-    // FCustomRuleHullGrowth:byte;
 
     _gap_32 _1AC;
     TList* events;                      ///< список галактических событий

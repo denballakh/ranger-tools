@@ -68,10 +68,7 @@ struct TShip {
     _gap _08D;
     _gap _08E;
     _gap _08F;
-    _gap _090;
-    _gap _091;
-    _gap _092;
-    _gap _093;
+    int money;
     _gap _094;
     _gap _095;
     _gap _096;
@@ -129,7 +126,7 @@ struct TShip {
     _gap _0ED;
     _gap _0EE;
     _gap _0EF;
-    int money;
+    int _0F0;
     int group_no;  ///< номер группы, но не скриптовой? Используется в военных операциях
     _gap_32 _0F8;
     _gap_32 _0FC;

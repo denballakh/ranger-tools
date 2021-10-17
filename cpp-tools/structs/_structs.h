@@ -134,6 +134,24 @@ struct TEther {
     _gap_32 _014;
 };
 
+struct TCustomShipInfo {
+    STR InfoType;
+    STR InfoDescription;
+
+    STR InfoData1;
+    STR InfoData2;
+    STR InfoData3;
+
+    STR InfoTextData1;
+    STR InfoTextData2;
+    STR InfoTextData3;
+
+    PTR OnActCode;
+    bool IsInit;
+    bool Delete;
+    _gap _[2];
+};
+
 /*
 
 TEther - 18
