@@ -16,6 +16,6 @@ setuptools.setup(
     install_requires=[
         'pillow',
         'msl-loadlib',
-        'pyyaml'
+        'pyyaml',
     ]
 )

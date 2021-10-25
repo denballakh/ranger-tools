@@ -1,3 +1,7 @@
+"""!
+@file
+"""
+
 import os
 import sys
 from time import time
@@ -241,7 +245,8 @@ save_parser = subparsers.add_parser(
     help='Converting .sav files',
     formatter_class=argparse.RawTextHelpFormatter,
     epilog='''example:
-
+    save TurnSave.sav TurnSave.json
+    save TurnSave.json TurnSave.sav
     ''',
 )
 
@@ -264,7 +269,8 @@ score_parser = subparsers.add_parser(
     help='Converting score files (ToServerXX.txt) to JSON [and back]',
     formatter_class=argparse.RawTextHelpFormatter,
     epilog='''example:
-
+    score ToServer01.txt ToServer01.json
+    score ToServer01.json ToServer01.txt
     ''',
 )
 
@@ -283,7 +289,7 @@ score_parser.add_argument(
 
 
 def process_dat(args):
-    pass
+    return CODE_ERR
 
 
 def process_pkg(args):
@@ -361,15 +367,15 @@ def process_pkg(args):
 
 
 def process_gi(args):
-    pass
+    return CODE_ERR
 
 
 def process_gai(args):
-    pass
+    return CODE_ERR
 
 
 def process_script(args):
-    pass
+    return CODE_ERR
 
 
 def process_save(args):
@@ -468,4 +474,7 @@ if __name__ == "__main__":
             print(f'Unknown command: {args.cmd}')
             exitcode = CODE_ERR
 
+    if exitcode == CODE_ERR:
+        print()
+        print('Error occurred!')
     sys.exit(exitcode)

@@ -4,6 +4,7 @@ __pycache__
 2_colored/
 3_result/
 4_output/
+_dats/
 *.log
 *.png
 !*_mask.png

@@ -1,12 +1,28 @@
-from typing import Union, Iterable, Any, Sized
+"""!
+@file
+"""
+from __future__ import annotations
+
+from typing import (
+    Iterable,
+    Any,
+    TypeVar,
+    TYPE_CHECKING,
+    IO,
+)
 import struct
-import zlib
+
+if TYPE_CHECKING:
+    from .dataclass import DataClass
+
 
 __all__ = [
     'AbstractIBuffer',
     'Buffer',
     'Stack',
 ]
+
+T = TypeVar('T')
 
 
 class AbstractIBuffer:
@@ -49,7 +65,7 @@ class Buffer:
     pos: int
     _position_stack: list[int]
 
-    def __init__(self, obj: Union['Buffer', Iterable[int]] = b'', *, pos: int = 0):
+    def __init__(self, obj: Buffer | Iterable[int] = b'', *, pos: int = 0):
         if isinstance(obj, bytearray):
             self.data = obj  # bytearray is mutable
 
@@ -57,9 +73,7 @@ class Buffer:
             self.data = bytearray(obj)
 
         elif isinstance(obj, Buffer):
-            self.data = (
-                obj.data
-            )  # it will share instances of data between instances of Buffer
+            self.data = obj.data  # it will share instances of data between instances of Buffer
 
         else:
             self.data = bytearray(obj)
@@ -89,8 +103,10 @@ class Buffer:
             f'>'
         )
 
-    def __eq__(self, other):
-        return self.data == other.data
+    def __eq__(self, other) -> bool:
+        if isinstance(other, Buffer):
+            return self.data == other.data
+        return NotImplemented
 
     def __repr__(self) -> str:
         return f'Buffer({self.data!r}, pos={self.pos})'
@@ -101,8 +117,11 @@ class Buffer:
     def __len__(self) -> int:
         return len(self.data)
 
-    def __getitem__(self, key):
+    def __getitem__(self, key: int) -> int:
         return self.data[key]
+
+    def __bytes__(self) -> bytes:
+        return bytes(self.data)
 
     def to_bytes(self) -> bytes:
         return bytes(self.data)
@@ -129,7 +148,7 @@ class Buffer:
         self.pos = pos
         return result
 
-    def read(self, n: Union[int, None] = None, pos=None) -> bytes:
+    def read(self, n: int = None, pos=None) -> bytes:
         if pos is not None:
             self.push_pos(pos)
         if n is None:
@@ -138,9 +157,7 @@ class Buffer:
             n = len(self.data) - self.pos + n
 
         if not 0 <= self.pos <= len(self.data) - n:
-            raise ValueError(
-                f'Invalid buffer position: {self.pos}, len={len(self.data)}'
-            )
+            raise ValueError(f'Invalid buffer position: {self.pos}, len={len(self.data)}')
 
         result = bytes(self.data[self.pos : self.pos + n])
         self.pos += n
@@ -169,10 +186,10 @@ class Buffer:
     def skip(self, n):
         self.pos += n
 
-    def load(self, buf: Union['Buffer', 'BinaryIO']):
+    def load(self, buf: Buffer | IO):
         self.write(buf.read())
 
-    def save(self, buf: Union['Buffer', 'BinaryIO']):
+    def save(self, buf: Buffer | IO):
         buf.write(self.read())
 
     def load_file(self, path: str):
@@ -196,9 +213,7 @@ class Buffer:
         try:
             self.write(struct.pack(fmt, *values))
         except Exception as e:
-            raise Exception(
-                f'Error in struct.pack: fmt={fmt}, values={values}, pos={pos}'
-            ) from e
+            raise Exception(f'Error in struct.pack: fmt={fmt}, values={values}, pos={pos}') from e
         if pos is not None:
             self.pop_pos()
 
@@ -304,7 +319,7 @@ class Buffer:
         if length == -1:
             value += '\0'
         else:
-            value = value[: length - 1]
+            value = value[:length]
             value += (length - len(value)) * '\0'
         self.write(value.encode('utf-8'))
 
@@ -325,83 +340,12 @@ class Buffer:
         if length == -1:
             value += '\0'
         else:
-            value = value[: length - 1]
+            value = value[:length]
             value += (length - len(value)) * '\0'
         self.write(value.encode('utf-16le'))
 
-    def decodeZL(self) -> bytes:
-        result = bytearray(b'')
+    def read_obj(self, objcls: DataClass[T]) -> T:
+        return objcls.read(self)
 
-        magic = self.read(4)
-
-        match magic:
-            case b'ZL01':
-                size = self.read_uint()
-                data = self.read(size)
-                result += zlib.decompress(data)
-
-            case b'ZL02':
-                pass
-
-            case b'ZL03':
-                chunk_cnt = self.read_uint()
-
-                for _ in range(chunk_cnt):
-                    chunksize = self.read_uint()
-                    chunk = self.read(chunksize)
-                    result += zlib.decompress(chunk)
-
-            case _:
-                raise ValueError(f'Invalid magic value: {magic}')
-
-        return bytes(result)
-
-    def encodeZL(self, data: bytes, mode: int):
-        assert mode in {1, 2, 3}
-        pass
-
-
-# murgesku code (https://github.com/murgesku/rangers-utils/blob/master/rangers/io/_io.py#L126):
-# def decompress(self, size: int = -1) -> bytes:
-#     if size == -1:
-#         size = self.size() - self.pos()
-
-#     result = b''
-#     magic = self.get(4)
-#     if magic == b'ZL01':
-#         bufsize = self.get_uint()
-#         start = self.pos()
-#         result = self._decompress(start, size - 8, bufsize)
-#     elif magic == b'ZL02':
-#         # return
-#         self.close()
-#         raise ValueError("AbstractIO.decompress: unknown format")
-#     elif magic == b'ZL03':
-#         for i in range(self.get_int()):
-#             chunksize = self.get_uint()
-#             start = self.pos()
-#             result += self._decompress(start, chunksize, 65000)
-#     else:
-#         self.close()
-#         raise ValueError("AbstractIO.decompress: unknown format")
-#     return result
-
-# def compress(self, fmt: str, size: int = -1) -> bytes:
-#     '''
-#     Supported formats: 'ZLO1', 'ZL02', 'ZL03'
-#     '''
-#     pass
-#     if size == -1:
-#         size = self.size() - self.pos()
-
-#     result = b''
-#     if fmt == 'ZL01':
-#         result += b'ZL01'
-#         result += uint_to_bytes(sz)
-#         result += zlib.compress(self.get(size),
-#                                 level=9)
-#     elif fmt == 'ZL02':
-#         pass
-#     elif fmt == 'ZL03':
-#         pass
-#     return result
+    def write_obj(self, objcls: DataClass[T], obj: T):
+        objcls.write(self, obj)
