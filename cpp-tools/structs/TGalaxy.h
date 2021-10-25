@@ -99,7 +99,7 @@ struct TGalaxy {
     _gap _180;
     bool ultrascan;                     ///< флаг от чита `ULTRASCAN`
     bool zawarudo;                      ///< флаг от чита `ZAWARUDO`
-    byte _183;
+    bool dump;                          ///< нужен для создания дампа вместе с сейвом?
     STR finalization_name;
 
     // Тонкие настройки:

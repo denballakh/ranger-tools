@@ -1049,7 +1049,7 @@ struct TTranclucator: public TShip {
 
 struct TKling: public TShip {
     byte sub_type;
-    byte _4D1;
+    byte sub_race;
     _gap _4D2;
     _gap _4D3;
     int _4D4;

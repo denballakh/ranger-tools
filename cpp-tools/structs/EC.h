@@ -203,7 +203,7 @@ enum TVarEC_type {
 };
 
 struct TVarEC {
-    VMT          cls;
+    VMT             cls;
 
     byte*           name;
     TVarEC_type     type;

@@ -19,10 +19,7 @@ struct TPlanet {
     _gap _036;
     _gap _037;
     int radius;
-    _gap _034_;
-    _gap _035_;
-    _gap _036_;
-    _gap _037_;
+    _gap _03C[4];
     double angle_speed;
     byte invention_levels[20];
     byte cur_invention;
@@ -106,6 +103,5 @@ struct TPlanet {
     byte no_landing;
     byte no_shop_update;
     bool is_rogeria;
-    _gap _16B;
-    // тут вставится еще 4 байта, т.к. в структуре есть double
+    _gap _16B[1];
 };
