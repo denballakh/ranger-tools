@@ -17,5 +17,9 @@ setuptools.setup(
         'pillow',
         'msl-loadlib',
         'pyyaml',
+        'mypy',
+        'mypy-extensions',
+        'typing-extensions',
+        'types-pillow',
     ]
 )

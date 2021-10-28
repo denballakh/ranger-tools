@@ -6,7 +6,7 @@ from PIL import Image
 from random import sample
 import os
 
-from ranger_tools.graphics.gi import GI
+from rangers.graphics.gi import GI
 
 randomize = False
 

@@ -7,8 +7,8 @@ import time
 import shutil
 
 
-from ranger_tools.pkg import PKG
-from ranger_tools.dat import DAT, DAT_SIGN_AVAILABLE
+from rangers.pkg import PKG
+from rangers.dat import DAT, DAT_SIGN_AVAILABLE
 
 COMPRESS_PKG = True
 PROFILE = False

@@ -10,10 +10,10 @@ from random import sample
 import os
 import time
 
-from ranger_tools.graphics.gi import GI
-from ranger_tools.graphics.gai import GAI
-from ranger_tools.pkg import PKG
-from ranger_tools.dat import DAT
+from rangers.graphics.gi import GI
+from rangers.graphics.gai import GAI
+from rangers.pkg import PKG
+from rangers.dat import DAT
 
 Image.MAX_IMAGE_PIXELS = 4096 ** 2
 

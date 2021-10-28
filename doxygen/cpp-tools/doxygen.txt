@@ -1,4 +1,6 @@
 # Doxyfile 1.9.2
+GENERATE_HTMLHELP = YES
+CHM_FILE               = cpp-tools.chm
 DOXYFILE_ENCODING      = UTF-8
 PROJECT_NAME           = "cpp-tools"
 PROJECT_NUMBER         =
