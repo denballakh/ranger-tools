@@ -5,7 +5,7 @@ import sys
 from abc import abstractmethod, ABC
 # from functools import wraps
 
-from ..io import Buffer
+from ..buffer import Buffer
 
 __all__ = [
     'PrintableMixin',
