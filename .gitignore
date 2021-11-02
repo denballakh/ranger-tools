@@ -3,9 +3,6 @@
 .pytype/
 .idea/
 
-# mypyc cache
-build/
-
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
