@@ -4,16 +4,24 @@ from .scr import SCR
 from .svr import SVR
 from .enums import *
 
+
 def scr_to_svr(scr: SCR) -> SVR:
     tr: list[tuple[str, str]] = []
+
     def get_op(svr, text):
         op = svr.add('Top')
         op.type = OP_TYPE.NORMAL
-        op.expression = text.strip()#.replace('\'', '"')
+        op.expression = text.strip().replace('\'', '"')
 
-        strings = re.findall('"([^"]*)"', op.expression)
+        # strings = re.findall('"([^"]*)"|\'([^\']*)\'', op.expression)
+        strings = re.findall('".*?"|\'.*?\'', op.expression)
+        # print(strings)
 
-        for s in strings:
+        for s_ in strings:
+            s = s_[1:-1]
+            if s == 'Ship.Akrin.':
+                print(1)
+
             flag = 1
             for _, ts in tr:
                 if ts == s:
@@ -24,16 +32,15 @@ def scr_to_svr(scr: SCR) -> SVR:
                     tid = '0'
                 else:
                     tid = str(int(tr[-1][0]) + 1)
+                print(s)
                 tr.append((tid, s))
 
         return op
 
-
-
-    scr = SCR.from_scr('Mod_ShuKlissan.scr')
     assert scr.version == 7
     svr = SVR()
-
+    svr.viewpos.x = -100
+    svr.viewpos.y = -100
 
     svr.name = "script_name"
     svr.filename = "D:\\script.scr"
@@ -65,13 +72,13 @@ def scr_to_svr(scr: SCR) -> SVR:
         local_vars_exclude.append(s.name)
 
     for scr_var in scr.localvars:
-        if scr_var.name in local_vars_exclude: continue
+        if scr_var.name in local_vars_exclude:
+            continue
         svr_var = svr.add("TVar")
         svr_var.text = scr_var.name
         svr_var.type = VAR_TYPE_DECOMPILATION[scr_var.type]
         svr_var.init_value = str(scr_var.value)
         svr_var.is_global = False
-
 
     if scr.globalcode:
         code = get_op(svr, scr.globalcode)
@@ -88,8 +95,6 @@ def scr_to_svr(scr: SCR) -> SVR:
     if scr.dialogbegincode:
         code = get_op(svr, scr.dialogbegincode)
         code.type = OP_TYPE.DIALOGBEGIN
-
-    expression = scr.dialogbegincode.strip().replace('"', '\'')
 
     for dialog in scr.dialogs:
         dial = svr.add('TDialog')
@@ -121,7 +126,6 @@ def scr_to_svr(scr: SCR) -> SVR:
         star.no_kling = scr_star.no_kling
         star.no_come_kling = scr_star.no_come_kling
 
-
         for scr_starlink in scr_star.starlinks:
             raise NotImplementedError
 
@@ -152,8 +156,6 @@ def scr_to_svr(scr: SCR) -> SVR:
             ship.ruins = scr_ship.ruins
             svr.link(ship, star)
 
-
-
     for scr_state in scr.states:
         state = svr.add('TState')
         state.text = scr_state.name
@@ -173,7 +175,6 @@ def scr_to_svr(scr: SCR) -> SVR:
             op = get_op(svr, scr_state.code)
             svr.link(state, op)
 
-
     for scr_gr in scr.groups:
         gr = svr.add('TGroup')
         gr.text = scr_gr.name
@@ -191,7 +192,6 @@ def scr_to_svr(scr: SCR) -> SVR:
         gr.strength = scr_gr.strength
         gr.ruins = scr_gr.ruins
 
-
         planet = svr.find(scr_gr.planet)
         svr.link(gr, planet)
 
@@ -205,9 +205,6 @@ def scr_to_svr(scr: SCR) -> SVR:
         l.relations = link.relations
         l.war_weight = link.war_weight
 
-
-
-
     for scr_place in scr.places:
         place = svr.add('TPlace')
         place.text = scr_place.name
@@ -220,7 +217,6 @@ def scr_to_svr(scr: SCR) -> SVR:
         if scr_place.star:
             star = svr.find(scr_place.star)
             svr.link(place, star)
-
 
     for scr_item in scr.items:
         item = svr.add('TItem')
@@ -237,4 +233,3 @@ def scr_to_svr(scr: SCR) -> SVR:
             svr.link(item, place)
 
     return svr
-

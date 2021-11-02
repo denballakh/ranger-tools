@@ -1,6 +1,6 @@
 from typing import Union
 
-from ..io import Buffer
+from ..buffer import Buffer
 from .enums import *
 
 # __all__ = ['SCR']
@@ -8,6 +8,7 @@ from .enums import *
 
 class MinMax:
     __slots__ = ['min', 'max']
+
     def __repr__(self) -> str:
         return f'<MinMax: min={self.min!r} max={self.max!r}>'
 
@@ -15,8 +16,10 @@ class MinMax:
         self.min = mn
         self.max = mx
 
+
 class Status:
     __slots__ = ['trader', 'warrior', 'pirate']
+
     def __repr__(self) -> str:
         return f'<Status: trader={self.trader!r} warrior={self.warrior!r} pirate={self.pirate!r}>'
 
@@ -25,13 +28,18 @@ class Status:
         self.warrior = warrior
         self.pirate = pirate
 
+
 class SCRObj:
     # def __init__(self, script): raise NotImplementedError
-    def __repr__(self) -> str: pass
-    @classmethod
-    def from_buffer(cls, buf: Buffer, script: 'SCR'): pass
-    def to_buffer(self, buf: Buffer): pass
+    def __repr__(self) -> str:
+        pass
 
+    @classmethod
+    def from_buffer(cls, buf: Buffer, script: 'SCR'):
+        pass
+
+    def to_buffer(self, buf: Buffer):
+        pass
 
 
 class Var(SCRObj):
@@ -101,6 +109,7 @@ class Var(SCRObj):
                 buf.write_wstr('')
                 buf.write_byte(0)
 
+
 class StarLink(SCRObj):
     end_star: int
     distance: MinMax
@@ -129,6 +138,7 @@ class StarLink(SCRObj):
         buf.write_int(self.distance.min)
         buf.write_int(self.distance.max)
         buf.write_bool(self.is_hole)
+
 
 class Planet(SCRObj):
     name: str
@@ -165,7 +175,6 @@ class Planet(SCRObj):
         p.dialog = buf.read_wstr()
         return p
 
-
     def to_buffer(self, buf: Buffer):
         buf.write_wstr(self.name)
         buf.write_uint(int(self.race))
@@ -175,6 +184,7 @@ class Planet(SCRObj):
         buf.write_int(self.range.min)
         buf.write_int(self.range.max)
         buf.write_wstr(self.dialog)
+
 
 class Ship(SCRObj):
     count: int
@@ -218,8 +228,12 @@ class Ship(SCRObj):
         e.weapon = WEAPON(buf.read_uint())
         e.cargohook = buf.read_int()
         e.emptyspace = buf.read_int()
-        e.status = Status(MinMax(buf.read_int(),buf.read_int()),MinMax(buf.read_int(),buf.read_int()),MinMax(buf.read_int(),buf.read_int()))
-        e.strength = MinMax(buf.read_int(),buf.read_int())
+        e.status = Status(
+            MinMax(buf.read_int(), buf.read_int()),
+            MinMax(buf.read_int(), buf.read_int()),
+            MinMax(buf.read_int(), buf.read_int()),
+        )
+        e.strength = MinMax(buf.read_int(), buf.read_int())
         e.ruins = buf.read_wstr()
         return e
 
@@ -242,6 +256,7 @@ class Ship(SCRObj):
         buf.write_int(self.strength.min)
         buf.write_int(self.strength.max)
         buf.write_wstr(self.ruins)
+
 
 class Star(SCRObj):
     name: str
@@ -292,7 +307,6 @@ class Star(SCRObj):
 
         return star
 
-
     def to_buffer(self, buf: Buffer):
         buf.write_wstr(self.name)
         buf.write_int(self.constellation)
@@ -310,6 +324,7 @@ class Star(SCRObj):
         buf.write_uint(len(self.ships))
         for e in self.ships:
             e.to_buffer(buf)
+
 
 class Place(SCRObj):
     name: str
@@ -333,7 +348,6 @@ class Place(SCRObj):
         self.angle = 0.0
         self.distance = 0.5
         self.radius = 300
-
 
     @classmethod
     def from_buffer(cls, buf: Buffer, script: 'SCR'):
@@ -383,6 +397,7 @@ class Place(SCRObj):
         if self.type in {PLACE_TYPE.TO_STAR, PLACE_TYPE.FROM_SHIP}:
             buf.write_float(self.angle)
 
+
 class Item(SCRObj):
     name: str
     place: str
@@ -410,7 +425,6 @@ class Item(SCRObj):
         self.owner = RACE.NONE
         self.useless = ''
 
-
     @classmethod
     def from_buffer(cls, buf: Buffer, script: 'SCR'):
         e = cls(script)
@@ -437,6 +451,7 @@ class Item(SCRObj):
         buf.write_uint(int(self.owner))
         buf.write_wstr(self.useless)
 
+
 class Group(SCRObj):
     name: str
     planet: str
@@ -454,7 +469,6 @@ class Group(SCRObj):
     dialog: str
     strength: MinMax
     ruins: str
-
 
     def __repr__(self) -> str:
         return f'<Group: name={self.name!r} planet={self.planet!r} state={self.state!r} owner={self.owner!r} type={self.type!r} count={self.count!r} speed={self.speed!r} weapon={self.weapon!r} cargohook={self.cargohook!r} emptyspace={self.emptyspace!r} add_player={self.add_player!r} status={self.status!r} search_distance={self.search_distance!r} dialog={self.dialog!r} strength={self.strength!r} ruins={self.ruins!r}>'
@@ -493,7 +507,11 @@ class Group(SCRObj):
         e.cargohook = buf.read_int()
         e.emptyspace = buf.read_int()
         e.add_player = buf.read_bool()
-        e.status = Status(MinMax(buf.read_int(),buf.read_int()),MinMax(buf.read_int(),buf.read_int()),MinMax(buf.read_int(),buf.read_int()))
+        e.status = Status(
+            MinMax(buf.read_int(), buf.read_int()),
+            MinMax(buf.read_int(), buf.read_int()),
+            MinMax(buf.read_int(), buf.read_int()),
+        )
         e.search_distance = buf.read_int()
         e.dialog = buf.read_wstr()
         e.strength = MinMax(buf.read_float(), buf.read_float())
@@ -526,6 +544,7 @@ class Group(SCRObj):
         buf.write_float(self.strength.min)
         buf.write_float(self.strength.max)
         buf.write_wstr(self.ruins)
+
 
 class GroupLink(SCRObj):
     begin: int
@@ -560,6 +579,7 @@ class GroupLink(SCRObj):
         buf.write_uint(int(self.relations.max))
         buf.write_float(self.war_weight.min)
         buf.write_float(self.war_weight.max)
+
 
 class State(SCRObj):
     name: str
@@ -624,6 +644,7 @@ class State(SCRObj):
         buf.write_wstr(self.ether)
         buf.write_wstr(self.code)
 
+
 class Dialog(SCRObj):
     name: str
     code: str
@@ -647,6 +668,7 @@ class Dialog(SCRObj):
     def to_buffer(self, buf: Buffer):
         buf.write_wstr(self.name)
         buf.write_wstr(self.code)
+
 
 class DialogMsg(SCRObj):
     command: str
@@ -672,6 +694,7 @@ class DialogMsg(SCRObj):
     def to_buffer(self, buf: Buffer):
         buf.write_wstr(self.command)
         buf.write_wstr(self.code)
+
 
 class DialogAnswer(SCRObj):
     command: str
@@ -744,7 +767,8 @@ class SCR:
         self.dialog_answers = []
 
     def __repr__(self) -> str:
-        return (f'SCR (version {self.version}):\n'
+        return (
+            f'SCR (version {self.version}):\n'
             f'global vars: {len(self.globalvars)}\n'
             f'local vars: {len(self.localvars)}\n'
             f'length of globalcode: {len(self.globalcode)}\n'
@@ -762,7 +786,7 @@ class SCR:
         scr.version = buf.read_uint()
 
         if scr.version not in SCR.SUPPORTED_VERSIONS:
-            raise ValueError(f'Unsupported script vrrsion: {scr.version}')
+            raise ValueError(f'Unsupported script version: {scr.version}')
 
         buf.read_uint()
 
@@ -880,7 +904,6 @@ class SCR:
         buf.write_uint(len(self.dialog_answers))
         for e in self.dialog_answers:
             e.to_buffer(buf)
-
 
     @classmethod
     def from_bytes(cls, data: bytes):

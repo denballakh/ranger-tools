@@ -1,6 +1,8 @@
 """!
 @file
 """
+from __future__ import annotations
+
 
 import os
 import time
@@ -72,7 +74,7 @@ class Logger:
             if clear_file:
                 open(self.filename, mode='wb').close()
             with open(self.filename, mode='wt+', encoding=LOGGER_ENCODING) as f:
-                print(f'New logger instance. Time: {time.ctime()}', file=f)
+                print(f'New logger instance. Time: {time.ctime()}', file=f, flush=True)
 
     def log(self, priority: LL, *args, **kwargs):
         """!
@@ -89,13 +91,8 @@ class Logger:
             print(f'[{priority.name}] ', *args, **kwargs)
 
             if self.filename:
-                if os.path.isfile(self.filename):
-                    mode = 'wt+'
-                else:
-                    mode = 'wt'
-
-                with open(self.filename, mode=mode, encoding=LOGGER_ENCODING) as f:
-                    print(f'[{priority.name}] ', *args, **kwargs, file=f)
+                with open(self.filename, mode='at', encoding=LOGGER_ENCODING) as f:
+                    print(f'[{priority.name}] ', *args, **kwargs, file=f, flush=True)
 
 
 class ModBuilder:
@@ -260,7 +257,7 @@ class ModBuilder:
         if compression_level is not None:
             pkg.compress(compression_level)
 
-        filename = f'{backup_path}/backup_{int(time.time())}.pkg'
+        filename = f'{backup_path}/{time.strftime("%Y.%m.%d %H-%M-%S")}.pkg'
         self.log(LL.INFO, f'Packing backup file to {filename} [{pkg.size()} bytes]')
         self.log(LL.VERBOSE, f'Backup contains {pkg.count()} files')
         pkg.to_pkg(filename)
@@ -376,7 +373,7 @@ class ModBuilder:
         self.convert_dats(inputs, 'CFG/CacheData.dat', fmt='HDCache', sign=sign)
 
 
-    def write_moduleinfo(self, data: Optional[dict[str, str]] = None, *, filename: str = 'ModuleInfo.txt'):
+    def write_moduleinfo(self, data: Optional[dict[str, str | int]] = None, *, filename: str = 'ModuleInfo.txt'):
         """!
         Создает файл информации о моде.
 
@@ -388,7 +385,7 @@ class ModBuilder:
         """
 
         try:
-            module_name = self.in_game_path.replace('\\', '/').split('/')[-1]
+            module_name = self.in_game_path.replace('\\', '/').split('/')[-2]
         except KeyError:
             self.log(LL.WARNING, f'Cannot get module name from "in_game_path": {self.in_game_path}')
             module_name = 'UNKNOWN_MODULE_NAME'
@@ -418,7 +415,7 @@ class ModBuilder:
             'Name': module_name,
             'Author': 'UNKNOWN_AUTHOR',
             'Conflict': '',
-            'Priority': '0',
+            'Priority': 0,
             'Dependence': '',
             'Languages': 'Rus',
 
@@ -426,9 +423,9 @@ class ModBuilder:
             'SmallDescription': f'короткое описание мода {module_name}',
             'FullDescription': f'полное описание мода {module_name}',
 
-            'SectionEng': section_names[section_name] if section_name in section_names else '',
-            'SmallDescriptionEng': f'small description {module_name}',
-            'FullDescriptionEng': f'full description {module_name}',
+            # 'SectionEng': section_names[section_name] if section_name in section_names else '',
+            # 'SmallDescriptionEng': f'small description {module_name}',
+            # 'FullDescriptionEng': f'full description {module_name}',
         }
 
         moduleinfo_data = default
@@ -437,9 +434,9 @@ class ModBuilder:
 
         content = ''
         for key, value in moduleinfo_data.items():
-            values = value.split('\n')
+            values = str(value).strip().split('\n')
             for v in values:
-                content += f'{key}={v}\n'
+                content += f'{key!s}={v.strip()!s}\n'
 
         self.log(LL.INFO, f'Saving module info to {filename}')
         filename = self.build_path + filename
@@ -572,12 +569,12 @@ class ModBuilder:
             'CacheData': 'CFG/CacheData.dat',
             'RUSSIAN': 'INSTALL_RUSSIAN.TXT',
             'ENGLISH': 'INSTALL_ENGLISH.TXT',
-            'COMMON': 'inSTALL.TXT',
+            'COMMON': 'INSTALL.TXT',
         }
 
 
     @not_implemented
-    def automatic_build(self, *args, **kwargs):
+    def auto_build(self, *args, **kwargs):
         """!"""
 
 

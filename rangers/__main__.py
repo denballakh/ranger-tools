@@ -9,8 +9,8 @@ import argparse
 from pathlib import Path
 import shutil as sh
 
-# import ranger_tools
-# import ranger_tools.modding
+# import rangers
+# import rangers.modding
 
 logger = ...
 
@@ -18,7 +18,7 @@ CODE_OK = 0
 CODE_ERR = 1
 
 parser = argparse.ArgumentParser(
-    prog='python -m ranger_tools',
+    prog='python -m rangers',
     description='Ranger-tools file converter',
     formatter_class=argparse.RawTextHelpFormatter,
 )
@@ -293,7 +293,7 @@ def process_dat(args):
 
 
 def process_pkg(args):
-    from ranger_tools.pkg import PKG
+    from rangers.pkg import PKG
 
     input_path = Path(args.input)
     output_path = Path(args.output)
@@ -303,7 +303,7 @@ def process_pkg(args):
             print(f'Warning: invalid extension: {input_path.suffix}')
 
         if str(output_path) == '*':
-            from ranger_tools.common import sizeof_fmt
+            from rangers.common import sizeof_fmt
 
             def print_pkg_item(item, indent=''):
                 i = indent
@@ -379,7 +379,7 @@ def process_script(args):
 
 
 def process_save(args):
-    from ranger_tools.sav import SAV
+    from rangers.sav import SAV
 
     input_path = Path(args.input)
     output_path = Path(args.output)
@@ -412,7 +412,7 @@ def process_save(args):
 
 
 def process_score(args):
-    from ranger_tools.score import SCORE
+    from rangers.score import SCORE
 
     input_path = Path(args.input)
     output_path = Path(args.output)
@@ -446,7 +446,7 @@ def process_score(args):
 if __name__ == "__main__":
     args = parser.parse_args()
 
-    print(args)
+    # print(args)
 
     match args.cmd:
         case 'dat':

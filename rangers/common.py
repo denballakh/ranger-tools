@@ -2,7 +2,7 @@
 @file
 """
 from __future__ import annotations
-
+from typing import Any, Callable, TypeVar, Tuple
 import os
 
 # def sizeof_fmt(num, suffix="B"):
@@ -27,6 +27,132 @@ import os
 #     return (f % (abs(r % (-r - 1)), pre[r], u)).format(n * b ** pow / b ** float(r))
 
 
+def identity(x: Any) -> Any:
+    return x
+
+
+##
+# Clamping to 0, 255
+def _clamp(v: float) -> int:
+    if v < 0:
+        return 0
+    if v > 255:
+        return 255
+    return round(v)
+
+
+# (1 - k / 2) * k == 1 - (1 - (1 - k / 2)) / k
+def darken(k: float) -> Callable[[float], float]:
+    assert 0 < k < 2, f'Value for k should be between 0 and 2: k = {k}'
+
+    k /= 2  # For balance to be at 1 instead of 0.5
+    _k = 1 - k
+    kd = k / _k
+
+    def f(x: float) -> float:
+        if x > _k:
+            return 1 - (1 - x) / kd
+        return x * kd
+
+    return f
+
+
+def average(c1: tuple[float, float, float], c2: tuple[float, float, float], ratio: float = 0.5) -> tuple[float, float, float]:
+    return tuple(y * ratio + x * (1 - ratio) for x, y in zip(c1, c2))  # type: ignore[return-value]
+
+
+def my_mul(x: float, mn: float, mx: float, mul: float) -> float:
+    assert mul >= 0
+    if mul < 1:
+        result = mn + (x - mn) * mul
+    elif mul > 1:
+        result = mx - (mx - x) / mul
+    else:
+        result = x
+    return min(max(result, mn), mx)
+
+
+def recolor(
+    color: tuple[int, int, int, int],
+    mask: tuple[int, int, int, int] | None,
+    red_angle: float, green_angle: float, blue_angle: float,
+    brightness: float,
+    lightness: Callable[[float], float],
+    gamma: float,
+    p_matrix: tuple[list[list[float]],list[list[float]],list[list[float]]],
+) -> tuple[float, float, float, float]:
+    size = 5
+    _255 = range(256 - size, 256)
+    _0 = range(0, 0 + size)
+
+    mask = mask or (255, 255, 255, 255)
+
+    r, g, b, a = color
+    mr, mg, mb, ma = mask
+
+    # mask = mr, mg, mb
+
+    if mr in _255 and mg in _0 and mb in _0:
+        angle = red_angle
+        matrix = p_matrix[0]
+    elif mr in _0 and mg in _255 and mb in _0:
+        angle = green_angle
+        matrix = p_matrix[1]
+    else:
+        angle = blue_angle
+        matrix = p_matrix[2]
+
+    # elif mr in _0  and mg in _0 and mb in _255:
+    #     pass
+    # elif mr in _255  and mg in _255 and mb in _255:
+    #     pass
+    # else:
+    #     pass
+
+    # RGB hue rotation
+    result: tuple[float, float, float] = (
+        _clamp(color[0] * matrix[0][0] + color[1] * matrix[0][1] + color[2] * matrix[0][2]),
+        _clamp(color[0] * matrix[1][0] + color[1] * matrix[1][1] + color[2] * matrix[1][2]),
+        _clamp(color[0] * matrix[2][0] + color[1] * matrix[2][1] + color[2] * matrix[2][2]),
+    )
+
+    if angle == blue_angle:
+        ratio = ma / 255
+
+        if brightness != 0.0 or ratio != 1.0:
+            # Linearize RGB from gamma
+            result = tuple((channel / 255) ** gamma for channel in result)  # type: ignore[assignment]
+            # Apply non-linearity
+            result = tuple(lightness(channel) for channel in result)  # type: ignore[assignment]
+
+            if ratio != 1.0:
+                original: tuple[float, float, float] = tuple((channel / 255) ** gamma for channel in (r, g, b))  # type: ignore[assignment]
+                result = average(original, result, ratio)
+
+            # De-linearize to gamma
+            result = tuple(channel ** (1 / gamma) * 255 for channel in result)  # type: ignore[assignment]
+
+    return *result, a
+
+
+##
+# Degree of non-linearity expressed in values `(-∞, +∞)\{0}`. Non-linearity increases when approaching `0`
+# Bias is neutral at `1.0`.
+# Lowering value shifts bias of the non-linearity towards `0` on the x scale, raising shifts bias towards max
+def nonlinear_brightness(dn: float, bias: float = 1.0) -> Callable[[float], float]:
+    assert bias > 0, f'Value for bias should be higher than 0: bias = {bias}'
+    assert dn != 0, 'Value for dn cannot be equal to 0'
+
+    # To reflect behavior of positive dn values
+    if dn < 0:
+        dn -= 1
+
+    def f(x: float) -> float:
+        return ((1 + dn) * pow(x, bias)) / (dn + pow(x, bias))
+
+    return f
+
+
 def check_dir(path: str) -> None:
     path = path.replace('\\', '/').replace('//', '/')
     splitted = path.split('/')[:-1]
@@ -37,7 +163,10 @@ def check_dir(path: str) -> None:
     for item in splitted:
         res += item
         if not os.path.isdir(res):
-            os.mkdir(res)
+            try:
+                os.mkdir(res)
+            except FileExistsError:
+                pass
 
 
 def clamp(v: float, lt: float, gt: float) -> float:

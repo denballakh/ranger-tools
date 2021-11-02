@@ -4,10 +4,10 @@ from typing import (
     TYPE_CHECKING,
     Any,
     TypeVar,
-    Type,
+    Literal,
     Generic,
     Callable,
-    Generator,
+    Iterator,
     final,
 )
 
@@ -25,6 +25,8 @@ G = TypeVar('G')
 
 
 class DataClass(Generic[T]):
+    __slots__ = ()
+
     def before(self, buf: Buffer) -> None:
         pass
 
@@ -219,7 +221,7 @@ class Bytes(DataClass[bytes]):
 
 
 class List(DataClass[list[T]]):
-    def __init__(self, dcls: DataClass[T], lensize: int = 4, byteorder: str = 'little') -> None:
+    def __init__(self, dcls: DataClass[T], lensize: int = 4, byteorder: Literal['little', 'big'] = 'little') -> None:
         self.dcls = dcls
         self.lensize = lensize
         self.byteorder = byteorder
@@ -348,11 +350,11 @@ class Nested(DataClass[T]):
 
     def read(self, buf: IBuffer) -> T:
         data = self.dcls1.read(buf)
-        obj = self.dcls2.read(Buffer(data))
+        obj = self.dcls2.read(IBuffer(data))
         return obj
 
     def write(self, buf: OBuffer, obj: T) -> None:
-        buf2 = Buffer()
+        buf2 = OBuffer()
         self.dcls2.write(buf2, obj)
         data = bytes(buf2)
         self.dcls1.write(buf, data)
@@ -376,7 +378,7 @@ class CryptedRand31pm(DataClass[bytes]):
         self.length = length
 
     @staticmethod
-    def _rand31pm(seed: int) -> Generator[int, None, None]:
+    def _rand31pm(seed: int) -> Iterator[int]:
         while True:
             hi, lo = divmod(seed, 0x1F31D)
             seed = lo * 0x41A7 - hi * 0xB14
@@ -387,7 +389,7 @@ class CryptedRand31pm(DataClass[bytes]):
     def read(self, buf: IBuffer) -> bytes:
         content_hash = buf.read_uint()
         rnd = self._rand31pm(buf.read_int() ^ self.key)
-        dout = Buffer()
+        dout = OBuffer()
         while buf:
             dout.write_byte(buf.read_byte() ^ (next(rnd) & 0xFF))
         result = bytes(dout)
@@ -398,12 +400,13 @@ class CryptedRand31pm(DataClass[bytes]):
         rnd = self._rand31pm(self.seed)
         buf.write_uint(zlib.crc32(obj))
         buf.write_int(self.seed ^ self.key)
-        din = Buffer(obj)
+        din = IBuffer(obj)
         while din:
             buf.write_byte(din.read_byte() ^ (next(rnd) & 0xFF))
 
+
 class ZL(DataClass[bytes]):
-    def __init__(self, mode, **kwargs) -> None:
+    def __init__(self, mode: int, **kwargs) -> None:
         assert mode in {1, 2, 3}
         self.mode = mode
         self.kwargs = kwargs
@@ -422,7 +425,6 @@ class ZL(DataClass[bytes]):
             data = zlib.decompress(compressed_data)
             assert len(data) == decompressed_size
             return data
-
 
         if self.mode == 2:
             pass
@@ -445,8 +447,6 @@ class ZL(DataClass[bytes]):
         raise ValueError(f'Unknown ZL mode: {self.mode}')
 
 
-
-
 # class BinaryObject(Generic[T]):
 #     __dcls__: DataClass[T]
 
@@ -455,4 +455,3 @@ class ZL(DataClass[bytes]):
 
 #     def write(self) -> T:
 #         pass
-

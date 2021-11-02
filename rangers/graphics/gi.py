@@ -11,16 +11,20 @@ from PIL.Image import Image as ImageType
 from ..buffer import Buffer
 from ..common import rgb565le_to_rgb888, rgb24_to_rgb16, rgb888_to_rgb565le
 
-__all__ = ['GI',]
+__all__ = [
+    'GI',
+]
 
 
 class Point:
     __slots__ = ('x', 'y')
     x: int
     y: int
-    def __init__(self, x: int, y: int):
+
+    def __init__(self, x: int, y: int) -> None:
         self.x = x
         self.y = y
+
 
 class Layer:
     def __init__(self) -> None:
@@ -29,7 +33,6 @@ class Layer:
         self.finish_X: int = 0
         self.finish_Y: int = 0
         self.data: bytes = b''
-
 
     @classmethod
     def from_bytes(cls, data: bytes) -> Layer:
@@ -81,12 +84,11 @@ class Layer:
         buf.write_uint(pos)
         buf.pop_pos()
 
-
     def __repr__(self) -> str:
         s = (
-        f'Layer:\n'
-        f'  size: {len(self.data)}\n'
-        f'  position: {self.start_X},{self.start_Y} - {self.finish_X},{self.finish_Y}\n'
+            f'Layer:\n'
+            f'  size: {len(self.data)}\n'
+            f'  position: {self.start_X},{self.start_Y} - {self.finish_X},{self.finish_Y}\n'
         )
         return s
 
@@ -225,7 +227,6 @@ class GI:
         for i, l in enumerate(self.layers):
             l.data_to_buffer(buf, data_positions[i])
 
-
     @classmethod
     def from_gi(cls, path: str) -> GI:
         with open(path, 'rb') as file:
@@ -241,16 +242,25 @@ class GI:
     def from_image(cls, img: ImageType, fmt: int | None = 2, opt: int | None = None) -> GI:
         assert fmt in {0, 1, 2, 3, 4, 5}
 
-        converters = {
-            0: from_image_0,
-            1: from_image_1,
-            2: from_image_2,
-            3: from_image_3,
-            4: from_image_4,
-            5: from_image_5,
-        }
-        converter = converters[fmt]
-        return converter(img, fmt, opt)
+        if fmt == 0:
+            return from_image_0(img, fmt, opt)
+
+        if fmt == 1:
+            return from_image_1(img, fmt, opt)
+
+        if fmt == 2:
+            return from_image_2(img, fmt, opt)
+
+        if fmt == 3:
+            return from_image_3(img, fmt, opt)
+
+        if fmt == 4:
+            return from_image_4(img, fmt, opt)
+
+        if fmt == 5:
+            return from_image_5(img, fmt, opt)
+
+        raise ValueError
 
     def to_image(self) -> ImageType:
         converters = {
@@ -270,6 +280,8 @@ def from_image_0(img: ImageType, fmt: int, opt: int = None) -> GI:
     assert fmt == 0
 
     img = img.convert('RGBA')
+    width: int
+    height: int
     width, height = img.size
 
     gi = GI()
@@ -291,8 +303,12 @@ def from_image_0(img: ImageType, fmt: int, opt: int = None) -> GI:
     buf = Buffer()
 
     # RGBA8888
-    data = list(img.getdata())
+    data: list[tuple[int, int, int, int]] = list(img.getdata())
 
+    r: int
+    g: int
+    b: int
+    a: int
     if opt == 32:
         # ARGB8888
         header.a_bitmask = 0xFF000000
@@ -318,13 +334,15 @@ def from_image_0(img: ImageType, fmt: int, opt: int = None) -> GI:
     else:
         raise ValueError(f'Invalid option value: {opt}')
 
-    layer.data = bytes(buf)
+    layer.data = bytes(buf.data)
 
     return gi
+
 
 def from_image_1(img: ImageType, fmt, opt=None) -> GI:
     assert fmt == 1
     raise NotImplementedError
+
 
 def from_image_2(img: ImageType, fmt: int, opt: int = None) -> GI:
     assert fmt == 2
@@ -342,7 +360,7 @@ def from_image_2(img: ImageType, fmt: int, opt: int = None) -> GI:
     header.finish_X = width
     header.finish_Y = height
     header.r_bitmask = 0xF800
-    header.g_bitmask = 0x07e0
+    header.g_bitmask = 0x07E0
     header.b_bitmask = 0x001F
     header.a_bitmask = 0x0000
 
@@ -377,14 +395,14 @@ def from_image_2(img: ImageType, fmt: int, opt: int = None) -> GI:
     pixels: bytes = b''
 
     # RGBA8888
-    data: list[tuple[int,int,int,int]] = list(img.getdata())
+    data: list[tuple[int, int, int, int]] = list(img.getdata())
     index: int = 0
 
     for y in range(height):
         for x in range(width):
             if data[index][3] == 255:
                 if cnt and not pixels:
-                    buf0.write_byte(cnt) # skip cnt pixels
+                    buf0.write_byte(cnt)  # skip cnt pixels
                     cnt = 0
                     pixels = b''
                 cnt += 1
@@ -392,40 +410,41 @@ def from_image_2(img: ImageType, fmt: int, opt: int = None) -> GI:
                 pixels += rgb888_to_rgb565le(data[index][0], data[index][1], data[index][2])
 
                 if cnt >= 127:
-                    buf0.write_byte(0x80 + cnt) # read cnt pixels + pixels
+                    buf0.write_byte(0x80 + cnt)  # read cnt pixels + pixels
                     buf0.write(pixels)
                     cnt = 0
                     pixels = b''
             else:
-                if pixels:
-                    buf0.write_byte(0x80 + cnt) # read cnt pixels + pixels
+                if len(pixels):
+                    buf0.write_byte(0x80 + cnt)  # read cnt pixels + pixels
                     buf0.write(pixels)
                     cnt = 0
                     pixels = b''
                 cnt += 1
 
                 if cnt >= 127:
-                    buf0.write_byte(cnt) # skip cnt pixels
+                    buf0.write_byte(cnt)  # skip cnt pixels
                     cnt = 0
                     pixels = b''
 
             index += 1
 
-        if pixels:
-            buf0.write_byte(0x80 + cnt) # read cnt pixels + pixels
+        if len(pixels):
+            buf0.write_byte(0x80 + cnt)  # read cnt pixels + pixels
             buf0.write(pixels)
             pixels = b''
+
         elif cnt:
             if cnt == width:
                 buf0.write_byte(0x80)
                 cnt = 0
                 continue
             else:
-                buf0.write_byte(cnt) # skip cnt pixels
+                buf0.write_byte(cnt)  # skip cnt pixels
 
         cnt = 0
 
-        buf0.write_byte(0x00) # go to next line
+        buf0.write_byte(0x00)  # go to next line
 
     cnt = 0
     pixels1: bytes = b''
@@ -461,7 +480,7 @@ def from_image_2(img: ImageType, fmt: int, opt: int = None) -> GI:
                     pixels1 = b''
                     pixels2 = b''
             else:
-                if pixels1:
+                if len(pixels1):
                     buf1.write_byte(0x80 + cnt)
                     buf1.write(pixels1)
                     buf2.write_byte(0x80 + cnt)
@@ -472,7 +491,7 @@ def from_image_2(img: ImageType, fmt: int, opt: int = None) -> GI:
                 cnt += 1
 
                 if cnt >= 127:
-                    buf1.write_byte(cnt) # read cnt pixels + pixels
+                    buf1.write_byte(cnt)  # read cnt pixels + pixels
                     buf2.write_byte(cnt)
                     cnt = 0
                     pixels1 = b''
@@ -480,16 +499,17 @@ def from_image_2(img: ImageType, fmt: int, opt: int = None) -> GI:
 
             index += 1
 
-        if pixels1:
+        if len(pixels1):
             buf1.write_byte(0x80 + cnt)
             buf1.write(pixels1)
             buf2.write_byte(0x80 + cnt)
             buf2.write(pixels2)
             pixels1 = b''
             pixels2 = b''
+
         elif cnt:
             if cnt == width:
-                buf1.write_byte(0x80) # go to next line
+                buf1.write_byte(0x80)  # go to next line
                 buf2.write_byte(0x80)
                 cnt = 0
                 continue
@@ -498,30 +518,29 @@ def from_image_2(img: ImageType, fmt: int, opt: int = None) -> GI:
                 buf2.write_byte(cnt)
 
         cnt = 0
-        buf1.write_byte(0x00) # go to next line
+        buf1.write_byte(0x00)  # go to next line
         buf2.write_byte(0x00)
-
 
     buf0_ = Buffer()
     buf0_.write_uint(len(buf0))
     buf0_.write_uint(width)
     buf0_.write_uint(height)
     buf0_.write_uint(0)
-    buf0_.write(buf0)
+    buf0_.write(buf0.data)
 
     buf1_ = Buffer()
     buf1_.write_uint(len(buf1))
     buf1_.write_uint(width)
     buf1_.write_uint(height)
     buf1_.write_uint(0)
-    buf1_.write(buf1)
+    buf1_.write(buf1.data)
 
     buf2_ = Buffer()
     buf2_.write_uint(len(buf2))
     buf2_.write_uint(width)
     buf2_.write_uint(height)
     buf2_.write_uint(0)
-    buf2_.write(buf2)
+    buf2_.write(buf2.data)
 
     layer0.data = bytes(buf0_.data)
     layer1.data = bytes(buf1_.data)
@@ -534,9 +553,11 @@ def from_image_3(img: ImageType, fmt, opt=None) -> GI:
     assert fmt == 3
     raise NotImplementedError
 
+
 def from_image_4(img: ImageType, fmt, opt=None) -> GI:
     assert fmt == 4
     raise NotImplementedError
+
 
 def from_image_5(img: ImageType, fmt, opt=None) -> GI:
     assert fmt == 5
@@ -554,7 +575,12 @@ def to_image_0(gi: GI) -> ImageType:
     width = header.finish_X - header.start_X
     height = header.finish_Y - header.start_Y
 
-    if (header.a_bitmask, header.r_bitmask, header.g_bitmask, header.b_bitmask) == (0xFF000000, 0xFF0000, 0xFF00, 0xFF):
+    if (header.a_bitmask, header.r_bitmask, header.g_bitmask, header.b_bitmask) == (
+        0xFF000000,
+        0x00FF0000,
+        0x0000FF00,
+        0x000000FF,
+    ):
         img = Image.new('RGBA', (width, height), (0, 0, 0, 0))
 
         buf = Buffer(layer.data)
@@ -573,15 +599,19 @@ def to_image_0(gi: GI) -> ImageType:
                 img.putpixel((x - header.start_X, y - header.start_Y), rgb565le_to_rgb888(rgb16))
 
     else:
-        raise ValueError(f'Invalid bitmask: {(header.r_bitmask, header.g_bitmask, header.b_bitmask)}')
+        raise ValueError(
+            f'Invalid bitmask: {(header.r_bitmask, header.g_bitmask, header.b_bitmask)}'
+        )
 
     return img
+
 
 # One layer, 16 bit RGB optimized
 def to_image_1(gi: GI) -> ImageType:
     assert gi.header.frame_type == 1
     assert gi.header.layer_count == 1
     raise NotImplementedError
+
 
 # Three layers: 16 bit RGB optimized - body, 16 bit RGB optimized - outline, 6 bit Alpha optimized
 def to_image_2(gi: GI) -> ImageType:
@@ -627,7 +657,7 @@ def to_image_2(gi: GI) -> ImageType:
 
             elif byte > 0x80:
                 # pixels found
-                cnt = byte & 0x7f
+                cnt = byte & 0x7F
                 size -= cnt * (1 if li == 2 else 2)
 
                 pos_add = (pos.y + start_Y) * width + start_X
@@ -642,8 +672,8 @@ def to_image_2(gi: GI) -> ImageType:
                         a = (63 - buf.read_byte()) << 2
 
                         r = out_data[index]
-                        g = out_data[index+1]
-                        b = out_data[index+2]
+                        g = out_data[index + 1]
+                        b = out_data[index + 2]
 
                         if a not in (0, 255):
                             # Retrieveing second layer pixel value from premultiplied alpha (destructive operation)
@@ -651,10 +681,10 @@ def to_image_2(gi: GI) -> ImageType:
                             g = round((g / a) * 63) << 2
                             b = round((b / a) * 63) << 2
 
-                    out_data[index]   = r
-                    out_data[index+1] = g
-                    out_data[index+2] = b
-                    out_data[index+3] = a
+                    out_data[index] = r
+                    out_data[index + 1] = g
+                    out_data[index + 2] = b
+                    out_data[index + 3] = a
 
                     pos.x += 1
                     cnt -= 1
@@ -665,11 +695,13 @@ def to_image_2(gi: GI) -> ImageType:
 
     return Image.frombytes('RGBA', (width, height), bytes(out_data))
 
+
 # Two layers: Indexed RGB colors, Indexed Alpha
 def to_image_3(gi: GI) -> ImageType:
     assert gi.header.frame_type == 3
     assert gi.header.layer_count == 2
     raise NotImplementedError
+
 
 # One layer, indexed RGBA colors
 def to_image_4(gi: GI) -> ImageType:
@@ -677,8 +709,8 @@ def to_image_4(gi: GI) -> ImageType:
     assert gi.header.layer_count == 1
     raise NotImplementedError
 
+
 # Delta frame of GAI animation
 def to_image_5(gi: GI) -> ImageType:
     assert gi.header.frame_type == 5
     raise NotImplementedError
-

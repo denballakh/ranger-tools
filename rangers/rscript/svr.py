@@ -1,10 +1,12 @@
-from ..io import Buffer
+from ..buffer import Buffer
 from .enums import *
+
 
 def rgb_to_dword(r, g, b):
     return (b << 16) | (g << 8) | r
 
-def pos_gen(size, step = 20):
+
+def pos_gen(size, step=20):
     n = 0
     while True:
         y, x = divmod(n, size)
@@ -12,9 +14,9 @@ def pos_gen(size, step = 20):
         yield Point(x * step, y * step)
 
 
-
 class MinMax:
     __slots__ = ['min', 'max']
+
     def __repr__(self) -> str:
         return f'<MinMax: min={self.min!r} max={self.max!r}>'
 
@@ -22,8 +24,10 @@ class MinMax:
         self.min = mn
         self.max = mx
 
+
 class Point:
     __slots__ = ['x', 'y']
+
     def __repr__(self) -> str:
         return f'<Point: x={self.x!r} y={self.y!r}>'
 
@@ -31,8 +35,10 @@ class Point:
         self.x = x
         self.y = y
 
+
 class Status:
     __slots__ = ['trader', 'warrior', 'pirate']
+
     def __repr__(self) -> str:
         return f'<Status: trader={self.trader!r} warrior={self.warrior!r} pirate={self.pirate!r}>'
 
@@ -41,8 +47,10 @@ class Status:
         self.warrior = warrior
         self.pirate = pirate
 
+
 class Rect:
     __slots__ = "top", "left", "right", "bottom"
+
     def __repr__(self):
         return f'<Rect: top={self.top!r} left={self.left!r} right={self.right!r} bottom={self.bottom!r}>'
 
@@ -51,7 +59,6 @@ class Rect:
         self.left = left
         self.right = right
         self.bottom = bottom
-
 
 
 class GraphPoint:
@@ -88,6 +95,7 @@ class GraphPoint:
 
 class GraphLink:
     classname = "TGraphLink"
+
     def __repr__(self) -> str:
         return f'<{self.classname}: begin={self.begin!r} end={self.end!r} ord_num={self.ord_num!r} has_arrow={self.has_arrow!r}>'
 
@@ -194,7 +202,6 @@ class GraphRect:
         return self
 
 
-
 class Star(GraphPoint):
     classname = "TStar"
 
@@ -290,9 +297,7 @@ class Ship(GraphPoint):
         self.cargohook = 0
         self.emptyspace = 0
         self.rating = MinMax(0, 1000)
-        self.status = Status(MinMax(0, 100),
-                             MinMax(0, 100),
-                             MinMax(0, 100))
+        self.status = Status(MinMax(0, 100), MinMax(0, 100), MinMax(0, 100))
         self.score = MinMax(0, 1000000)
         self.strength = MinMax(0, 0)
         self.ruins = ""
@@ -336,7 +341,11 @@ class Ship(GraphPoint):
         self.cargohook = buf.read_uint()
         self.emptyspace = buf.read_int()
         self.rating = MinMax(buf.read_int(), buf.read_int())
-        self.status = Status(MinMax(buf.read_int(), buf.read_int()), MinMax(buf.read_int(), buf.read_int()), MinMax(buf.read_int(), buf.read_int()))
+        self.status = Status(
+            MinMax(buf.read_int(), buf.read_int()),
+            MinMax(buf.read_int(), buf.read_int()),
+            MinMax(buf.read_int(), buf.read_int()),
+        )
         self.score = MinMax(buf.read_int(), buf.read_int())
         self.strength = MinMax(buf.read_int(), buf.read_int())
         self.ruins = buf.read_wstr()
@@ -346,6 +355,7 @@ class Ship(GraphPoint):
 
 class Item(GraphPoint):
     classname = "TItem"
+
     def __repr__(self) -> str:
         return f'<{self.classname}: pos={self.pos!r} text={self.text!r} kind={self.kind!r} type={self.type!r} size={self.size!r} level={self.level!r} radius={self.radius!r} owner={self.owner!r} useless={self.useless!r}>'
 
@@ -439,9 +449,7 @@ class Group(GraphPoint):
         self.friendship = FRIENDSHIP.FREE  # f
         self.add_player = False
         self.rating = MinMax(0, 1000)
-        self.status = Status(MinMax(0, 100),
-                             MinMax(0, 100),
-                             MinMax(0, 100))
+        self.status = Status(MinMax(0, 100), MinMax(0, 100), MinMax(0, 100))
         self.score = MinMax(0, 1000000)
         self.search_dist = 10000
         self.dialog = None
@@ -536,7 +544,11 @@ class State(GraphPoint):
         self.obj = self._script.graphpoints[self.obj] if self.obj != -1 else None
         self.item = self._script.graphpoints[self.item] if self.item != -1 else None
         for i in range(len(self.attack_groups)):
-            self.attack_groups[i] = self._script.graphpoints[self.attack_groups[i]] if self.attack_groups[i] != -1 else None
+            self.attack_groups[i] = (
+                self._script.graphpoints[self.attack_groups[i]]
+                if self.attack_groups[i] != -1
+                else None
+            )
 
     def to_buffer(self, buf: Buffer):
         GraphPoint.to_buffer(self, buf)
@@ -631,7 +643,7 @@ class ExprWhile(GraphPoint):
     def __repr__(self) -> str:
         return f'<{self.classname}: pos={self.pos!r} text={self.text!r} expression={self.expression!r} type={self.type!r}>'
 
-    def __init__(self, script, pos= None, text=""):
+    def __init__(self, script, pos=None, text=""):
         GraphPoint.__init__(self, script, pos, text)
         self.expression = ""
         self.type = OP_TYPE.NORMAL  # op
@@ -721,6 +733,7 @@ class Ether(GraphPoint):
 
 class Dialog(GraphPoint):
     classname = "TDialog"
+
     def __repr__(self) -> str:
         return f'<{self.classname}: pos={self.pos!r} text={self.text!r}>'
 
@@ -741,6 +754,7 @@ class Dialog(GraphPoint):
 
 class DialogMsg(GraphPoint):
     classname = "TDialogMsg"
+
     def __repr__(self) -> str:
         return f'<{self.classname}: pos={self.pos!r} text={self.text!r} msg={self.msg!r}>'
 
@@ -786,15 +800,13 @@ class DialogAnswer(GraphPoint):
         return self
 
 
-
 class StarLink(GraphLink):
     classname = "TStarLink"
 
     def __repr__(self) -> str:
         return f'<{self.classname}: begin={self.begin!r} end={self.end!r} ord_num={self.ord_num!r} has_arrow={self.has_arrow!r} dist={self.dist!r} deviation={self.deviation!r} relation={self.relation!r} is_hole={self.is_hole!r}>'
 
-    def __init__(self, script, begin=None, end=None, ord_num=0,
-                 has_arrow=False):
+    def __init__(self, script, begin=None, end=None, ord_num=0, has_arrow=False):
         GraphLink.__init__(self, script, begin, end, ord_num, has_arrow)
         self.dist = MinMax(0, 150)
         self.deviation = 25
@@ -831,8 +843,7 @@ class GroupLink(GraphLink):
     def __repr__(self) -> str:
         return f'<{self.classname}: begin={self.begin!r} end={self.end!r} ord_num={self.ord_num!r} has_arrow={self.has_arrow!r} relations={self.relations!r} war_weight={self.war_weight!r}>'
 
-    def __init__(self, script, begin=None, end=None, ord_num=0,
-                 has_arrow=True):
+    def __init__(self, script, begin=None, end=None, ord_num=0, has_arrow=True):
         GraphLink.__init__(self, script, begin, end, ord_num, has_arrow)
         self.relations = [RELATION.NOCHANGE, RELATION.NOCHANGE]
         self.war_weight = MinMax(0.0, 1000.0)
@@ -862,8 +873,7 @@ class StateLink(GraphLink):
     def __repr__(self) -> str:
         return f'<{self.classname}: begin={self.begin!r} end={self.end!r} ord_num={self.ord_num!r} has_arrow={self.has_arrow!r} expression={self.expression!r} priority={self.priority!r}>'
 
-    def __init__(self, script, begin=None, end=None, ord_num=0,
-                 has_arrow=True):
+    def __init__(self, script, begin=None, end=None, ord_num=0, has_arrow=True):
         GraphLink.__init__(self, script, begin, end, ord_num, has_arrow)
         self.expression = ""
         self.priority = 0
@@ -933,7 +943,8 @@ class SVR:
         return None
 
     def find(self, name):
-        if name == "": return None
+        if name == "":
+            return None
         for gp in self.graphpoints:
             if gp.text == name:
                 return gp
@@ -969,7 +980,6 @@ class SVR:
             buf.write_wstr(lang)
             buf.write_wstr(filename)
 
-
         buf.write(b'\0' * 6)
         buf.write_uint(len(self.translations))
         for tr_id, tran in self.translations:
@@ -983,7 +993,6 @@ class SVR:
         #     buf.write_byte(1)
         #     buf.write_wstr(tr_id)
         #     buf.write_wstr(tran)
-
 
         buf.write_uint(len(self.graphpoints))
         for gp in self.graphpoints:
@@ -1084,16 +1093,36 @@ class SVR:
             file.write(self.to_bytes())
 
 
-classnames_points = {v.classname: v for v in (
-    GraphPoint, Star, Planet, Ship, Item, Place, Group, State,
-    ExprOp, ExprIf, ExprWhile, ExprVar, Ether,
-    Dialog, DialogMsg, DialogAnswer,
-)}
+classnames_points = {
+    v.classname: v
+    for v in (
+        GraphPoint,
+        Star,
+        Planet,
+        Ship,
+        Item,
+        Place,
+        Group,
+        State,
+        ExprOp,
+        ExprIf,
+        ExprWhile,
+        ExprVar,
+        Ether,
+        Dialog,
+        DialogMsg,
+        DialogAnswer,
+    )
+}
 
-classnames_links = {v.classname: v for v in (
-    GraphLink, GroupLink, StateLink, StarLink,
-)}
+classnames_links = {
+    v.classname: v
+    for v in (
+        GraphLink,
+        GroupLink,
+        StateLink,
+        StarLink,
+    )
+}
 
-classnames_rects = {v.classname: v for v in (
-    GraphRect,
-)}
+classnames_rects = {v.classname: v for v in (GraphRect,)}

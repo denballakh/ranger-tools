@@ -1,6 +1,8 @@
 """!
 @file
 """
+from __future__ import annotations
+
 
 from PIL import Image
 import zlib
@@ -42,7 +44,7 @@ class GAIFrame:
         return f'<GAIFrame: {vars(self)}>'
 
     @classmethod
-    def from_buffer(cls, buf: Buffer) -> 'GAIFrame':
+    def from_buffer(cls, buf: Buffer) -> GAIFrame:
         buf.push_pos()
         signature = buf.read(4)
         buf.pop_pos()
@@ -77,7 +79,7 @@ class GAI:
         return f'<GAI: {vars(self)}>'
 
     @classmethod
-    def from_buffer(cls, buf: Buffer) -> 'GAI':
+    def from_buffer(cls, buf: Buffer) -> GAI:
         self = cls()
 
         signature = buf.read(4)
