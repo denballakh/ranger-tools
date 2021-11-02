@@ -8,7 +8,10 @@ def process():
 
             if os.stat(filename).st_size == 0:
                 print(filename[2:])
-                os.remove(filename)
+                try:
+                    os.remove(filename)
+                except:
+                    print(f'Error while deleting file {filename}')
 
 if __name__ == '__main__':
     process()

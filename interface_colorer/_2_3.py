@@ -5,29 +5,32 @@ TODO:
 Конвертирует _gai папки в .gai
 Конвертирует .txt файлы в .dat
 '''
-from PIL import Image
 from random import sample
 import os
 import time
 
+from PIL import Image
+
 from rangers.graphics.gi import GI
 from rangers.graphics.gai import GAI
-from rangers.pkg import PKG
-from rangers.dat import DAT
+# from rangers.pkg import PKG
+# from rangers.dat import DAT
+
+import config
 
 Image.MAX_IMAGE_PIXELS = 4096 ** 2
 
-rewrite = False
-randomize = False
-PROFILE = False
+rewrite = config.rewrite
+randomize = config.randomize
+PROFILE = config.PROFILE
 
 
 # Default GI conversion
-gi_type = 2
-gi_bit = 16
+gi_type = config.gi_type
+gi_bit = config.gi_bit
 
-_in = '2_colored/'
-_out = '3_result/'
+_in = config._2
+_out = config._3
 
 
 def check_dir(path):

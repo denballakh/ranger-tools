@@ -8,25 +8,29 @@ import time
 
 from PIL import Image
 
+from rangers.common import check_dir, identity, _clamp, darken, average, my_mul, nonlinear_brightness, recolor
+
+import config
+
 Image.MAX_IMAGE_PIXELS = 4096 ** 2
 
 min_alpha = 2
 
 # Controlled by main.py
-rewrite = False
-randomize = False
-PROFILE = False
+rewrite = config.rewrite
+randomize = config.randomize
+PROFILE = config.PROFILE
 
-modified_file_delta = 3600  # s
+modified_file_delta = config.modified_file_delta
 
-_in = '1_converted/'
-_out = '2_colored/'
-_dats = '_dats/'
+_in = config._1
+_out = config._2
+_dats = config._dats
 
-dat_file = 'Main.txt'
+dat_file = config.dat_file
 
-modified_rules: list[str] = []
-dat_rule_mod = 0
+modified_rules = config.modified_rules
+dat_rule_mod = config.dat_rule_mod
 
 
 def get_rules():
@@ -34,15 +38,15 @@ def get_rules():
 
     rules = {
         'Red':      transform(-90, 0, 160, saturation=1.08, value=0.98),
-        'Green':    transform(0, 90, 280),
-        'Blue':     transform(0, 0, 40),
+        # 'Green':    transform(0, 90, 280),
+        # 'Blue':     transform(0, 0, 40),
 
-        'Yellow':   transform(0, 0, 220),
-        'Cyan':     transform(0, 0, 340),
-        'Magenta':  transform(0, 0, 100),
+        # 'Yellow':   transform(0, 0, 220),
+        # 'Cyan':     transform(0, 0, 340),
+        # 'Magenta':  transform(0, 0, 100),
 
-        'Grey':     to_grey(brightness=0.42),
-        'DarkGrey': to_grey(brightness=6.00, bias=1.03)
+        # 'Grey':     to_grey(brightness=0.42),
+        # 'DarkGrey': to_grey(brightness=6.00, bias=1.03)
     }
     return rules
 
@@ -218,63 +222,6 @@ def recolor_dat():
             fp.write(s)
 
 
-# (1 - k / 2) * k == 1 - (1 - (1 - k / 2)) / k
-def darken(k):
-    assert 0 < k < 2, f'Value for k should be between 0 and 2: k = {k}'
-
-    k /= 2  # For balance to be at 1 instead of 0.5
-    _k = 1 - k
-    kd = k / _k
-
-    def f(x):
-        if x > _k:
-            return 1 - (1 - x) / kd
-        else:
-            return x * kd
-
-    return f
-
-
-def my_mul(x, mn, mx, mul):
-    assert mul >= 0
-    if mul < 1:
-        result = mn + (x - mn) * mul
-    elif mul > 1:
-        result = mx - (mx - x) / mul
-    else:
-        result = x
-    return min(max(result, mn), mx)
-
-##
-# Clamping to 0, 255
-def _clamp(v):
-    if v < 0:
-        return 0
-    if v > 255:
-        return 255
-    return v
-
-
-def average(c1, c2, ratio=0.5):
-    return tuple(y * ratio + x * (1 - ratio) for x, y in zip(c1, c2))
-
-##
-# Degree of non-linearity expressed in values `(-∞, +∞)\{0}`. Non-linearity increases when approaching `0`
-# Bias is neutral at `1.0`.
-# Lowering value shifts bias of the non-linearity towards `0` on the x scale, raising shifts bias towards max
-def nonlinear_brightness(dn, bias=1.0):
-    assert bias > 0, f'Value for bias should be higher than 0: bias = {bias}'
-    assert dn != 0, 'Value for dn cannot be equal to 0'
-
-    # To reflect behavior of positive dn values
-    if dn < 0:
-        dn -= 1
-
-    def f(x):
-        return ((1 + dn) * pow(x, bias)) / (dn + pow(x, bias))
-
-    return f
-
 
 def to_grey(brightness, bias=1.0, gamma=2.2):
     size = 5
@@ -284,7 +231,7 @@ def to_grey(brightness, bias=1.0, gamma=2.2):
     if brightness != 0:
         lightness = nonlinear_brightness(brightness, bias)
     else:
-        lightness = lambda x : x
+        lightness = identity
 
     def f(color, mask=None):
         mask = mask or (255, 255, 255, 255)
@@ -300,7 +247,7 @@ def to_grey(brightness, bias=1.0, gamma=2.2):
             return r, g, b, a
 
         # Linearize RGB from gamma
-        original = tuple(pow(channel / 255, gamma) for channel in (r, g, b))
+        original = tuple((channel / 255) ** gamma for channel in (r, g, b))
         # Rec. 709 luma grayscale coefficients
         v = original[0] * .2126 + original[1] * .7152 + original[2] * .0722
         # Apply non-linearity
@@ -311,9 +258,9 @@ def to_grey(brightness, bias=1.0, gamma=2.2):
             result = v, v, v
             result = average(original, result, ratio)
         # De-linearize to gamma
-            result = tuple(pow(channel, 1 / gamma) * 255 for channel in result)
+            result = tuple(channel ** (1 / gamma) * 255 for channel in result)
         else:
-            v = pow(v, 1 / gamma) * 255
+            v = v ** (1 / gamma) * 255
             result = v, v, v
 
         return *result, a
@@ -349,57 +296,14 @@ def transform(red_angle, green_angle, blue_angle, saturation=1.0, value=1.0, bri
     if brightness != 0:
         lightness = nonlinear_brightness(brightness, bias)
     else:
-        lightness = lambda x : x
+        lightness = identity
 
-    def f(color, mask=None):
-        mask = mask or (255, 255, 255, 255)
-
-        r, g, b, a = color
-        mr, mg, mb, ma = mask
-
-        #mask = mr, mg, mb
-
-        if mr in _255 and mg in _0 and mb in _0:
-            angle = red_angle
-            matrix = p_matrix[0]
-        elif mr in _0 and mg in _255 and mb in _0:
-            angle = green_angle
-            matrix = p_matrix[1]
-        else:
-            angle = blue_angle
-            matrix = p_matrix[2]
-
-        # elif mr in _0  and mg in _0 and mb in _255:
-        #     pass
-        # elif mr in _255  and mg in _255 and mb in _255:
-        #     pass
-        # else:
-        #     pass
-
-        # RGB hue rotation
-        result = _clamp(color[0] * matrix[0][0] + color[1] * matrix[0][1] + color[2] * matrix[0][2]), \
-                 _clamp(color[0] * matrix[1][0] + color[1] * matrix[1][1] + color[2] * matrix[1][2]), \
-                 _clamp(color[0] * matrix[2][0] + color[1] * matrix[2][1] + color[2] * matrix[2][2])
-
-        if angle == blue_angle:
-            ratio = ma / 255
-
-            if brightness != 0.0 or ratio != 1.0:
-                # Linearize RGB from gamma
-                result = tuple(pow(channel / 255, gamma) for channel in result)
-                # Apply non-linearity
-                result = tuple(lightness(channel) for channel in result)
-
-                if ratio != 1.0:
-                    original = tuple(pow(channel / 255, gamma) for channel in (r, g, b))
-                    result = average(original, result, ratio)
-
-                # De-linearize to gamma
-                result = tuple(pow(channel, 1 / gamma) * 255 for channel in result)
-
-        return *result, a
-
-    return f
+    return lambda color, mask=None: recolor(
+        color, mask,
+        red_angle, green_angle, blue_angle,
+        brightness, lightness, gamma,
+        p_matrix
+    )
 
 
 def recolor_two_colors(rule1, rule2):
@@ -480,12 +384,13 @@ def process():
 
             out_data = []
 
-            #start_time = time.perf_counter_ns()
+            # start_time = time.perf_counter_ns()
 
             for rulename, image in images_items:
                 for i, px in enumerate(data):
                     if px[-1] < min_alpha:
-                        out_data += (0, 0, 0, 0)
+                        # out_data += (0, 0, 0, 0)
+                        out_data += px
                         continue
 
                     mask_px = None
@@ -502,23 +407,7 @@ def process():
                 out_data = []
                 images[rulename].save(out_name)
 
-            #print('Saving  image: {:<32}'.format(rulename + '/' + file) + ' -   ' + '{:<16}'.format(time.perf_counter_ns() - start_time) + ' ns')
-
-
-def check_dir(path):
-    path = path.replace('\\', '/').replace('//', '/')
-    splitted = path.split('/')[:-1]
-    splitted = [name.strip('/') for name in splitted]
-    splitted = [name for name in splitted if name != '']
-    splitted = [name + '/' for name in splitted]
-    res = './'
-    for _, item in enumerate(splitted):
-        res += item
-        if not os.path.isdir(res):
-            try:
-                os.mkdir(res)
-            except FileExistsError:
-                pass
+            # print('Saving  image: {:<32}'.format(rulename + '/' + file) + ' -   ' + '{:>16}'.format(time.perf_counter_ns() - start_time) + ' ns')
 
 
 if __name__ == '__main__':

@@ -8,15 +8,17 @@ import os
 
 from rangers.graphics.gi import GI
 
-randomize = False
+import config
+
 
 Image.MAX_IMAGE_PIXELS = 4096 ** 2
 
-rewrite = False
-PROFILE = False
+randomize = config.randomize
+rewrite = config.rewrite
+PROFILE = config.PROFILE
 
-_in = '0_orig/'
-_out = '1_converted/'
+_in = config._0
+_out = config._1
 
 
 def check_dir(path):

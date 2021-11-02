@@ -2,9 +2,9 @@ import os
 import time as t
 from time import time
 
-rewrite = False
-randomize = False
-PROFILE = True
+import config
+
+PROFILE = config.PROFILE
 
 
 def process():
@@ -16,15 +16,6 @@ def process():
     import _3_4
     import clear_empty
 
-    _0_1.rewrite = rewrite
-    _1_2.rewrite = rewrite
-    _2_3.rewrite = rewrite
-    _0_1.randomize = randomize
-    _1_2.randomize = randomize
-    _2_3.randomize = randomize
-    _0_1.PROFILE = PROFILE
-    _1_2.PROFILE = PROFILE
-    _2_3.PROFILE = PROFILE
 
     t1 = time()
 

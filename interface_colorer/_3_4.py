@@ -10,10 +10,12 @@ import shutil
 from rangers.pkg import PKG
 from rangers.dat import DAT, DAT_SIGN_AVAILABLE
 
-COMPRESS_PKG = True
-PROFILE = False
+import config
 
-rewrite = False
+COMPRESS_PKG = config.COMPRESS_PKG
+PROFILE = config.PROFILE
+
+rewrite = config.rewrite
 
 color_texts = {
     'Red':       ('150,0,0',     'красный',        'red'),
@@ -40,9 +42,9 @@ dat_prefix = 'CFG/'
 pkg_prefix = 'DATA/'
 
 
-_dats = '_dats/'
-_in = '3_result/'
-_out = '4_output/'
+_dats = config._dats
+_in = config._3
+_out = config._4
 
 
 special_mods = {
