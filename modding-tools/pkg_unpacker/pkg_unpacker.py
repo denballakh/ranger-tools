@@ -1,7 +1,7 @@
 import zlib
 import os
 
-from ranger_tools.pkg import PKG
+from rangers.pkg import PKG
 
 _in = '_input'
 _out = '_output'

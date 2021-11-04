@@ -1,6 +1,6 @@
 import unittest
 
-from ranger_tools.io import Buffer
+from rangers.buffer import Buffer
 
 class TestBuffer(unittest.TestCase):
 

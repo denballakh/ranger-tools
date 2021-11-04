@@ -2,7 +2,7 @@ import zlib
 import os
 from PIL import Image
 
-from ranger_tools.graphics.gi import GI
+from rangers.graphics.gi import GI
 
 _in = '_input'
 _out = '_output'
