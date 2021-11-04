@@ -6,8 +6,9 @@ from __future__ import annotations
 from typing import Iterator, Final, ClassVar, TypeVar
 
 import zlib
-import random
-import enum
+
+# import random
+# import enum
 
 from .buffer import Buffer
 from .io import AbstractIBuffer
@@ -38,7 +39,7 @@ __all__ = [
     'ENCRYPTION_KEYS',
     'FORMAT_DEFAULT_SEEDS',
     'DAT_SIGN_AVAILABLE',
-    'DatFormat',
+    # 'DatFormat',
     'get_sign',
     'check_signed',
 ]
@@ -87,19 +88,27 @@ FORMAT_DEFAULT_SEEDS: Final = {
     'HDCache': -319409088,
 }
 
+if DAT_SIGN_AVAILABLE:
+    # приписывает к данным подпись, если данные не подписаны, иначе возвращает исходные данные
+    def sign_data(data: bytes) -> bytes:
+        if not check_signed(data):
+            return get_sign(data) + data
+        return data
 
-# приписывает к данным подпись, если данные не подписаны, иначе возвращает исходные данные
-def sign(data: bytes):
-    if not check_signed(data):
-        return get_sign(data) + data
-    return data
+    # удаляет подпись данных, если данные подписаны, иначе возвращает исходные данные
+    def unsign_data(data: bytes) -> bytes:
+        if check_signed(data):
+            return data[8:]
+        return data
 
 
-# удаляет подпись данных, если данные подписаны, иначе возвращает исходные данные
-def unsign(data: bytes):
-    if check_signed(data):
-        return data[8:]
-    return data
+else:
+
+    def sign_data(data: bytes) -> bytes:
+        return data
+
+    def unsign_data(data: bytes) -> bytes:
+        return data
 
 
 # пытается угадать формат датника, подбирая ключ шифрования
@@ -182,8 +191,7 @@ class DAT:
 
     @classmethod
     def from_bytes(cls, data: bytes, fmt: str = None) -> DAT:
-        if check_signed(data):
-            data = data[8:]
+        data = unsign_data(data)
 
         if fmt not in ENCRYPTION_KEYS:
             fmt = guess_format(data)
@@ -194,7 +202,7 @@ class DAT:
                 ZL(mode=1, length=-1),
             )
         )
-        # b'\2\0\0' - метка блока (2) и название корня (пустая строка = 0 0)
+        # b'\2\0\0' - тип элемента (блок == \2) и название корня (пустая строка == \0\0)
         data_d = b'\2\0\0' + data_d
         root = DATItem.from_bytes(data_d, fmt=fmt)
         dat = cls(root)
@@ -219,7 +227,7 @@ class DAT:
         data = bytes(buf)
 
         if sign:
-            data = get_sign(data) + data
+            data = sign_data(data)
 
         return data
 
@@ -257,12 +265,18 @@ class DATItem:
     PAR: ClassVar = 1
     BLOCK: ClassVar = 2
 
+    type: int
+    name: str
+    value: str
+    childs: list[DATItem]
+    sorted: bool
+
     def __init__(self) -> None:
-        self.type: int = DATItem.BLOCK
-        self.name: str = ''
-        self.value: str = ''
-        self.childs: list[DATItem] = []
-        self.sorted: int = True
+        self.type = DATItem.BLOCK
+        self.name = ''
+        self.value = ''
+        self.childs = []
+        self.sorted = True
 
     def __repr__(self) -> str:
         return self.to_str()
@@ -302,9 +316,9 @@ class DATItem:
             item.type = cls.BLOCK
             item.name = name
             if '~' in s:
-                item.sorted = 0
+                item.sorted = False
             elif '^' in s:
-                item.sorted = 1
+                item.sorted = True
             else:
                 raise ValueError
 
@@ -361,9 +375,9 @@ class DATItem:
 
         elif item.type == cls.BLOCK:
             if fmt in {'HDMain', 'ReloadMain', 'SR1'}:
-                item.sorted = buf.read_byte()
+                item.sorted = buf.read_bool()
             else:
-                item.sorted = 0
+                item.sorted = False
 
             childs_cnt = buf.read_uint()
 
@@ -398,18 +412,14 @@ class DATItem:
             if fmt in {'HDMain', 'ReloadMain', 'SR1'} and self.sorted:
                 glo_index: int = 0
                 loc_index: int = 1
-                name: str | None = None  # unused name
+                name = self.childs[0].name + '\0'  # unused name
                 for child in self.childs:
                     if child.name == name:
                         loc_index += 1
                         glo_index = 0
                     else:
                         loc_index = 0
-                        glo_index = 0
-                        for c in self.childs:
-                            if c.name == child.name:
-                                glo_index += 1
-
+                        glo_index = [c.name for c in self.childs].count(child.name)
                     name = child.name
 
                     buf.write_uint(loc_index)
