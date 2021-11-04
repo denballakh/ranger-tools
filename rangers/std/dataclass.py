@@ -393,7 +393,8 @@ class CryptedRand31pm(DataClass[bytes]):
         while buf:
             dout.write_byte(buf.read_byte() ^ (next(rnd) & 0xFF))
         result = bytes(dout)
-        assert zlib.crc32(result) == content_hash
+        if (actual_hash := zlib.crc32(result)) != content_hash:
+            raise ValueError(f'Content hash 0x{content_hash:x} dont match actual hash 0x{actual_hash:x}')
         return result
 
     def write(self, buf: OBuffer, obj: bytes) -> None:
@@ -415,11 +416,14 @@ class ZL(DataClass[bytes]):
         if self.mode == 1:
             if 'length' in self.kwargs:
                 size = self.kwargs['length']
+                if size == -1:
+                    size = buf.bytes_remains()
             else:
                 size = buf.read_uint()
 
             magic = buf.read(4)
-            assert magic == b'ZL01'
+            # print(buf)
+            assert magic == b'ZL01', magic
             decompressed_size = buf.read_uint()
             compressed_data = buf.read(size - 8)
             data = zlib.decompress(compressed_data)
@@ -436,6 +440,14 @@ class ZL(DataClass[bytes]):
 
     def write(self, buf: OBuffer, obj: bytes) -> None:
         if self.mode == 1:
+            if 'length' in self.kwargs:
+                if self.kwargs['length'] != -1:
+                    buf.write_uint(self.kwargs['length'])
+
+            buf.write(b'ZL01')
+            buf.write_uint(len(obj))
+            data = zlib.compress(obj, level=9)
+            buf.write(data)
             return
 
         if self.mode == 2:
