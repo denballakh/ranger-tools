@@ -1,5 +1,16 @@
 from .types import TCodeEC
-from .core import DelphiFunction
 
 def __init__(self, code):
+    pass
+
+class DelphiFunction:
+    pass
+
+class GetMem(DelphiFunction):
+    pass
+
+class FreeMem(DelphiFunction):
+    pass
+
+class ReallocMem(DelphiFunction):
     pass
