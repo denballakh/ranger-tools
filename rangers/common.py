@@ -26,6 +26,38 @@ import os
 #     r, f = min(int(log(max(n * b ** pow, 1), b)), len(pre) - 1), '{:,.%if} %s%s'
 #     return (f % (abs(r % (-r - 1)), pre[r], u)).format(n * b ** pow / b ** float(r))
 
+def fmt_time(time: float) -> tuple[float, str]:
+    if not time:
+        return time, ''
+    sign = [-1, 1][time > 0]
+    time = abs(time)
+
+    units = {
+        -5: 'fs',
+        -4: 'ps',
+        -3: 'ns',
+        -2: 'μs',
+        -1: 'ms',
+        +0: 's ',
+    }
+
+    unit_p = 0
+
+    while time >= 1000. and unit_p + 1 in units:
+        time /= 1000.
+        unit_p += 1
+
+    while time < 1. and unit_p - 1 in units:
+        time *= 1000.
+        unit_p -= 1
+
+
+    return time * sign, units[unit_p]
+
+def round_to_three_chars(f: float) -> float | int:
+    if abs(f) >= 9.5:
+        return round(f)
+    return round(f, 1)
 
 def identity(x: Any) -> Any:
     return x
