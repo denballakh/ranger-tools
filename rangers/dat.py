@@ -11,7 +11,7 @@ import enum
 
 from .buffer import Buffer
 from .io import AbstractIBuffer
-from .std.dataclass import DataClass
+from .std.dataclass import CryptedRand31pm, ZL, Nested
 
 T = TypeVar('T')
 
@@ -87,50 +87,6 @@ FORMAT_DEFAULT_SEEDS: Final = {
     'HDCache': -319409088,
 }
 
-# генератор псевдо-случайных чисел, использующийся для шифрования данных
-def _rand31pm(seed: int) -> Iterator[int]:
-    while True:
-        hi, lo = divmod(seed, 0x1F31D)
-        seed = lo * 0x41A7 - hi * 0xB14
-        if seed < 1:
-            seed += 0x7FFFFFFF
-        yield seed - 1
-
-
-# расшифровывает данные и сверяет хеш расшифрованных данных
-def decipher(data: bytes, key: int) -> bytes:
-    buf = Buffer(data)
-    content_hash = buf.read_uint()
-    seed = buf.read_int() ^ key
-    rnd = _rand31pm(seed)
-    dout = Buffer()
-    while buf:
-        dout.write_byte(buf.read_byte() ^ (next(rnd) & 0xFF))
-    result = bytes(dout)
-    assert zlib.crc32(result) == content_hash
-    return result
-
-
-# зашифровывывает данные, приписывает к ним хеш исходных данных и сид шифрования
-# если параметр fmt есть в словаре FORMAT_DEFAULT_SEEDS, то ключ берется оттуда, иначе генерируется случайный
-def cipher(data: bytes, fmt: str) -> bytes:
-    seed = (
-        FORMAT_DEFAULT_SEEDS[fmt]
-        if fmt in FORMAT_DEFAULT_SEEDS
-        else random.randint(-(2 ** 31), 2 ** 31 - 1)
-    )
-    key = ENCRYPTION_KEYS[fmt]
-
-    rnd = _rand31pm(seed)
-    dout = Buffer()
-    dout.write_uint(zlib.crc32(data))
-    dout.write_int(seed ^ key)
-    buf = Buffer(data)
-    while buf:
-        dout.write_byte(buf.read_byte() ^ (next(rnd) & 0xFF))
-    result = bytes(dout)
-    return result
-
 
 # приписывает к данным подпись, если данные не подписаны, иначе возвращает исходные данные
 def sign(data: bytes):
@@ -146,60 +102,52 @@ def unsign(data: bytes):
     return data
 
 
-# распаковывает данные из формата ZL01
-def decompress(data: bytes) -> bytes:
-    buf = Buffer(data)
-    zl01 = buf.read(4)
-    size = buf.read_uint()
-    data = buf.read()
-    assert zl01 == b'ZL01', f'Invalid ZL01 header: {zl01!r}'
-    data = zlib.decompress(data)
-    assert size == len(data), f'Invalid decompressed size: {size} != {len(data)}'
-    return data
-
-
-# запаковывает данные в формат ZL01
-def compress(data: bytes) -> bytes:
-    size = len(data)
-    data = zlib.compress(data, level=9)
-    buf = Buffer()
-    buf.write(b'ZL01')
-    buf.write_uint(size)
-    buf.write(data)
-    return bytes(buf)
-
-
 # пытается угадать формат датника, подбирая ключ шифрования
-def guess_format(data: bytes, check_hash: bool = False) -> str | None:
+def guess_format(data: bytes, check_hash: bool = True) -> str | None:
+    # генератор псевдослучайных чисел, использующийся для шифрования данных
+    def _rand31pm(seed: int) -> Iterator[int]:
+        while True:
+            hi, lo = divmod(seed, 0x1F31D)
+            seed = lo * 0x41A7 - hi * 0xB14
+            if seed < 1:
+                seed += 0x7FFFFFFF
+            yield seed - 1
+
     buf = Buffer(data)
     if check_signed(data):
         buf.skip(8)
-    content_hash = buf.read(4)
+    content_hash = buf.read_uint()
     seed_ciphered = buf.read_int()
     zl01_ciphered = buf.read(4)
 
+    buf = Buffer(zl01_ciphered)
+    dout = Buffer()
+
     for keyname, key in ENCRYPTION_KEYS.items():
-        buf = Buffer(zl01_ciphered)
+        buf.pos = 0
+        dout.pos = 0
+
         rnd = _rand31pm(seed_ciphered ^ key)
 
-        dout = Buffer()
         while not buf.is_end():
             dout.write_byte(buf.read_byte() ^ (next(rnd) & 0xFF))
-        zl01 = bytes(dout)
 
-        if zl01 != b'ZL01':
+        if bytes(dout) != b'ZL01':
             continue
+
         if not check_hash:
             return keyname
 
-        buf = Buffer(data)
-        _ = buf.read_uint()
-        _ = buf.read_int()
+        fbuf = Buffer(data)
+        if check_signed(data):
+            fbuf.skip(8)
+        _ = fbuf.read_uint()
+        _ = fbuf.read_int()
         rnd = _rand31pm(seed_ciphered ^ key)
 
         dout = Buffer()
-        while not buf.is_end():
-            dout.write_byte(buf.read_byte() ^ (next(rnd) & 0xFF))
+        while not fbuf.is_end():
+            dout.write_byte(fbuf.read_byte() ^ (next(rnd) & 0xFF))
         result = bytes(dout)
 
         if zlib.crc32(result) == content_hash:
@@ -240,7 +188,12 @@ class DAT:
         if fmt not in ENCRYPTION_KEYS:
             fmt = guess_format(data)
         assert fmt in ENCRYPTION_KEYS, f'Invalid dat format: {fmt}'
-        data_d = decompress(decipher(data, key=ENCRYPTION_KEYS[fmt]))
+        data_d = Buffer(data).read_obj(
+            Nested(
+                CryptedRand31pm(key=ENCRYPTION_KEYS[fmt]),
+                ZL(mode=1, length=-1),
+            )
+        )
         # b'\2\0\0' - метка блока (2) и название корня (пустая строка = 0 0)
         data_d = b'\2\0\0' + data_d
         root = DATItem.from_bytes(data_d, fmt=fmt)
@@ -251,11 +204,19 @@ class DAT:
     def to_bytes(self, fmt: str, sign: bool = False) -> bytes:
         prefixlen = (len(self.root.name) + 1) * 2 + 1
         data = self.root.to_bytes(fmt=fmt)[prefixlen:]
-        data = compress(data)
         if fmt is None:
             fmt = self.fmt
         assert fmt in ENCRYPTION_KEYS, f'Invalid dat format: {fmt}'
-        data = cipher(data, fmt=fmt)
+
+        buf = Buffer()
+        buf.write_obj(
+            Nested(
+                CryptedRand31pm(key=ENCRYPTION_KEYS[fmt]),
+                ZL(mode=1, length=-1),
+            ),
+            data,
+        )
+        data = bytes(buf)
 
         if sign:
             data = get_sign(data) + data
@@ -458,7 +419,6 @@ class DATItem:
             else:
                 for child in self.childs:
                     child.to_buffer(buf, fmt=fmt)
-
 
     @classmethod
     def from_bytes(cls, data: bytes, fmt: str) -> DATItem:
