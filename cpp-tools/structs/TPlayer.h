@@ -1,5 +1,5 @@
 /** @file */
-struct TPlayer: public TRanger {
+struct TPlayer: TRanger {
     _gap _560;
     _gap _561;
     _gap _562;
@@ -38,10 +38,7 @@ struct TPlayer: public TRanger {
     _gap _589;
     _gap _58A;
     _gap _58B;
-    _gap _58C;
-    _gap _58D;
-    _gap _58E;
-    _gap _58F;
+    TList* script_ship_objects;
     _gap _590;
     _gap _591;
     _gap _592;

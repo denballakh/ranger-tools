@@ -44,28 +44,34 @@ struct TGoods: public TItem {
 };
 
 struct TEquipment: public TItem {
-    _gap _38;
-    _gap _39;
-    _gap _3A;
-    _gap _3B;
+    WSTR sys_name;
     WSTR custom_faction;
-    bool explotable;
-    _gap _41;
-    _gap _42;
-    _gap _43;
-    _gap _44;
-    _gap _45;
-    _gap _46;
-    _gap _47;
+
+#if SR_EXE_VERSION > 0
     double duration;
     bool broken;
-    _gap _51;
-    _gap _52;
-    _gap _53;
-    _gap _54;
-    _gap _55;
-    _gap _56;
-    _gap _57;
+    bool explotable;
+    _gap _4A[2];
+    int equip_slot_num;         ///< Актуально только для оружия и артефактов
+    int mm;                     ///< Микромодуль
+    int special;                ///< Основной акрин
+    TList* extra_specials;      ///< Экстраакрины
+    byte sub_race;              ///< Доминаторская серия
+    byte detail_improvement;    ///< Определяет, на какой стат получит упор
+                                ///< данное оборудование при улучшении на НБ
+                                ///< (дальность, скорость и т.д.), но по факту оно
+                                ///< здесь бесполезно, т.к. перед наложением
+                                ///< улучшения оно всё равно реролится кодом
+    _gap _empty3;
+    _gap _empty4;
+
+#else
+    bool explotable;
+    _gap _41[7];
+    double duration;
+    bool broken;
+    _gap _51[3];
+    int equip_slot_num;
     int bonus;
     int special;
     int* weapon_info;
@@ -77,6 +83,8 @@ struct TEquipment: public TItem {
     _gap _69;
     _gap _6A;
     _gap _6B;
+
+#endif
 };
 
 struct THull: public TEquipment {

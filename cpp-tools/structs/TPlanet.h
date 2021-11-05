@@ -80,12 +80,14 @@ struct TPlanet {
     _gap _12A;
     _gap _12B;
     int water_total;
-    int water_complate;
+    int water_researched;
     int land_total;
-    int land_complate;
-    int hill_total;
-    int hill_complate;
-    int orbit_cnt;
+    int land_researched;
+    int mountains_total;
+    int mountains_researched;
+    byte orbit_cnt;
+    bool is_visited;
+    _gap _143[2];
     TList* gone_items;
     int graph_raduis;
     TObjectSE* graph_planet;
@@ -103,5 +105,5 @@ struct TPlanet {
     byte no_landing;
     byte no_shop_update;
     bool is_rogeria;
-    _gap _16B[1];
+    _gap _16B;
 };
