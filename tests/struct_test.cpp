@@ -55,6 +55,7 @@ int main() {
 
     ASSERT_EQ(sizeof(TItem),                    0x38);
     ASSERT_EQ(sizeof(TGoods),                   0x40);
+#if SR_EXE_VERSION == 0
     ASSERT_EQ(sizeof(TEquipment),               0x6C);
     ASSERT_EQ(sizeof(THull),                    0x94);
     ASSERT_EQ(sizeof(TFuelTanks),               0x7C);
@@ -78,6 +79,9 @@ int main() {
     ASSERT_EQ(sizeof(TArtefactTranclucator),    0x7C);
     ASSERT_EQ(sizeof(TArtefactCustom),          0x94);
     ASSERT_EQ(sizeof(TCustomWeapon),            0x94);
+#else
+    #error "There are no struct size tests for this version"
+#endif
 
     ASSERT_EQ(sizeof(TGalaxyEvent),             0x014);
 
