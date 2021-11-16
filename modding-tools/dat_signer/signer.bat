@@ -1,2 +1,0 @@
-@python signer.py
-@pause
