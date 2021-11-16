@@ -78,14 +78,25 @@ class frozenbitset:
         if size is None:
             size = len(value)
         if value == '':
-            value = '0'
+            return cls(size=size)
         return cls(int(value, 2), size=size, _check=False)
 
     @classmethod
     def from_list(cls: type[FT], value: list[BIN] | tuple[BIN], size: int = None) -> FT:
         if not value:
             return cls(size=size)
+        if size is None:
+            size = len(value)
+        # b = 0
+        # for item in reversed(value):
+        #     if item:
+        #         b = b << 1 | 1
+        #     else:
+        #         b = b << 1
+
+        # return cls(b, size=size)
         bin_string = ''.join('1' if item else '0' for item in reversed(value))
+        bin_string = ''.join(str(int(bool(item))) for item in reversed(value))
         return cls.from_str(bin_string, size=size)
 
     @classmethod
@@ -125,8 +136,8 @@ class frozenbitset:
     def __len__(self) -> int:
         return self._size
 
-    def __index__(self) -> int:
-        return self._value
+    # def __index__(self) -> int:
+    #     return self._value
 
     def __int__(self) -> int:
         return self._value
@@ -143,11 +154,14 @@ class frozenbitset:
     def __iter__(self) -> Iterator[BIN]:
         # for key in range(self._size):
         # yield self[key]
-        return iter([int(c, 2) for c in list(str(self)[::-1])])
+        # return iter([int(c, 2) for c in list(self.__str__()[::-1])])
+        # return map('1'.__eq__, str(self))
+        return map(int, map('1'.__eq__, str(self)[::-1]))
         # return iter([int(c == '1') for c in list(str(self)[::-1])])
 
     def __reversed__(self) -> Iterator[BIN]:
-        return iter([int(c) for c in list(str(self))])
+        return map(int, map('1'.__eq__, str(self)))
+        # return iter([int(c) for c in list(str(self))])
 
     @overload
     def __getitem__(self: FT, key: int) -> BIN:
@@ -276,7 +290,12 @@ class frozenbitset:
 
     def __mul__(self: FT, other: int) -> FT:
         if isinstance(other, int):
-            # FIXME
+            if other == 2:
+                return self.__class__(
+                    self._value << self._size | self._value,
+                    size=self._size << 1,
+                    _check=False,
+                )
             return self.from_list(list[BIN](self) * other)
         return NotImplemented
 
@@ -320,11 +339,13 @@ class frozenbitset:
     @property
     def size(self) -> int:
         assert self._size >= 0
+        assert self._value >= 0
         assert self._size >= self._value.bit_length()
         return self._size
 
     @property
     def value(self) -> int:
+        assert self._size >= 0
         assert self._value >= 0
         assert self._size >= self._value.bit_length()
         return self._value

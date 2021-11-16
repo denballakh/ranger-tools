@@ -4,10 +4,13 @@ from typing import TYPE_CHECKING
 from itertools import repeat
 import unittest
 import time
+from hashlib import md5, sha256
+import random
 
 from rangers.std.time import AdaptiveTimeMeasurer
 from rangers.std.bitset import frozenbitset, bitset
 
+COMPILED = frozenbitset.__init__.__class__.__name__ != 'function'
 
 if TYPE_CHECKING:
     # reveal_type(frozenbitset.__add__)
@@ -126,8 +129,6 @@ def test_doc():
     bytes():
     >>> bytes(frozenbitset())
     b''
-    >>> bytearray(frozenbitset())
-    bytearray(b'')
     >>> bytes(frozenbitset(255))
     b'\\xff'
     >>> bytes(frozenbitset(size=64))
@@ -136,6 +137,11 @@ def test_doc():
     b'\\x00\\x00'
     >>> bytes(frozenbitset(1, size=15))
     b'\\x00\\x01'
+
+    >>> bytearray(frozenbitset())
+    bytearray(b'\\x00')
+    >>> bytearray(bitset())
+    bytearray(b'\\x00')
 
     hash():
     >>> hash(frozenbitset()) == hash(('frozenbitset', 0, 0))
@@ -338,292 +344,414 @@ def test_doc():
 
 
 def test_speed():
-
+    runs = 10
     size = 1_000_000
     size8 = size // 8
     size2 = size // 2
 
-    print(f'size = {size}')
-    print()
-
-    with AdaptiveTimeMeasurer(
-        target_time=0.3,
-        config_file='test_bitset_cfg.json',
-        history_len=100,
-        growth_ratio=10,
-        adapt_ratio=3,
-    ) as atm:
-
-        T = atm('empty loop', extra=3)
-        with T as cnt:
-            for _ in repeat(None, cnt):
-                pass
-
-        T.calibrate(T.time)
-
-        with atm('calibrated empty loop') as cnt:
-            for _ in repeat(None, cnt):
-                pass
-
-        with atm('range loop') as cnt:
-            for _ in range(cnt):
-                pass
-
-        with atm('while loop') as cnt:
-            i = cnt
-            while i:
-                i -= 1
-
-        with atm('repeat(None)') as cnt:
-            for _ in repeat(None, cnt):
-                repeat(None, cnt)
-
-        with atm('empty loop with 101 assignment') as cnt:
-            for _ in repeat(None, cnt):
-                # fmt: off
-                _=_;_=_;_=_;_=_;_=_;_=_;_=_;_=_;_=_;_=_;
-                _=_;_=_;_=_;_=_;_=_;_=_;_=_;_=_;_=_;_=_;
-                _=_;_=_;_=_;_=_;_=_;_=_;_=_;_=_;_=_;_=_;
-                _=_;_=_;_=_;_=_;_=_;_=_;_=_;_=_;_=_;_=_;
-                _=_;_=_;_=_;_=_;_=_;_=_;_=_;_=_;_=_;_=_;
-                _=_;_=_;_=_;_=_;_=_;_=_;_=_;_=_;_=_;_=_;
-                _=_;_=_;_=_;_=_;_=_;_=_;_=_;_=_;_=_;_=_;
-                _=_;_=_;_=_;_=_;_=_;_=_;_=_;_=_;_=_;_=_;
-                _=_;_=_;_=_;_=_;_=_;_=_;_=_;_=_;_=_;_=_;
-                _=_;_=_;_=_;_=_;_=_;_=_;_=_;_=_;_=_;_=_;
-                # fmt: on
-
-        print()
-
-        with atm('list()') as cnt:
-            for _ in repeat(None, cnt):
-                list()
+    for _ in range(runs):
+        with AdaptiveTimeMeasurer(
+            target_time=1,
+            config_file='_bitset_bench_opt.json' if COMPILED else '_bitset_bench_pure.json',
+            history_len=20,
+            adapt_ratio=10,
+            # print_to='_bitset_bench_opt.txt' if COMPILED else '_bitset_bench_pure.txt',
+        ) as atm:
+            by = random.randbytes(size)
+            b = bitset.random(size)
+            l = list(b)
+
+            print(f'size = {size}')
+            print()
+
+            T = atm('empty loop', extra=5)
+            T.calibrate(0)
+            with T as cnt:
+                for _ in repeat(None, cnt):
+                    pass
+            T.calibrate(T.time)
+
+            with atm('calibrated empty loop') as cnt:
+                for _ in repeat(None, cnt):
+                    pass
+
+            with atm('range loop') as cnt:
+                for _ in range(cnt):
+                    pass
+
+            with atm('while loop') as cnt:
+                i = cnt
+                while i:
+                    i -= 1
+
+            with atm('while loop # 2') as cnt:
+                i = 0
+                while i < cnt:
+                    i += 1
+
+            with atm('repeat(None)') as cnt:
+                for _ in repeat(None, cnt):
+                    repeat(None, cnt)
+
+            with atm('empty loop with 101 assignment') as cnt:
+                for _ in repeat(None, cnt):
+                    # fmt: off
+                    _=_;_=_;_=_;_=_;_=_;_=_;_=_;_=_;_=_;_=_;
+                    _=_;_=_;_=_;_=_;_=_;_=_;_=_;_=_;_=_;_=_;
+                    _=_;_=_;_=_;_=_;_=_;_=_;_=_;_=_;_=_;_=_;
+                    _=_;_=_;_=_;_=_;_=_;_=_;_=_;_=_;_=_;_=_;
+                    _=_;_=_;_=_;_=_;_=_;_=_;_=_;_=_;_=_;_=_;
+                    _=_;_=_;_=_;_=_;_=_;_=_;_=_;_=_;_=_;_=_;
+                    _=_;_=_;_=_;_=_;_=_;_=_;_=_;_=_;_=_;_=_;
+                    _=_;_=_;_=_;_=_;_=_;_=_;_=_;_=_;_=_;_=_;
+                    _=_;_=_;_=_;_=_;_=_;_=_;_=_;_=_;_=_;_=_;
+                    _=_;_=_;_=_;_=_;_=_;_=_;_=_;_=_;_=_;_=_;
+                    # fmt: on
+
+            print()
+
+            with atm('int(\'1\')') as cnt:
+                for _ in repeat(None, cnt):
+                    int('1')
+
+            with atm('str(1)') as cnt:
+                for _ in repeat(None, cnt):
+                    str(1)
+
+            with atm('hash("1(&")') as cnt:
+                for _ in repeat(None, cnt):
+                    hash("1(&")
+
+            with atm('hash(1)') as cnt:
+                for _ in repeat(None, cnt):
+                    hash(1)
+
+            with atm('hash("123")') as cnt:
+                for _ in repeat(None, cnt):
+                    hash('123')
+
+            with atm('hash(hash)') as cnt:
+                for _ in repeat(None, cnt):
+                    hash(hash)
+
+            with atm('eval("1 + 1")') as cnt:
+                for _ in repeat(None, cnt):
+                    eval("1 + 1")
+
+            with atm('object') as cnt:
+                for _ in repeat(None, cnt):
+                    object
+
+            with atm('_') as cnt:
+                for _ in repeat(None, cnt):
+                    _
+
+            print()
+
+            # fmt: off
+            with atm('try-except') as cnt:
+                for _ in repeat(None, cnt):
+                    try: pass
+                    except: pass
 
-        with atm('[]') as cnt:
-            for _ in repeat(None, cnt):
-                []
+            with atm('try-except #2') as cnt:
+                for _ in repeat(None, cnt):
+                    try: 1/0
+                    except: pass
+
+            with atm('def') as cnt:
+                for _ in repeat(None, cnt):
+                    def _(): _
+
+            with atm('lambda') as cnt:
+                for _ in repeat(None, cnt):
+                    lambda: _
+
+            with atm('lambda()') as cnt:
+                for _ in repeat(None, cnt):
+                    (lambda: _)()
+
+            with atm('class') as cnt:
+                for _ in repeat(None, cnt):
+                    class _: pass
+            # fmt: on
 
-        with atm('object()') as cnt:
-            for _ in repeat(None, cnt):
-                object()
+            print()
 
-        with atm('bitset()') as cnt:
-            for _ in repeat(None, cnt):
-                bitset()
+            with atm('list()') as cnt:
+                for _ in repeat(None, cnt):
+                    list()
 
-        with atm('bitset(size=size)') as cnt:
-            for _ in repeat(None, cnt):
-                bitset(size=size)
+            with atm('[]') as cnt:
+                for _ in repeat(None, cnt):
+                    []
 
-        print()
+            with atm('{}') as cnt:
+                for _ in repeat(None, cnt):
+                    {}
 
-        with atm('~bitset(size=size)') as cnt:
-            for _ in repeat(None, cnt):
-                ~bitset(size=size)
+            with atm('{1,}') as cnt:
+                for _ in repeat(None, cnt):
+                    _ = {
+                        1,
+                    }
+            print()
 
-        with atm('bitset((1<<size)-1)') as cnt:
-            for _ in repeat(None, cnt):
-                bitset((1 << size) - 1)
+            with atm('by + b"0"') as cnt:
+                for _ in repeat(None, cnt):
+                    by + b"0"
 
-        with atm('[0]*size') as cnt:
-            for _ in repeat(None, cnt):
-                [0] * size
+            with atm('hash(by + b"0")') as cnt:
+                for _ in repeat(None, cnt):
+                    hash(by + b"0")
 
-        with atm('[0 for _ in range(size)]') as cnt:
-            for _ in repeat(None, cnt):
-                [0 for _ in range(size)]
+            with atm('md5(by + b"0").digest()') as cnt:
+                for _ in repeat(None, cnt):
+                    md5(by + b"0").digest()
 
-        with atm('bytes(size8)') as cnt:
-            for _ in repeat(None, cnt):
-                bytes(size8)
+            with atm('sha256(by + b"0").digest()') as cnt:
+                for _ in repeat(None, cnt):
+                    sha256(by + b"0").digest()
 
-        b = bitset.random(size)
-        l = list(b)
+            print()
 
-        print()
+            with atm('object()') as cnt:
+                for _ in repeat(None, cnt):
+                    object()
 
-        with atm('bitset.random(size)') as cnt:
-            for _ in repeat(None, cnt):
-                bitset.random(size)
+            with atm('bitset()') as cnt:
+                for _ in repeat(None, cnt):
+                    bitset()
 
-        print()
+            with atm('frozenbitset()') as cnt:
+                for _ in repeat(None, cnt):
+                    frozenbitset()
 
-        with atm('list(b)') as cnt:
-            for _ in repeat(None, cnt):
-                list(b)
+            with atm('bitset(size=size)') as cnt:
+                for _ in repeat(None, cnt):
+                    bitset(size=size)
 
-        with atm('list(l)') as cnt:
-            for _ in repeat(None, cnt):
-                list(l)
+            print()
 
-        with atm('bitset.from_list(l)') as cnt:
-            for _ in repeat(None, cnt):
-                bitset.from_list(l)
+            with atm('~bitset(size=size)') as cnt:
+                for _ in repeat(None, cnt):
+                    ~bitset(size=size)
 
-        with atm('bitset.from_iterable(b)') as cnt:
-            for _ in repeat(None, cnt):
-                bitset.from_iterable(b)
+            with atm('bitset((1<<size)-1)') as cnt:
+                for _ in repeat(None, cnt):
+                    bitset((1 << size) - 1)
 
-        print()
+            with atm('[0]*size') as cnt:
+                for _ in repeat(None, cnt):
+                    [0] * size
 
-        with atm('b.value b.size') as cnt:
-            for _ in repeat(None, cnt):
-                b.value
-                b.size
+            with atm('[0 for _ in range(size)]') as cnt:
+                for _ in repeat(None, cnt):
+                    [0 for _ in range(size)]
 
-        with atm('b._value b._size') as cnt:
-            for _ in repeat(None, cnt):
-                b._value
-                b._size
+            with atm('bytes(size8)') as cnt:
+                for _ in repeat(None, cnt):
+                    bytes(size8)
 
-        print()
+            print()
 
-        with atm('b[size2]') as cnt:
-            for _ in repeat(None, cnt):
-                b[size2]
+            with atm('type(b)') as cnt:
+                for _ in repeat(None, cnt):
+                    type(b)
 
-        with atm('l[size2]') as cnt:
-            for _ in repeat(None, cnt):
-                l[size2]
+            with atm('b.__class__') as cnt:
+                for _ in repeat(None, cnt):
+                    b.__class__
 
-        print()
+            with atm('b.value b.size') as cnt:
+                for _ in repeat(None, cnt):
+                    b.value
+                    b.size
 
-        with atm('b[::]') as cnt:
-            for _ in repeat(None, cnt):
-                b[::]
+            with atm('b._value b._size') as cnt:
+                for _ in repeat(None, cnt):
+                    b._value
+                    b._size
 
-        with atm('l[::]') as cnt:
-            for _ in repeat(None, cnt):
-                l[::]
+            print()
 
-        print()
+            with atm('list(b)') as cnt:
+                for _ in repeat(None, cnt):
+                    list(b)
 
-        with atm('b[::2]') as cnt:
-            for _ in repeat(None, cnt):
-                b[::2]
+            with atm('list(l)') as cnt:
+                for _ in repeat(None, cnt):
+                    list(l)
 
-        with atm('l[::2]') as cnt:
-            for _ in repeat(None, cnt):
-                l[::2]
+            with atm('bitset.from_list(l)') as cnt:
+                for _ in repeat(None, cnt):
+                    bitset.from_list(l)
 
-        print()
+            with atm('bitset.from_iterable(b)') as cnt:
+                for _ in repeat(None, cnt):
+                    bitset.from_iterable(b)
 
-        with atm('b[::-1]') as cnt:
-            for _ in repeat(None, cnt):
-                b[::-1]
+            print()
 
-        with atm('l[::-1]') as cnt:
-            for _ in repeat(None, cnt):
-                l[::-1]
+            with atm('bitset.random(size)') as cnt:
+                for _ in repeat(None, cnt):
+                    bitset.random(size)
 
-        print()
+            print()
 
-        with atm('b + b') as cnt:
-            for _ in repeat(None, cnt):
-                b + b
+            with atm('b[size2]') as cnt:
+                for _ in repeat(None, cnt):
+                    b[size2]
 
-        with atm('l + l') as cnt:
-            for _ in repeat(None, cnt):
-                l + l
-
-        print()
-
-        with atm('b * 2') as cnt:
-            for _ in repeat(None, cnt):
-                b * 2
-
-        with atm('l * 2') as cnt:
-            for _ in repeat(None, cnt):
-                l * 2
-
-        print()
-
-        with atm('b % size2') as cnt:
-            for _ in repeat(None, cnt):
-                b % size2
-
-        with atm('l[:size2]') as cnt:
-            for _ in repeat(None, cnt):
-                l[:size2]
-
-        print()
-
-        with atm('bool(b)') as cnt:
-            for _ in repeat(None, cnt):
-                bool(b)
-
-        with atm('any(l)') as cnt:
-            for _ in repeat(None, cnt):
-                any(l)
-
-        print()
-
-        with atm('iter(b)') as cnt:
-            for _ in repeat(None, cnt):
-                iter(b)
-
-        with atm('reversed(b)') as cnt:
-            for _ in repeat(None, cnt):
-                reversed(b)
-
-        with atm('iter(l)') as cnt:
-            for _ in repeat(None, cnt):
-                iter(l)
-
-        print()
-
-        with atm('b == b') as cnt:
-            for _ in repeat(None, cnt):
-                b == b
-
-        with atm('l == l') as cnt:
-            for _ in repeat(None, cnt):
-                l == l
-
-        print()
-
-        with atm('~b') as cnt:
-            for _ in repeat(None, cnt):
-                ~b
-
-        with atm('[not i for i in l]') as cnt:
-            for _ in repeat(None, cnt):
-                [not i for i in l]
-
-        print()
-
-        with atm('b & b') as cnt:
-            for _ in repeat(None, cnt):
-                b & b
-        with atm('b | b') as cnt:
-            for _ in repeat(None, cnt):
-                b | b
-        with atm('b ^ b') as cnt:
-            for _ in repeat(None, cnt):
-                b ^ b
-        with atm('b & 0') as cnt:
-            for _ in repeat(None, cnt):
-                b & 0
-        with atm('b | 0') as cnt:
-            for _ in repeat(None, cnt):
-                b | 0
-        with atm('b ^ 0') as cnt:
-            for _ in repeat(None, cnt):
-                b ^ 0
-        with atm('b << size2') as cnt:
-            for _ in repeat(None, cnt):
-                b << size2
-        with atm('b >> size2') as cnt:
-            for _ in repeat(None, cnt):
-                b >> size2
-
-        print()
-        with atm('b.bit_mask') as cnt:
-            for _ in repeat(None, cnt):
-                b.bit_mask
-        with atm('b.strip()') as cnt:
-            for _ in repeat(None, cnt):
-                b.strip()
+            with atm('l[size2]') as cnt:
+                for _ in repeat(None, cnt):
+                    l[size2]
+
+            print()
+
+            with atm('b[::]') as cnt:
+                for _ in repeat(None, cnt):
+                    b[::]
+
+            with atm('l[::]') as cnt:
+                for _ in repeat(None, cnt):
+                    l[::]
+
+            print()
+
+            with atm('b[::2]') as cnt:
+                for _ in repeat(None, cnt):
+                    b[::2]
+
+            with atm('l[::2]') as cnt:
+                for _ in repeat(None, cnt):
+                    l[::2]
+
+            print()
+
+            with atm('b[::-1]') as cnt:
+                for _ in repeat(None, cnt):
+                    b[::-1]
+
+            with atm('l[::-1]') as cnt:
+                for _ in repeat(None, cnt):
+                    l[::-1]
+
+            print()
+
+            with atm('b + b') as cnt:
+                for _ in repeat(None, cnt):
+                    b + b
+
+            with atm('l + l') as cnt:
+                for _ in repeat(None, cnt):
+                    l + l
+
+            print()
+
+            with atm('b * 2') as cnt:
+                for _ in repeat(None, cnt):
+                    b * 2
+
+            with atm('b * 2 * 2') as cnt:
+                for _ in repeat(None, cnt):
+                    b * 2 * 2
+
+            with atm('l * 2') as cnt:
+                for _ in repeat(None, cnt):
+                    l * 2
+
+            print()
+
+            with atm('b % size2') as cnt:
+                for _ in repeat(None, cnt):
+                    b % size2
+
+            with atm('l[:size2]') as cnt:
+                for _ in repeat(None, cnt):
+                    l[:size2]
+
+            print()
+
+            with atm('bool(b)') as cnt:
+                for _ in repeat(None, cnt):
+                    bool(b)
+
+            with atm('any(l)') as cnt:
+                for _ in repeat(None, cnt):
+                    any(l)
+
+            print()
+
+            with atm('iter(b)') as cnt:
+                for _ in repeat(None, cnt):
+                    iter(b)
+
+            with atm('reversed(b)') as cnt:
+                for _ in repeat(None, cnt):
+                    reversed(b)
+
+            with atm('iter(l)') as cnt:
+                for _ in repeat(None, cnt):
+                    iter(l)
+
+            print()
+
+            with atm('b == b') as cnt:
+                for _ in repeat(None, cnt):
+                    b == b
+
+            with atm('l == l') as cnt:
+                for _ in repeat(None, cnt):
+                    l == l
+
+            print()
+
+            with atm('~b') as cnt:
+                for _ in repeat(None, cnt):
+                    ~b
+
+            with atm('[not i for i in l]') as cnt:
+                for _ in repeat(None, cnt):
+                    [not i for i in l]
+
+            print()
+
+            with atm('b & b') as cnt:
+                for _ in repeat(None, cnt):
+                    b & b
+            with atm('b | b') as cnt:
+                for _ in repeat(None, cnt):
+                    b | b
+            with atm('b ^ b') as cnt:
+                for _ in repeat(None, cnt):
+                    b ^ b
+            with atm('b & 0') as cnt:
+                for _ in repeat(None, cnt):
+                    b & 0
+            with atm('b & 1') as cnt:
+                for _ in repeat(None, cnt):
+                    b & 1
+            with atm('b | 0') as cnt:
+                for _ in repeat(None, cnt):
+                    b | 0
+            with atm('b ^ 0') as cnt:
+                for _ in repeat(None, cnt):
+                    b ^ 0
+            with atm('b << size2') as cnt:
+                for _ in repeat(None, cnt):
+                    b << size2
+            with atm('b >> size2') as cnt:
+                for _ in repeat(None, cnt):
+                    b >> size2
+
+            print()
+            with atm('b.bit_mask') as cnt:
+                for _ in repeat(None, cnt):
+                    b.bit_mask
+            with atm('b.strip()') as cnt:
+                for _ in repeat(None, cnt):
+                    b.strip()
 
 
 if __name__ == '__main__':
