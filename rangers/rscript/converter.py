@@ -6,7 +6,7 @@ from .enums import *
 
 
 def scr_to_svr(scr: SCR) -> SVR:
-    tr: list[tuple[str, str]] = []
+    tr = list[tuple[str, str]]()
 
     def get_op(svr, text):
         op = svr.add('Top')
@@ -15,12 +15,9 @@ def scr_to_svr(scr: SCR) -> SVR:
 
         # strings = re.findall('"([^"]*)"|\'([^\']*)\'', op.expression)
         strings = re.findall('".*?"|\'.*?\'', op.expression)
-        # print(strings)
 
         for s_ in strings:
             s = s_[1:-1]
-            if s == 'Ship.Akrin.':
-                print(1)
 
             flag = 1
             for _, ts in tr:
@@ -32,7 +29,6 @@ def scr_to_svr(scr: SCR) -> SVR:
                     tid = '0'
                 else:
                     tid = str(int(tr[-1][0]) + 1)
-                print(s)
                 tr.append((tid, s))
 
         return op

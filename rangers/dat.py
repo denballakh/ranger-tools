@@ -88,27 +88,17 @@ FORMAT_DEFAULT_SEEDS: Final = {
     'HDCache': -319409088,
 }
 
-if DAT_SIGN_AVAILABLE:
-    # приписывает к данным подпись, если данные не подписаны, иначе возвращает исходные данные
-    def sign_data(data: bytes) -> bytes:
-        if not check_signed(data):
-            return get_sign(data) + data
-        return data
+# приписывает к данным подпись, если данные не подписаны, иначе возвращает исходные данные
+def sign_data(data: bytes) -> bytes:
+    if not check_signed(data):
+        return get_sign(data) + data
+    return data
 
-    # удаляет подпись данных, если данные подписаны, иначе возвращает исходные данные
-    def unsign_data(data: bytes) -> bytes:
-        if check_signed(data):
-            return data[8:]
-        return data
-
-
-else:
-
-    def sign_data(data: bytes) -> bytes:
-        return data
-
-    def unsign_data(data: bytes) -> bytes:
-        return data
+# удаляет подпись данных, если данные подписаны, иначе возвращает исходные данные
+def unsign_data(data: bytes) -> bytes:
+    if check_signed(data):
+        return data[8:]
+    return data
 
 
 # пытается угадать формат датника, подбирая ключ шифрования

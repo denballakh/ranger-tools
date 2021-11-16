@@ -303,7 +303,7 @@ def process_pkg(args):
             print(f'Warning: invalid extension: {input_path.suffix}')
 
         if str(output_path) == '*':
-            from rangers.common import sizeof_fmt
+            from rangers.common import fmt_file_size, make_number
 
             def print_pkg_item(item, indent=''):
                 i = indent
@@ -314,7 +314,7 @@ def process_pkg(args):
                     print(i+f'  Number of childs: {len(item.childs)}')
                     # print(i+f'  Childs names: {[child.name for child in item.childs]!r}')
                 else:
-                    print(i+f'  Size: {sizeof_fmt(len(item.data))}')
+                    print(i+f'  Size: {make_number(*fmt_file_size(len(item.data)), 4)}')
                     # print(i+f'  DSize: {sizeof_fmt(item.decompressed_size())}')
                 # print(i+f'  Parent name: {None if item.parent is None else item.parent.name!r}')
                 print()
@@ -324,8 +324,8 @@ def process_pkg(args):
 
             pkg = PKG.from_pkg(str(input_path))
             print(f'Package {input_path}:')
-            print(f'  Current size (approximately): {sizeof_fmt(pkg.size())}')
-            print(f'  Decompressed size (approximately): {sizeof_fmt(pkg.decompressed_size())}')
+            print(f'  Current size (approximately): {make_number(*fmt_file_size(pkg.size()), 4)}')
+            print(f'  Decompressed size (approximately): {make_number(*fmt_file_size(pkg.decompressed_size()), 4)}')
             print(f'  Number of items: {pkg.count()}')
             print(f'  Number of items in root: {len(pkg.root.childs)}')
             if pkg.metadata: print(f'  Metadata: {pkg.metadata!r}')
@@ -394,7 +394,7 @@ def process_save(args):
             return CODE_ERR
 
 
-        sav = SAV.from_sav(str(input_path))
+        sav = SAV.from_file(str(input_path))
         sav.to_json(str(output_path))
 
         return CODE_OK
@@ -402,7 +402,7 @@ def process_save(args):
     if input_path.suffix == '.json':
 
         sav = SAV.from_json(str(input_path))
-        sav.to_sav(str(output_path))
+        sav.to_file(str(output_path))
 
         return CODE_OK
 

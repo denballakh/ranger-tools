@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import Literal, Type, ClassVar
 from types import TracebackType
 
+import sys
 import time
 import json
 import os
@@ -24,7 +25,7 @@ class Timer(PrintableMixin):
         self.time = None
 
     def __enter__(self) -> Timer:
-        self.start_time = time.process_time()
+        self.start_time = time.perf_counter()
         return self
 
     def __exit__(
@@ -33,7 +34,7 @@ class Timer(PrintableMixin):
         exc_value: Type[Exception] | Exception,
         traceback: TracebackType,
     ) -> Literal[False]:
-        self.end_time = time.process_time()
+        self.end_time = time.perf_counter()
         assert self.start_time is not None
         self.time = self.end_time - self.start_time
         return False
@@ -86,10 +87,8 @@ class AdaptiveTimer:
     ) -> Literal[False]:
         self.end_time = time.perf_counter()
         assert self.start_time is not None
-        self.time = self.end_time - self.start_time
-        self.real_time = self.time
-        self.time /= self.cnt
-        self.time -= self._calibration
+        self.real_time = self.end_time - self.start_time
+        self.time = self.real_time / self.cnt - self._calibration
 
         stdev = self.atm.register(self)
         stdev, std_unit = fmt_time(stdev)
@@ -102,7 +101,7 @@ class AdaptiveTimer:
         rt_time = round_to_three_chars(rt_time)
 
         print(
-            f'{self.case_id:35}{m_time:>4} {m_unit} +- {stdev:>3} {std_unit} '
+            f'{self.case_id:35}{m_time:>4} {m_unit} ± {stdev:>3} {std_unit} '
             f'[{rt_time:>3} {rt_unit} / {self.cnt:>9}]'
         )
 
@@ -123,11 +122,15 @@ class AdaptiveTimeMeasurer:
         history_len: int = 5,
         growth_ratio: float = 5,
         adapt_ratio: float = 3,
+        print_to: str = None
     ) -> None:
         assert history_len > 2
         assert target_time > 0
         assert growth_ratio >= 2
         assert adapt_ratio >= 0
+        if print_to is not None:
+            fs = open(print_to, 'wt', encoding='utf-8', buffering=1)
+            sys.stdout = fs
 
         self.config_file = config_file
         self.target_time = target_time
@@ -140,7 +143,11 @@ class AdaptiveTimeMeasurer:
         else:
             try:
                 with open(config_file, 'rt', encoding='utf-8') as file:
-                    self.config = json.load(file)
+                    config = json.load(file)
+                    self.config = {}
+                    for key, (cnt, history) in config.items():
+                        self.config[key] = cnt, history
+
             except json.decoder.JSONDecodeError:
                 self.config = {}
 
@@ -161,6 +168,8 @@ class AdaptiveTimeMeasurer:
     ) -> Literal[False]:
         with open(self.config_file, 'wt', encoding='utf-8') as file:
             json.dump(self.config, file)
+
+        sys.stdout = sys.__stdout__
 
         return False
 

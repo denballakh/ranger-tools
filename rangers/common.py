@@ -2,8 +2,21 @@
 @file
 """
 from __future__ import annotations
-from typing import Any, Callable, TypeVar, Tuple
+from typing import (
+    Any,
+    Callable,
+    TypeVar,
+    Iterator,
+    Container,
+    Sequence,
+)
+from itertools import repeat
+
 import os
+
+
+_T1 = TypeVar('_T1')
+_T2 = TypeVar('_T2')
 
 # def sizeof_fmt(num, suffix="B"):
 #     for unit in ["", "K", "M", "G", "T", "P", "E", "Z", "Y"]:
@@ -26,9 +39,41 @@ import os
 #     r, f = min(int(log(max(n * b ** pow, 1), b)), len(pre) - 1), '{:,.%if} %s%s'
 #     return (f % (abs(r % (-r - 1)), pre[r], u)).format(n * b ** pow / b ** float(r))
 
+
+def make_number(num: float, unit: str, n: int) -> str:
+    return f'{round_to_n_chars(num, n)} {unit}'
+
+
+def fmt_file_size(size: float) -> tuple[float, str]:
+    if not size:
+        return size, '  '
+    sign = [-1, 1][size > 0]
+    size = abs(size)
+
+    units = {
+        +0: 'B ',
+        +1: 'KB',
+        +2: 'MB',
+        +3: 'GB',
+        +4: 'TB',
+    }
+
+    unit_p = 0
+
+    while size >= 1000.0 and unit_p + 1 in units:
+        size /= 1000.0
+        unit_p += 1
+
+    while size < 1.0 and unit_p - 1 in units:
+        size *= 1000.0
+        unit_p -= 1
+
+    return size * sign, units[unit_p]
+
+
 def fmt_time(time: float) -> tuple[float, str]:
     if not time:
-        return time, ''
+        return time, '  '
     sign = [-1, 1][time > 0]
     time = abs(time)
 
@@ -43,21 +88,53 @@ def fmt_time(time: float) -> tuple[float, str]:
 
     unit_p = 0
 
-    while time >= 1000. and unit_p + 1 in units:
-        time /= 1000.
+    while time >= 999.5 and unit_p + 1 in units:
+        time /= 1000.0
         unit_p += 1
 
-    while time < 1. and unit_p - 1 in units:
-        time *= 1000.
+    while time < 0.995 and unit_p - 1 in units:
+        time *= 1000.0
         unit_p -= 1
-
 
     return time * sign, units[unit_p]
 
+
 def round_to_three_chars(f: float) -> float | int:
-    if abs(f) >= 9.5:
+    if abs(f) >= 9.95:
         return round(f)
     return round(f, 1)
+
+
+def round_to_n_chars(f: float, n: int) -> float | int:
+    for i in range(20, -1, -1):
+        if len(str(round(f, i))) <= n:
+            return round(f, i)
+    return round(f)
+
+
+def rand31pm(seed: int) -> Iterator[int]:
+    while True:
+        hi: int
+        lo: int
+        hi, lo = divmod(seed, 0x1F31D)
+        seed = lo * 0x41A7 - hi * 0xB14
+        if seed < 1:
+            seed += 0x7FFFFFFF
+        yield seed - 1
+
+
+def coerse_types(cls1: type[_T1], cls2: type[_T2]) -> type[_T1] | type[_T2]:
+    if cls1 is cls2:
+        return cls1
+
+    if issubclass(cls1, cls2):
+        return cls1
+
+    if issubclass(cls2, cls1):
+        return cls2
+
+    raise TypeError(f'Cannot coerce types {cls1} and {cls2}')
+
 
 def identity(x: Any) -> Any:
     return x
@@ -89,7 +166,9 @@ def darken(k: float) -> Callable[[float], float]:
     return f
 
 
-def average(c1: tuple[float, float, float], c2: tuple[float, float, float], ratio: float = 0.5) -> tuple[float, float, float]:
+def average(
+    c1: tuple[float, float, float], c2: tuple[float, float, float], ratio: float = 0.5
+) -> tuple[float, float, float]:
     return tuple(y * ratio + x * (1 - ratio) for x, y in zip(c1, c2))  # type: ignore[return-value]
 
 
@@ -107,11 +186,13 @@ def my_mul(x: float, mn: float, mx: float, mul: float) -> float:
 def recolor(
     color: tuple[int, int, int, int],
     mask: tuple[int, int, int, int] | None,
-    red_angle: float, green_angle: float, blue_angle: float,
+    red_angle: float,
+    green_angle: float,
+    blue_angle: float,
     brightness: float,
     lightness: Callable[[float], float],
     gamma: float,
-    p_matrix: tuple[list[list[float]],list[list[float]],list[list[float]]],
+    p_matrix: tuple[list[list[float]], list[list[float]], list[list[float]]],
 ) -> tuple[float, float, float, float]:
     size = 5
     _255 = range(256 - size, 256)
@@ -199,6 +280,72 @@ def check_dir(path: str) -> None:
                 os.mkdir(res)
             except FileExistsError:
                 pass
+
+
+def tree_walker(
+    path: str,
+    cond: Callable[[str], bool] = None,
+    exts: Sequence[str] = (),
+    root: bool = False,
+) -> tuple[list[str], list[str]]:
+    if exts is not None and cond is not None:
+        raise TypeError
+
+    if cond is None:
+        if not exts:
+            cond = lambda s: True
+        else:
+            cond = lambda s: any(s.endswith(x) for x in exts)
+
+    files = list[str]()
+    dirs = list[str]()
+    iterator = (
+        os.walk(path)
+        if not root
+        else [('',
+            [os.path.join(path, x) for x in os.listdir(path) if os.path.isdir(x)],
+            [os.path.join(path, x) for x in os.listdir(path) if os.path.isfile(x)],
+        )]
+    )
+
+    for prefix, dirs_, files_ in iterator:
+        for file in files_:
+            fullfile = os.path.join(prefix, file)
+            if cond(fullfile):
+                files.append(fullfile)
+
+        for dir_ in dirs_:
+            fulldir = os.path.join(prefix, dir_)
+            if cond(fulldir):
+                dirs.append(fulldir)
+
+    return files, dirs
+
+
+def file_rebase(file: str, base: str, new_base: str) -> str:
+    return file.replace(base, new_base, 1)
+
+
+def change_ext(file: str, before: str, after: str) -> str:
+    return file[::-1].replace(before[::-1], after[::-1], 1)[::-1]
+
+
+def convert_ini_to_dict(content: str) -> dict[str, str]:
+    result = dict[str, str]()
+    for s in content.split('\n'):
+        if not s.strip():
+            continue
+        if '=' not in s:
+            continue
+        if s.startswith('#'):
+            continue
+
+        key, val = s.split('=', 1)
+        if key in result:
+            result[key] += '\n' + val
+        else:
+            result[key] = val
+    return result
 
 
 def clamp(v: float, lt: float, gt: float) -> float:
