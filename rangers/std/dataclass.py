@@ -7,7 +7,7 @@ from typing import (
     Literal,
     Generic,
     Callable,
-    Iterator,
+    # Iterator,
     final,
     NoReturn,
     # Protocol,
@@ -59,6 +59,8 @@ class DataClass(Generic[T]):
 
 @trait
 class ReadOnlyDataClass(Generic[T]):
+    __slots__ = ()
+
     @final
     def write(self, buf: OBuffer, obj: T, *, memo: Memo) -> NoReturn:
         raise DataClassError(f'Cannot write read-only {self.__class__.__name__} object')
@@ -66,6 +68,8 @@ class ReadOnlyDataClass(Generic[T]):
 
 @trait
 class WriteOnlyDataClass(Generic[T]):
+    __slots__ = ()
+
     @final
     def read(self, buf: IBuffer, *, memo: Memo) -> NoReturn:
         raise DataClassError(f'Cannot read write-only {self.__class__.__name__} object')
@@ -73,6 +77,8 @@ class WriteOnlyDataClass(Generic[T]):
 
 # @trait
 class NullDataClass(DataClass[None]):
+    __slots__ = ()
+
     def read(self, buf: IBuffer, *, memo: Memo) -> None:
         return None
 
@@ -82,127 +88,128 @@ class NullDataClass(DataClass[None]):
 
 # atomic dataclasses:
 class Bool(DataClass[bool]):
-    @staticmethod
-    def read(buf: IBuffer, *, memo: Memo) -> bool:
+    __slots__ = ()
+
+    def read(self, buf: IBuffer, *, memo: Memo) -> bool:
         return buf.read_bool()
 
-    @staticmethod
-    def write(buf: OBuffer, obj: bool, *, memo: Memo) -> None:
+    def write(self, buf: OBuffer, obj: bool, *, memo: Memo) -> None:
         buf.write_bool(obj)
 
 
-# @final
 class Byte(DataClass[int]):
-    @staticmethod
-    def read(buf: IBuffer, *, memo: Memo) -> int:
+    __slots__ = ()
+
+    def read(self, buf: IBuffer, *, memo: Memo) -> int:
         return buf.read_byte()
 
-    @staticmethod
-    def write(buf: OBuffer, obj: int, *, memo: Memo) -> None:
+    def write(self, buf: OBuffer, obj: int, *, memo: Memo) -> None:
         buf.write_byte(obj)
 
 
 class Int8(DataClass[int]):
-    @staticmethod
-    def read(buf: IBuffer, *, memo: Memo) -> int:
+    __slots__ = ()
+
+    def read(self, buf: IBuffer, *, memo: Memo) -> int:
         return buf.read_char()
 
-    @staticmethod
-    def write(buf: OBuffer, obj: int, *, memo: Memo) -> None:
+    def write(self, buf: OBuffer, obj: int, *, memo: Memo) -> None:
         buf.write_char(obj)
 
 
 class UInt8(DataClass[int]):
-    @staticmethod
-    def read(buf: IBuffer, *, memo: Memo) -> int:
+    __slots__ = ()
+
+    def read(self, buf: IBuffer, *, memo: Memo) -> int:
         return buf.read_uchar()
 
-    @staticmethod
-    def write(buf: OBuffer, obj: int, *, memo: Memo) -> None:
+    def write(self, buf: OBuffer, obj: int, *, memo: Memo) -> None:
         buf.write_uchar(obj)
 
 
 class Int16(DataClass[int]):
-    @staticmethod
-    def read(buf: IBuffer, *, memo: Memo) -> int:
+    __slots__ = ()
+
+    def read(self, buf: IBuffer, *, memo: Memo) -> int:
         return buf.read_short()
 
-    @staticmethod
-    def write(buf: OBuffer, obj: int, *, memo: Memo) -> None:
+    def write(self, buf: OBuffer, obj: int, *, memo: Memo) -> None:
         buf.write_short(obj)
 
 
 class UInt16(DataClass[int]):
-    @staticmethod
-    def read(buf: IBuffer, *, memo: Memo) -> int:
+    __slots__ = ()
+
+    def read(self, buf: IBuffer, *, memo: Memo) -> int:
         return buf.read_ushort()
 
-    @staticmethod
-    def write(buf: OBuffer, obj: int, *, memo: Memo) -> None:
+    def write(self, buf: OBuffer, obj: int, *, memo: Memo) -> None:
         buf.write_ushort(obj)
 
 
 class Int32(DataClass[int]):
-    @staticmethod
-    def read(buf: IBuffer, *, memo: Memo) -> int:
+    __slots__ = ()
+
+    def read(self, buf: IBuffer, *, memo: Memo) -> int:
         return buf.read_int()
 
-    @staticmethod
-    def write(buf: OBuffer, obj: int, *, memo: Memo) -> None:
+    def write(self, buf: OBuffer, obj: int, *, memo: Memo) -> None:
         buf.write_int(obj)
 
 
 class UInt32(DataClass[int]):
-    @staticmethod
-    def read(buf: IBuffer, *, memo: Memo) -> int:
+    __slots__ = ()
+
+    def read(self, buf: IBuffer, *, memo: Memo) -> int:
         return buf.read_uint()
 
-    @staticmethod
-    def write(buf: OBuffer, obj: int, *, memo: Memo) -> None:
+    def write(self, buf: OBuffer, obj: int, *, memo: Memo) -> None:
         buf.write_uint(obj)
 
 
 class Int64(DataClass[int]):
-    @staticmethod
-    def read(buf: IBuffer, *, memo: Memo) -> int:
+    __slots__ = ()
+
+    def read(self, buf: IBuffer, *, memo: Memo) -> int:
         return buf.read_long()
 
-    @staticmethod
-    def write(buf: OBuffer, obj: int, *, memo: Memo) -> None:
+    def write(self, buf: OBuffer, obj: int, *, memo: Memo) -> None:
         buf.write_long(obj)
 
 
 class UInt64(DataClass[int]):
-    @staticmethod
-    def read(buf: IBuffer, *, memo: Memo) -> int:
+    __slots__ = ()
+
+    def read(self, buf: IBuffer, *, memo: Memo) -> int:
         return buf.read_ulong()
 
-    @staticmethod
-    def write(buf: OBuffer, obj: int, *, memo: Memo) -> None:
+    def write(self, buf: OBuffer, obj: int, *, memo: Memo) -> None:
         buf.write_ulong(obj)
 
 
 class Float(DataClass[float]):
-    @staticmethod
-    def read(buf: IBuffer, *, memo: Memo) -> float:
+    __slots__ = ()
+
+    def read(self, buf: IBuffer, *, memo: Memo) -> float:
         return buf.read_float()
 
-    @staticmethod
-    def write(buf: OBuffer, obj: float, *, memo: Memo) -> None:
+    def write(self, buf: OBuffer, obj: float, *, memo: Memo) -> None:
         buf.write_float(obj)
 
 
 class Double(DataClass[float]):
-    @staticmethod
-    def read(buf: IBuffer, *, memo: Memo) -> float:
+    __slots__ = ()
+
+    def read(self, buf: IBuffer, *, memo: Memo) -> float:
         return buf.read_double()
 
-    @staticmethod
-    def write(buf: OBuffer, obj: float, *, memo: Memo) -> None:
+    def write(self, buf: OBuffer, obj: float, *, memo: Memo) -> None:
         buf.write_double(obj)
 
 
 class Str(DataClass[str]):
+    __slots__ = ('length',)
+
     def __init__(self, length: int = -1) -> None:
         self.length = length
 
@@ -214,6 +221,8 @@ class Str(DataClass[str]):
 
 
 class WStr(DataClass[str]):
+    __slots__ = ('length',)
+
     def __init__(self, length: int = -1) -> None:
         self.length = length
 
@@ -225,6 +234,8 @@ class WStr(DataClass[str]):
 
 
 class Bytes(DataClass[bytes]):
+    __slots__ = ('size',)
+
     def __init__(self, size: int = None) -> None:
         self.size = size
 
@@ -241,6 +252,8 @@ class Bytes(DataClass[bytes]):
 
 # compositions of dataclasses:
 class Const(DataClass[T]):
+    __slots__ = ('dcls', 'value', 'msg')
+
     def __init__(
         self,
         dcls: DataClass[T],
@@ -270,28 +283,26 @@ class Const(DataClass[T]):
 
 
 class List(DataClass[list[T]]):
+    __slots__ = ('dcls', 'lensize', 'byteorder')
+
     def __init__(
         self,
         dcls: DataClass[T],
         lensize: int = 4,
         byteorder: Literal['little', 'big'] = 'little',
-        lencorrection: int = 0,
     ) -> None:
         self.dcls = dcls
         self.lensize = lensize
         self.byteorder = byteorder
-        self.lencorrection = lencorrection
 
     def read(self, buf: IBuffer, *, memo: Memo) -> list[T]:
-        length = int.from_bytes(buf.read(self.lensize), self.byteorder) + self.lencorrection
-        if length > 2000:
-            raise DataClassError(f'List too long: {length}')  # FIXME
-        # print(f'Length of list is {length}') # FIXME
-        result: list[T] = []
+        length = int.from_bytes(buf.read(self.lensize), self.byteorder)
+        result = list[T]()
         for _ in range(length):
             try:
                 obj = self.dcls.read(buf, memo=memo)
             except Exception as exc:
+                print(buf.format_str(10, 10))
                 print(f'Error in List dataclass. Partially readed data ({_}/{length} items):')
                 # pprint(result, sort_dicts=False)
                 print()
@@ -302,7 +313,7 @@ class List(DataClass[list[T]]):
         return result
 
     def write(self, buf: OBuffer, obj: list[T], *, memo: Memo) -> None:
-        buf.write((len(obj) - self.lencorrection).to_bytes(self.lensize, self.byteorder))
+        buf.write((len(obj)).to_bytes(self.lensize, self.byteorder))
         for i, item in enumerate(obj):
             try:
                 self.dcls.write(buf, item, memo=memo)
@@ -316,6 +327,8 @@ class List(DataClass[list[T]]):
 
 
 class Sequence(DataClass[tuple[Any, ...]]):  # type: ignore[misc]
+    __slots__ = ('dclss',)
+
     def __init__(self, *dclss: DataClass[Any]) -> None:
         self.dclss = dclss
 
@@ -326,31 +339,35 @@ class Sequence(DataClass[tuple[Any, ...]]):  # type: ignore[misc]
             result.append(item)
         return tuple(result)
 
-    def write(self, buf: OBuffer, obj: tuple[Any, ...], *, memo: Memo) -> None:
+    def write(self, buf: OBuffer, obj: tuple[Any, ...] | list[Any], *, memo: Memo) -> None:
         assert len(self.dclss) == len(obj)
         for item, writer in zip(obj, self.dclss):
             writer.write(buf, item, memo=memo)
 
 
 class Pair(DataClass[tuple[T, T]]):
+    __slots__ = ('dcls',)
+
     def __init__(self, dcls: DataClass[T]) -> None:
         self.dcls = dcls
 
     def read(self, buf: IBuffer, *, memo: Memo) -> tuple[T, T]:
         return self.dcls.read(buf, memo=memo), self.dcls.read(buf, memo=memo)
 
-    def write(self, buf: OBuffer, obj: tuple[T, T], *, memo: Memo) -> None:
+    def write(self, buf: OBuffer, obj: tuple[T, T] | list[T], *, memo: Memo) -> None:
         self.dcls.write(buf, obj[0], memo=memo)
         self.dcls.write(buf, obj[1], memo=memo)
 
 
 class Repeat(DataClass[list[T]]):
+    __slots__ = ('dcls', 'n')
+
     def __init__(self, dcls: DataClass[T], n: int = None) -> None:
         self.dcls = dcls
         self.n = n
 
     def read(self, buf: IBuffer, *, memo: Memo) -> list[T]:
-        res: list[T] = []
+        res = list[T]()
         assert self.n is not None
         for _ in range(self.n):
             res.append(self.dcls.read(buf, memo=memo))
@@ -364,6 +381,8 @@ class Repeat(DataClass[list[T]]):
 
 
 class NamedSequence(DataClass[dict[str, Any]]):
+    __slots__ = ('kwargs',)
+
     def __init__(self, **kwargs: DataClass[Any]) -> None:
         self.kwargs = kwargs
 
@@ -375,7 +394,8 @@ class NamedSequence(DataClass[dict[str, Any]]):
                 if not name.startswith('__'):
                     result[name] = obj
             except Exception as exc:
-                pprint(result, sort_dicts=False)
+                # pprint(result, sort_dicts=False)
+                print(buf.format_str(10, 10))
                 input('wait after crash')
                 raise DataClassError(f'Error in item {name} of type {dcls.__class__}') from exc
         return result
@@ -394,6 +414,8 @@ class NamedSequence(DataClass[dict[str, Any]]):
 
 
 class DerivedNamedSequence(DataClass[dict[str, Any]]):
+    __slots__ = ('dcls', 'kwargs')
+
     def __init__(
         self, dcls: NamedSequence | DerivedNamedSequence, **kwargs: DataClass[Any]
     ) -> None:
@@ -402,7 +424,7 @@ class DerivedNamedSequence(DataClass[dict[str, Any]]):
 
     def read(self, buf: IBuffer, *, memo: Memo) -> dict[str, Any]:
         result: dict[str, Any] = self.dcls.read(buf, memo=memo)
-
+        dcls: DataClass[Any]
         for name, dcls in self.kwargs.items():
             try:
                 obj = dcls.read(buf, memo=memo)
@@ -412,6 +434,7 @@ class DerivedNamedSequence(DataClass[dict[str, Any]]):
                 print(
                     f'error in DerivedNamedSequence at item {name} of type {dcls.__class__.__name__}: {exc}'
                 )
+                print(buf.format_str(10, 10))
                 print('readed data:')
                 pprint(result, sort_dicts=False)
                 raise
@@ -434,6 +457,8 @@ class DerivedNamedSequence(DataClass[dict[str, Any]]):
 
 
 class Converted(DataClass[G], Generic[T, G]):
+    __slots__ = ('dcls', 'decode', 'encode')
+
     def __init__(
         self,
         dcls: DataClass[T],
@@ -455,6 +480,8 @@ class Converted(DataClass[G], Generic[T, G]):
 
 
 class CustomCallable(DataClass[T]):
+    __slots__ = ('decode', 'encode')
+
     def __init__(
         self,
         *,
@@ -472,6 +499,8 @@ class CustomCallable(DataClass[T]):
 
 
 class Nested(DataClass[T]):
+    __slots__ = ('dcls1', 'dcls2')
+
     def __init__(self, dcls1: DataClass[bytes], dcls2: DataClass[T]) -> None:
         self.dcls1 = dcls1
         self.dcls2 = dcls2
@@ -489,6 +518,8 @@ class Nested(DataClass[T]):
 
 
 class Selector(DataClass[tuple[int, T]]):
+    __slots__ = ('base', 'dclss')
+
     def __init__(self, base: DataClass[int], dclss: dict[int | EllipsisType, DataClass[T]]) -> None:
         self.base = base
         self.dclss = dclss
@@ -497,14 +528,16 @@ class Selector(DataClass[tuple[int, T]]):
         n = self.base.read(buf, memo=memo)
         if n not in self.dclss:
             if ... not in self.dclss:
+                print(buf.format_str(10, 10))
                 raise DataClassError(
                     f'Selector value not in dict: value={n} keys={self.dclss.keys()}'
                 )
             return n, self.dclss[...].read(buf, memo=memo)
         return n, self.dclss[n].read(buf, memo=memo)
 
-    def write(self, buf: OBuffer, obj: tuple[int, T], *, memo: Memo) -> None:
+    def write(self, buf: OBuffer, obj: tuple[int, T] | list, *, memo: Memo) -> None:
         n = obj[0]
+        self.base.write(buf, n, memo=memo)
         if n not in self.dclss:
             if ... not in self.dclss:
                 raise DataClassError(
@@ -517,6 +550,8 @@ class Selector(DataClass[tuple[int, T]]):
 
 # SR-specific dataclasses:
 class BufEC(DataClass[bytes]):
+    __slots__ = ()
+
     def read(self, buf: IBuffer, *, memo: Memo) -> bytes:
         size = buf.read_uint()
         data = buf.read(size)
@@ -528,6 +563,8 @@ class BufEC(DataClass[bytes]):
 
 
 class CryptedRand31pm(DataClass[bytes]):
+    __slots__ = ('key', 'seed', 'prepend_size')
+
     def __init__(self, key: int, seed: int = None, prepend_size: bool = False) -> None:
         self.key = key
         self.seed = random.randint(-(2 ** 31), 2 ** 31 - 1) if seed is None else seed
@@ -540,7 +577,6 @@ class CryptedRand31pm(DataClass[bytes]):
 
         if self.prepend_size:
             size = buf.read_uint()
-            print(f'{size = }')
             dout.write_uint(size)
             for _ in range(size):
                 dout.write_byte(buf.read_byte() ^ (next(rnd) & 0xFF))
@@ -549,15 +585,11 @@ class CryptedRand31pm(DataClass[bytes]):
             while buf:
                 dout.write_byte(buf.read_byte() ^ (next(rnd) & 0xFF))
 
-        print(dout.pos, '/', len(dout))
         result = bytes(dout)
         if self.prepend_size:
             actual_hash = zlib.crc32(result[4:])
         else:
             actual_hash = zlib.crc32(result)
-        # print(f'hash = {actual_hash}')
-        print(f'len of readed data = {len(result)}')
-        # input('...')
         if actual_hash != content_hash:
             raise ValueError(
                 f'Content hash 0x{content_hash:x} dont match actual hash 0x{actual_hash:x}'
@@ -577,47 +609,38 @@ class CryptedRand31pm(DataClass[bytes]):
 
         if self.prepend_size:
             buf.write_uint(din.read_uint())
-            # buf.write_uint(len(obj))
 
         while din:
             buf.write_byte(din.read_byte() ^ (next(rnd) & 0xFF))
 
 
 class ZL(DataClass[bytes]):
-    def __init__(self, mode: int, **kwargs) -> None:
-        # FIXME fix kwargs
+    __slots__ = ('mode', 'length', 'optional')
+
+    def __init__(self, mode: int, length: int = None, optional: bool = False) -> None:
         assert mode in {1, 2, 3}
         self.mode = mode
-        self.kwargs = kwargs
+        self.length = length
+        self.optional = optional
 
     def read(self, buf: IBuffer, *, memo: Memo) -> bytes:
         if self.mode == 1:
-            # print(buf.format_str(10, 10))
-            # breakpoint()
-
-            if 'length' in self.kwargs:
-                size = self.kwargs['length']
+            if self.length is None:
+                size = buf.read_uint()
+            else:
+                size = self.length
                 if size == -1:
                     size = buf.bytes_remains()
-            else:
-                size = buf.read_uint()
-
-            if 'optional' in self.kwargs:
-                optional = self.kwargs['optional']
-            else:
-                optional = False
 
             magic = buf.read(4)
-            if optional and magic == b'\0\0\0\0':
+            if self.optional and magic == b'\0\0\0\0':
                 return b''
 
-            # print(buf)
             assert magic == b'ZL01', magic
             decompressed_size = buf.read_uint()
             compressed_data = buf.read(size - 8)
             data = zlib.decompress(compressed_data)
             assert len(data) == decompressed_size
-            print(f'{decompressed_size = }')
             return data
 
         if self.mode == 2:
@@ -630,28 +653,21 @@ class ZL(DataClass[bytes]):
 
     def write(self, buf: OBuffer, obj: bytes, *, memo: Memo) -> None:
         if self.mode == 1:
-            if 'length' in self.kwargs:
-                if self.kwargs['length'] != -1:
-                    buf.write_uint(self.kwargs['length'])
+            if self.length is not None:
+                if self.length != -1:
+                    buf.write_uint(self.length)
 
-
-            if 'optional' in self.kwargs:
-                optional = self.kwargs['optional']
-            else:
-                optional = False
-
-            if optional and not obj:
+            if self.optional and not obj:
                 buf.write(b'\0\0\0\0')
                 return
 
             compressed = zlib.compress(obj, level=9)
-            if 'length' not in self.kwargs:
+            if self.length is None:
                 buf.write_uint(len(compressed) + 8)
 
             buf.write(b'ZL01')
             buf.write_uint(len(obj))
-            data = zlib.compress(obj, level=9)
-            buf.write(data)
+            buf.write(compressed)
             return
 
         if self.mode == 2:
@@ -664,6 +680,8 @@ class ZL(DataClass[bytes]):
 
 
 class ConstValue(DataClass[T]):
+    __slots__ = ('value',)
+
     def __init__(self, value: T) -> None:
         self.value = value
 
@@ -676,6 +694,8 @@ class ConstValue(DataClass[T]):
 
 
 class AddToMemo(DataClass[T]):
+    __slots__ = ('dcls', 'name')
+
     def __init__(self, name: Hashable, dcls: DataClass[T]) -> None:
         self.dcls = dcls
         self.name = name
@@ -729,20 +749,20 @@ class Raise(NullDataClass):
 
 
 class Log(NullDataClass):
-    def __init__(self, msg: str = '<log>', before=170, after=10) -> None:
+    def __init__(self, msg: str = '<log>', before: int = 170, after: int = 10) -> None:
         self.msg = msg
         self.before = before
         self.after = after
 
     def read(self, buf: IBuffer, *, memo: Memo) -> None:
         print(self.msg)
-        print(buf.format_str(self.before, self.after), flush=True)
+        print(buf.format_str(self.before, self.after))
         print()
 
     def write(self, buf: OBuffer, obj: Any, *, memo: Memo) -> None:
         assert obj is None
         print(self.msg)
-        print(buf.format_str(self.before, self.after), flush=True)
+        print(buf.format_str(self.before, self.after))
         print()
 
 
@@ -752,14 +772,10 @@ class DumpTo(NullDataClass):
         self.mode = mode
 
     def read(self, buf: IBuffer, *, memo: Memo) -> None:
-        print('dumping...')
         buf.dump_to_file(self.filename, self.mode)
-        print('ok')
 
     def write(self, buf: OBuffer, obj: Any, *, memo: Memo) -> None:
-        print('dumping...')
         buf.dump_to_file(self.filename, self.mode)
-        print('ok')
 
 
 class PrintMsg(NullDataClass):
@@ -863,3 +879,14 @@ class Breakpoint(NullDataClass):
 
     def write(self, buf: OBuffer, obj: Any, *, memo: Memo) -> None:
         breakpoint()
+
+class AssertOnEnd(DataClass[str]):
+    def read(self, buf: IBuffer, *, memo: Memo) -> str:
+        if not buf.pos == len(buf):
+            raise DataClassError
+
+        return '<end>'
+
+    def write(self, buf: OBuffer, obj: str, *, memo: Memo) -> None:
+        if obj != '<end>':
+            raise DataClassError
