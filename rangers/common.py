@@ -281,20 +281,19 @@ def check_dir(path: str) -> None:
             except FileExistsError:
                 pass
 
+_tree_walker_def_cond: Callable[[str], bool] = lambda x: True
 
 def tree_walker(
     path: str,
-    cond: Callable[[str], bool] = None,
+    cond: Callable[[str], bool] = _tree_walker_def_cond,
     exts: Sequence[str] = (),
     root: bool = False,
 ) -> tuple[list[str], list[str]]:
-    if exts is not None and cond is not None:
+    if exts is not None and cond is not _tree_walker_def_cond:
         raise TypeError
 
-    if cond is None:
-        if not exts:
-            cond = lambda s: True
-        else:
+    if cond is _tree_walker_def_cond:
+        if exts:
             cond = lambda s: any(s.endswith(x) for x in exts)
 
     files = list[str]()

@@ -12,6 +12,7 @@ import zlib
 
 from .buffer import Buffer
 from .io import AbstractIBuffer
+from .common import rand31pm
 from .std.dataclass import CryptedRand31pm, ZL, Nested
 
 T = TypeVar('T')
@@ -103,15 +104,6 @@ def unsign_data(data: bytes) -> bytes:
 
 # пытается угадать формат датника, подбирая ключ шифрования
 def guess_format(data: bytes, check_hash: bool = True) -> str | None:
-    # генератор псевдослучайных чисел, использующийся для шифрования данных
-    def _rand31pm(seed: int) -> Iterator[int]:
-        while True:
-            hi, lo = divmod(seed, 0x1F31D)
-            seed = lo * 0x41A7 - hi * 0xB14
-            if seed < 1:
-                seed += 0x7FFFFFFF
-            yield seed - 1
-
     buf = Buffer(data)
     if check_signed(data):
         buf.skip(8)
@@ -126,7 +118,7 @@ def guess_format(data: bytes, check_hash: bool = True) -> str | None:
         buf.pos = 0
         dout.pos = 0
 
-        rnd = _rand31pm(seed_ciphered ^ key)
+        rnd = rand31pm(seed_ciphered ^ key)
 
         while not buf.is_end():
             dout.write_byte(buf.read_byte() ^ (next(rnd) & 0xFF))
@@ -142,7 +134,7 @@ def guess_format(data: bytes, check_hash: bool = True) -> str | None:
             fbuf.skip(8)
         _ = fbuf.read_uint()
         _ = fbuf.read_int()
-        rnd = _rand31pm(seed_ciphered ^ key)
+        rnd = rand31pm(seed_ciphered ^ key)
 
         dout = Buffer()
         while not fbuf.is_end():

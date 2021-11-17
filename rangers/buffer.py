@@ -43,7 +43,7 @@ T = TypeVar('T')
 #         # + 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
 #     )
 # }
-_hex_readable_chars: set[int] = set()
+_hex_readable_chars = set[int]()
 
 _hex_char_conv: dict[int | str, str] = {
     '\0': '..',
