@@ -31,5 +31,7 @@ for filename in tree_walker(_in, exts=('.dat',))[0]:
         with open(out_name, 'wb') as file_out:
             file_out.write(signed_data)
 
-    except Exception as e:
-        print(f'Error with file {filename}: {e!r}')
+    except:
+        import traceback
+
+        print(traceback.format_exc())

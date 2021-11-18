@@ -1,5 +1,5 @@
 from rangers.pkg import PKG
-from rangers.common import tree_walker, check_dir, file_rebase, change_ext
+from rangers.common import tree_walker, check_dir, file_rebase
 
 
 _in = '_input/'
@@ -20,5 +20,7 @@ for folder in tree_walker(_in, root=True)[1]:
         check_dir(filename)
         pkg.to_pkg(filename)
 
-    except Exception as e:
-        print(f'Error with folder {folder}: {e!r}')
+    except:
+        import traceback
+
+        print(traceback.format_exc())

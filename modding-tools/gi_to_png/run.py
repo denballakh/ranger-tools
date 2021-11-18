@@ -20,5 +20,7 @@ for filename in tree_walker(_in, exts=('.gi',))[0]:
         check_dir(out_name)
         img.save(out_name)
 
-    except Exception as e:
-        print(f'Error with file {filename}: {e!r}')
+    except:
+        import traceback
+
+        print(traceback.format_exc())

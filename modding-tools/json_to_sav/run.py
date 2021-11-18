@@ -22,6 +22,7 @@ for filename in tree_walker(_in, exts=('.json',))[0]:
 
         check_dir(out_name)
         sav.to_file(out_name)
+    except:
+        import traceback
 
-    except Exception as e:
-        print(f'Error with file {filename}: {e!r}')
+        print(traceback.format_exc())

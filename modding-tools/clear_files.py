@@ -1,9 +1,9 @@
 import shutil
 
-from rangers.common import tree_walker, check_dir, file_rebase, change_ext
+from rangers.common import tree_walker
 
-_in = 'input/'
-_out = 'output/'
+_in = '_input/'
+_out = '_output/'
 
 for folder in tree_walker('./', root=True)[1]:
     try:
@@ -12,5 +12,7 @@ for folder in tree_walker('./', root=True)[1]:
         print(f'Deleting folder {folder + "/" + _out}...')
         shutil.rmtree(folder + '/' + _out, ignore_errors=True)
 
-    except Exception as e:
-        print(f'Error with folder {folder}: {e!r}')
+    except:
+        import traceback
+
+        print(traceback.format_exc())

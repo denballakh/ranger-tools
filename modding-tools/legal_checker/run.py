@@ -37,4 +37,3 @@ else:
     print('This files are signed:')
     print('\n'.join(signed_files))
     print()
-

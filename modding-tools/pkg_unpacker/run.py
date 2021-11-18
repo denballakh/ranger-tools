@@ -18,8 +18,7 @@ for filename in tree_walker(_in, exts=('.pkg',))[0]:
         check_dir(folder)
         pkg.to_dir(folder)
 
+    except:
+        import traceback
 
-
-    except Exception as e:
-        print(f'Error with file {filename}: {e!r}')
-
+        print(traceback.format_exc())
