@@ -3,8 +3,6 @@
 #pragma pack(push)
 #pragma pack(4)
 
-#include "_all.h"
-
 #include "_defines.h"
 
 #include "__declarations.h"

@@ -152,6 +152,29 @@ struct TCustomShipInfo {
     _gap _[2];
 };
 
+struct TPoint {
+    int x;
+    int y;
+};
+
+struct TPos {
+    float x;
+    float y;
+};
+
+struct TRect {
+    int x_1;
+    int y_1;
+    int x_2;
+    int y_2;
+};
+
+struct TPos_pair {
+    TPos p1;
+    TPos p2;
+};
+
+
 /*
 
 TEther - 18

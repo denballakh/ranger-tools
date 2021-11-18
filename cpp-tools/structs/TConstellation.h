@@ -23,24 +23,14 @@ struct TConstellation {
     _gap _16;
     _gap _17;
 
-    TList* _18;
-    TList* _1C;
-    TList* _20;
-    TList* _24;
-    TList* _28;
-    _gap_32 _2C;
-    _gap_32 _30;
-    _gap_32 _34;
-    _gap_32 _38;
-    _gap _3C;
-    _gap _3D;
-    _gap _3E;
-    _gap _3F;
-    _gap _40;
-    _gap _41;
-    _gap _42;
-    _gap _43;
-    TList* _44;
+    TList* stars_id;
+    TList* constellations_id;
+    TList* p_bound; // TPos_pair
+    TList* p_bound_hidden; // TPos_pair
+    TList* terrain_points;
+    TRect rect;
+    TPoint point;
+    TList* lines; // TPos_pair
     _gap _48;
     _gap _49;
     _gap _4A;
