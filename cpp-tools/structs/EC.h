@@ -210,7 +210,7 @@ struct TVarEC {
     int             val_int;
     unsigned int    val_dword;
     double          val_float;
-    byte*           val_str;
+    wchar_t*        val_str;
     void*           val_externfun;
     void*           val_libraryfun;
     TCodeEC*        val_fun;

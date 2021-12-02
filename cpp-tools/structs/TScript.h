@@ -45,6 +45,8 @@ struct TScriptShip {
 struct TScriptPlace {
     VMT cls;
 
+    // TPoint* point;
+
     _gap_32 _04;
     _gap_32 _08;
     _gap_32 _0C;
@@ -60,6 +62,7 @@ struct TScriptPlace {
 struct TScriptItem {
     VMT cls;
 
+    // TScript* script;
     _gap_32 _04;
     _gap_32 _08;
     _gap_32 _0C;
@@ -83,6 +86,7 @@ struct TScriptItem {
 struct TScriptState {
     VMT cls;
 
+    // TScript* script;
     WSTR name;                  ///< имя стейта
     _gap_32 _08;
     _gap_32 _0C;
