@@ -1,33 +1,48 @@
+from types import EllipsisType
+from typing import cast
+
 import unittest
 
 from rangers.buffer import Buffer
 
+
 class TestBuffer(unittest.TestCase):
-
-    def test_construction(self):
+    def test_construction(self) -> None:
         b1 = Buffer(b'abc')
-        b2 = Buffer(b'abc'); b2.pos = 1
+        b2 = Buffer(b'abc')
+        b2.pos = 1
 
-        for arg, values in [
-            (...,               (b'', 0, [])),
-            (b'',               (b'', 0, [])),
-            ([],                (b'', 0, [])),
-            ((),                (b'', 0, [])),
-
-            (b'abc',            (b'abc', 0, [])),
-            (bytearray(b'abc'), (b'abc', 0, [])),
-
-            ([97, 98, 99],      (b'abc', 0, [])),
-            ((97, 98, 99),      (b'abc', 0, [])),
-            (b1,                (b'abc', 0, [])),
-            (b2,                (b'abc', 0, [])),
-
-            (0,                 (b'', 0, [])),
-            (10,                (b'\0'*10, 0, [])),
-        ]:
+        for arg, values in cast(
+            list[
+                tuple[
+                    bytes | tuple[int] | list[int] | Buffer | int | EllipsisType,
+                    tuple[bytes, int, list],
+                ]
+            ],
+            [
+                (..., (b'', 0, [])),
+                (b'', (b'', 0, [])),
+                ([], (b'', 0, [])),
+                ((), (b'', 0, [])),
+                (b'abc', (b'abc', 0, [])),
+                (bytearray(b'abc'), (b'abc', 0, [])),
+                ([97, 98, 99], (b'abc', 0, [])),
+                ((97, 98, 99), (b'abc', 0, [])),
+                (b1, (b'abc', 0, [])),
+                (b2, (b'abc', 0, [])),
+                (0, (b'', 0, [])),
+                (10, (b'\0' * 10, 0, [])),
+            ],
+        ):
             with self.subTest(arg=arg, values=values):
+                _position_stack: list
                 data, pos, _position_stack = values
-                buf = Buffer(arg) if arg is not ... else Buffer()
+                if arg is ...:
+                    buf = Buffer()
+                else:
+                    assert not isinstance(arg, EllipsisType)
+                    buf = Buffer(arg)
+                # buf = Buffer(arg) if arg is not ... else Buffer()
                 if data is not ...:
                     self.assertEqual(buf.data, data)
                 if data is not ...:
@@ -39,11 +54,9 @@ class TestBuffer(unittest.TestCase):
         self.assertRaises(ValueError, Buffer, -1)
         self.assertRaises(TypeError, Buffer, Buffer)
 
-
     def test_iter(self):
         self.assertEqual(list(Buffer()), [])
         self.assertEqual(list(Buffer(b'abc')), [97, 98, 99])
-
 
     def test_repr(self):
         for data, pos in (
@@ -52,7 +65,6 @@ class TestBuffer(unittest.TestCase):
             (b'abc', 1),
         ):
             self.assertEqual(eval(repr(Buffer(data, pos=pos))), Buffer(data, pos=pos))
-
 
     def test_equality(self):
         self.assertEqual(Buffer(), Buffer())
@@ -64,11 +76,9 @@ class TestBuffer(unittest.TestCase):
         self.assertEqual(Buffer(b'abc'), Buffer([97, 98, 99]))
         self.assertEqual(Buffer(b'\0'), Buffer(1))
 
-
         self.assertNotEqual(Buffer(b'a'), Buffer(b'b'))
         self.assertNotEqual(Buffer(b''), Buffer(b'b'))
         self.assertNotEqual(Buffer(b'\0'), Buffer(b''))
-
 
     def test_bool(self):
         self.assertFalse(Buffer())
@@ -91,7 +101,6 @@ class TestBuffer(unittest.TestCase):
         self.assertEqual(b'abc', b.to_bytes())
 
         self.assertEqual(Buffer().to_bytes(), b'')
-
 
 
 if __name__ == '__main__':

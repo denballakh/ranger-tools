@@ -6,6 +6,7 @@ import unittest
 import time
 from hashlib import md5, sha256
 import random
+from struct import Struct, calcsize, pack, unpack
 
 from rangers.std.time import AdaptiveTimeMeasurer
 from rangers.std.bitset import frozenbitset, bitset
@@ -144,8 +145,8 @@ def test_doc():
     bytearray(b'\\x00')
 
     hash():
-    >>> hash(frozenbitset()) == hash(('frozenbitset', 0, 0))
-    True
+    # >>> hash(frozenbitset()) == hash(('frozenbitset', 0, 0))
+    # True
     >>> _ = hash(frozenbitset())
     >>> hash(bitset())
     Traceback (most recent call last):
@@ -180,7 +181,7 @@ def test_doc():
     >>> frozenbitset()[0]
     Traceback (most recent call last):
       ...
-    IndexError: Invalid bitset index: 0
+    IndexError: Invalid frozenbitset index: 0
     >>> frozenbitset()[::]
     frozenbitset()
     >>> frozenbitset()[::1]
@@ -207,8 +208,8 @@ def test_doc():
     True
     >>> frozenbitset() == 0
     True
-    >>> frozenbitset() == (0, 0)
-    True
+    # >>> frozenbitset() == (0, 0)
+    # True
 
     ~:
     >>> ~frozenbitset()
@@ -343,17 +344,18 @@ def test_doc():
     """
 
 
-def test_speed():
-    runs = 10
-    size = 1_000_000
+def test_speed() -> None:
+    runs = 100
+    # size = 1_000_000
+    size = 1_000
     size8 = size // 8
     size2 = size // 2
 
     for _ in range(runs):
         with AdaptiveTimeMeasurer(
-            target_time=1,
+            target_time=5,
             config_file='_bitset_bench_opt.json' if COMPILED else '_bitset_bench_pure.json',
-            history_len=20,
+            history_len=100,
             adapt_ratio=10,
             # print_to='_bitset_bench_opt.txt' if COMPILED else '_bitset_bench_pure.txt',
         ) as atm:
@@ -364,11 +366,12 @@ def test_speed():
             print(f'size = {size}')
             print()
 
-            T = atm('empty loop', extra=5)
+            T = atm('empty loop', extra=2)
             T.calibrate(0)
             with T as cnt:
                 for _ in repeat(None, cnt):
                     pass
+            assert T.time is not None
             T.calibrate(T.time)
 
             with atm('calibrated empty loop') as cnt:
@@ -379,21 +382,21 @@ def test_speed():
                 for _ in range(cnt):
                     pass
 
-            with atm('while loop') as cnt:
+            with atm('while loop down') as cnt:
                 i = cnt
                 while i:
                     i -= 1
 
-            with atm('while loop # 2') as cnt:
+            with atm('while loop up') as cnt:
                 i = 0
                 while i < cnt:
                     i += 1
 
-            with atm('repeat(None)') as cnt:
+            with atm('repeat(None, cnt)') as cnt:
                 for _ in repeat(None, cnt):
                     repeat(None, cnt)
 
-            with atm('empty loop with 101 assignment') as cnt:
+            with atm('empty loop with 100 assignment') as cnt:
                 for _ in repeat(None, cnt):
                     # fmt: off
                     _=_;_=_;_=_;_=_;_=_;_=_;_=_;_=_;_=_;_=_;
@@ -410,25 +413,13 @@ def test_speed():
 
             print()
 
-            with atm('int(\'1\')') as cnt:
+            with atm('int("1")') as cnt:
                 for _ in repeat(None, cnt):
-                    int('1')
+                    int("1")
 
             with atm('str(1)') as cnt:
                 for _ in repeat(None, cnt):
                     str(1)
-
-            with atm('hash("1(&")') as cnt:
-                for _ in repeat(None, cnt):
-                    hash("1(&")
-
-            with atm('hash(1)') as cnt:
-                for _ in repeat(None, cnt):
-                    hash(1)
-
-            with atm('hash("123")') as cnt:
-                for _ in repeat(None, cnt):
-                    hash('123')
 
             with atm('hash(hash)') as cnt:
                 for _ in repeat(None, cnt):
@@ -449,32 +440,57 @@ def test_speed():
             print()
 
             # fmt: off
-            with atm('try-except') as cnt:
+            with atm('try-except passes') as cnt:
                 for _ in repeat(None, cnt):
                     try: pass
                     except: pass
 
-            with atm('try-except #2') as cnt:
+            with atm('try-except failed') as cnt:
                 for _ in repeat(None, cnt):
                     try: 1/0
                     except: pass
 
-            with atm('def') as cnt:
+            with atm('def _(): pass') as cnt:
                 for _ in repeat(None, cnt):
-                    def _(): _
+                    def _(): pass
 
-            with atm('lambda') as cnt:
+            with atm('lambda: None') as cnt:
                 for _ in repeat(None, cnt):
-                    lambda: _
+                    lambda: None
 
-            with atm('lambda()') as cnt:
+            with atm('(lambda: None)()') as cnt:
                 for _ in repeat(None, cnt):
-                    (lambda: _)()
+                    (lambda: None)()
 
-            with atm('class') as cnt:
+            with atm('class _: pass') as cnt:
                 for _ in repeat(None, cnt):
-                    class _: pass
+                    class _: pass  # type: ignore[no-redef]
             # fmt: on
+
+            print()
+
+            with atm('int()') as cnt:
+                for _ in repeat(None, cnt):
+                    int()
+
+            with atm('0') as cnt:
+                for _ in repeat(None, cnt):
+                    0
+
+            with atm('1+1') as cnt:
+                for _ in repeat(None, cnt):
+                    _ = 1
+                    _ + _
+
+            print()
+
+            with atm('str()') as cnt:
+                for _ in repeat(None, cnt):
+                    str()
+
+            with atm('""') as cnt:
+                for _ in repeat(None, cnt):
+                    """"""
 
             print()
 
@@ -486,16 +502,52 @@ def test_speed():
                 for _ in repeat(None, cnt):
                     []
 
+            print()
+
+            with atm('tuple()') as cnt:
+                for _ in repeat(None, cnt):
+                    tuple()
+
+            with atm('()') as cnt:
+                for _ in repeat(None, cnt):
+                    ()
+
+            print()
+
+            with atm('dict()') as cnt:
+                for _ in repeat(None, cnt):
+                    dict()
+
             with atm('{}') as cnt:
                 for _ in repeat(None, cnt):
                     {}
 
-            with atm('{1,}') as cnt:
-                for _ in repeat(None, cnt):
-                    _ = {
-                        1,
-                    }
             print()
+
+            with atm('bytes()') as cnt:
+                for _ in repeat(None, cnt):
+                    bytes()
+
+            with atm('b""') as cnt:
+                for _ in repeat(None, cnt):
+                    b""""""
+
+            print()
+
+            with atm('set()') as cnt:
+                for _ in repeat(None, cnt):
+                    set()
+
+            with atm('{0}') as cnt:
+                for _ in repeat(None, cnt):
+                    {0}
+
+            with atm('0 in {0}') as cnt:
+                for _ in repeat(None, cnt):
+                    0 in {0}
+
+            print()
+
 
             with atm('by + b"0"') as cnt:
                 for _ in repeat(None, cnt):
