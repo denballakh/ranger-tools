@@ -8,9 +8,10 @@ import time
 import json
 import os
 import statistics
+import math
 
 from ..common import fmt_time, round_to_three_chars
-from .mixins import PrintableMixin
+from .mixin import PrintableMixin
 
 
 class Timer(PrintableMixin):
@@ -81,11 +82,15 @@ class AdaptiveTimer:
 
     def __exit__(
         self,
-        exc_type: Type[Exception],
-        exc_value: Type[Exception] | Exception,
-        traceback: TracebackType,
+        exc_type: Type[Exception] | None,
+        exc_value: Type[Exception] | Exception | None,
+        traceback: TracebackType | None,
     ) -> Literal[False]:
-        self.end_time = time.perf_counter()
+        if exc_type is None:
+            self.end_time = time.perf_counter()
+        else:
+            self.end_time = float('inf')
+
         assert self.start_time is not None
         self.real_time = self.end_time - self.start_time
         self.time = self.real_time / self.cnt - self._calibration
@@ -122,7 +127,7 @@ class AdaptiveTimeMeasurer:
         history_len: int = 5,
         growth_ratio: float = 5,
         adapt_ratio: float = 3,
-        print_to: str = None
+        print_to: str = None,
     ) -> None:
         assert history_len > 2
         assert target_time > 0
@@ -167,7 +172,7 @@ class AdaptiveTimeMeasurer:
         traceback: TracebackType,
     ) -> Literal[False]:
         with open(self.config_file, 'wt', encoding='utf-8') as file:
-            json.dump(self.config, file)
+            json.dump(self.config, file, indent=4)
 
         sys.stdout = sys.__stdout__
 
@@ -182,21 +187,28 @@ class AdaptiveTimeMeasurer:
         assert value is not None
 
         cnt, history = self.config[at.case_id]
-        rt = at.real_time / at.extra
+        rt = at.real_time
 
-        if not rt:
+        if math.isinf(value):
+            self.config[case_id] = 1, []
+            return float('nan')
+
+        if not value:
             cnt *= int(max(cnt * self.growth_ratio, 1))
+
         else:
             cnt = round(
-                cnt * (self.target_time / rt * self.adapt_ratio + 1) / (self.adapt_ratio + 1)
+                cnt
+                * (at.extra * self.target_time / rt * self.adapt_ratio + 1)
+                / (self.adapt_ratio + 1)
             )
             cnt = max(round(cnt), 1)
 
         history = history + [value]
-        history = history[: self.history_len]
+        history = history[-self.history_len:]
 
         self.config[case_id] = cnt, history
 
         if len(history) >= 3:
             return statistics.stdev(history[1:])
-        return 0.0
+        return float('nan')
