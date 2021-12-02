@@ -3,13 +3,10 @@ from __future__ import annotations
 from typing import Any, Literal, Iterator, Type
 from types import TracebackType
 
-from .mixins import PrintableMixin
+from .mixin import PrintableMixin
 
-__all__ = ['switch']
+__all__ = ('switch',)
 
-
-from .time import Timer # FIXME
-__all__.append('Timer')
 
 class switch(PrintableMixin):
     __slots__ = ('expr', 'triggered')
