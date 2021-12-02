@@ -24,12 +24,15 @@ ByteOrder = Literal['big', 'little']
 
 
 class frozenbitset:
-    __slots__ = ('_value', '_size')
+    __slots__ = ('_value', '_size', '_str')
 
     _value: int
     _size: int
+    _str: str | None
 
-    def __init__(self: FT, value: int = 0, /, size: int = None, _check: bool = True) -> None:
+    def __init__(self: FT, value: int = 0, /, size: int = None, *, _check: bool = True) -> None:
+        self._str = None
+
         if not _check:
             self._value = value
             assert size is not None
@@ -65,7 +68,10 @@ class frozenbitset:
             raise TypeError
         if size is None:
             size = 8 * len(value)
-        return cls(int.from_bytes(value, byteorder), size=size)
+        return cls(
+            int.from_bytes(value, byteorder),
+            size=size,
+        )
 
     @classmethod
     def from_int(cls: type[FT], value: int, size: int = None) -> FT:
@@ -79,7 +85,11 @@ class frozenbitset:
             size = len(value)
         if value == '':
             return cls(size=size)
-        return cls(int(value, 2), size=size, _check=False)
+        return cls(
+            int(value, 2),
+            size=size,
+            _check=False,
+        )
 
     @classmethod
     def from_list(cls: type[FT], value: list[BIN] | tuple[BIN], size: int = None) -> FT:
@@ -87,21 +97,18 @@ class frozenbitset:
             return cls(size=size)
         if size is None:
             size = len(value)
-        # b = 0
-        # for item in reversed(value):
-        #     if item:
-        #         b = b << 1 | 1
-        #     else:
-        #         b = b << 1
 
-        # return cls(b, size=size)
         bin_string = ''.join('1' if item else '0' for item in reversed(value))
         bin_string = ''.join(str(int(bool(item))) for item in reversed(value))
         return cls.from_str(bin_string, size=size)
 
     @classmethod
     def from_bitset(cls: type[FT], value: frozenbitset) -> FT:
-        return cls(value.value, size=value.size, _check=False)
+        return cls(
+            value.value,
+            size=value.size,
+            _check=False,
+        )
 
     @classmethod
     def from_file(cls: type[FT], filename: str, size: int = None) -> FT:
@@ -122,7 +129,9 @@ class frozenbitset:
         )
 
     def __str__(self) -> str:
-        return f'{self._value:0{self._size}b}'
+        if self._str is None:
+            self._str = f'{self._value:0{self._size}b}'
+        return self._str
 
     def __repr__(self) -> str:
         if self._value == 0 and self._size == 0:
@@ -146,22 +155,16 @@ class frozenbitset:
         return self._value.to_bytes(length=(self._size + 7) // 8, byteorder='big')
 
     def __hash__(self) -> int:
-        return hash((self.__class__.__name__, self._size, self._value))
+        return hash(self._value)
 
     def __bool__(self) -> bool:
         return bool(self._value)
 
     def __iter__(self) -> Iterator[BIN]:
-        # for key in range(self._size):
-        # yield self[key]
-        # return iter([int(c, 2) for c in list(self.__str__()[::-1])])
-        # return map('1'.__eq__, str(self))
         return map(int, map('1'.__eq__, str(self)[::-1]))
-        # return iter([int(c == '1') for c in list(str(self)[::-1])])
 
     def __reversed__(self) -> Iterator[BIN]:
         return map(int, map('1'.__eq__, str(self)))
-        # return iter([int(c) for c in list(str(self))])
 
     @overload
     def __getitem__(self: FT, key: int) -> BIN:
@@ -177,14 +180,17 @@ class frozenbitset:
                 key += self._size
 
             if not 0 <= key < self._size:
-                raise IndexError(f'Invalid bitset index: {key}')
+                raise IndexError(f'Invalid {self.__class__.__name__} index: {key}')
 
             return self._value >> key & 1
-            # return int(str(self)[::-1][key])
 
         if isinstance(key, slice):
             if key == slice(None):
-                return self.__class__(self._value, size=self._size, _check=False)
+                return self.__class__(
+                    self._value,
+                    size=self._size,
+                    _check=False,
+                )
 
             if key.step == 1 or key.step is None:
                 start, stop, step = key.indices(self._size)
@@ -192,10 +198,6 @@ class frozenbitset:
                 assert start >= 0
                 assert stop >= start
 
-                # return self.__class__(
-                # self._value >> start,
-                # size=stop - start,
-                # )
                 return self.__class__(
                     (self._value >> start) & ((1 << stop - start) - 1),
                     size=stop - start,
@@ -203,21 +205,27 @@ class frozenbitset:
                 )
 
             return self.from_str(str(self)[::-1][key][::-1])
-            # return self.from_list([(self._value >> i & 1) for i in rng], size=len(rng))
 
         raise TypeError
 
-    def __eq__(self, other: frozenbitset | int | tuple | object) -> bool:
+    def __eq__(self, other: frozenbitset | int | object) -> bool:
         if isinstance(other, frozenbitset):
             return self._size == other._size and self._value == other._value
+
         if isinstance(other, int):
             return self._value == other
-        if isinstance(other, tuple):
-            return (self._value, self._size) == other
+
         return NotImplemented
 
+    def __ne__(self, other: frozenbitset | int | object) -> bool:
+        return not self == other
+
     def __invert__(self: FT) -> FT:
-        return self.__class__(self.bit_mask ^ self._value, size=self._size, _check=False)
+        return self.__class__(
+            self.bit_mask ^ self._value,
+            size=self._size,
+            _check=False,
+        )
 
     def __and__(self: FT, other: frozenbitset | int) -> FT:
         if isinstance(other, frozenbitset):
@@ -227,7 +235,11 @@ class frozenbitset:
                 _check=False,
             )
         if isinstance(other, int):
-            return self.__class__(self._value & other, size=self._size, _check=False)
+            return self.__class__(
+                self._value & other,
+                size=self._size,
+                _check=False,
+            )
         return NotImplemented
 
     def __rand__(self: FT, other: frozenbitset | int) -> FT:
@@ -241,7 +253,10 @@ class frozenbitset:
                 _check=False,
             )
         if isinstance(other, int):
-            return self.__class__(self._value | other, size=self._size)
+            return self.__class__(
+                self._value | other,
+                size=self._size,
+            )
         return NotImplemented
 
     def __ror__(self: FT, other: frozenbitset | int) -> FT:
@@ -255,7 +270,10 @@ class frozenbitset:
                 _check=False,
             )
         if isinstance(other, int):
-            return self.__class__(self._value ^ other, size=self._size)
+            return self.__class__(
+                self._value ^ other,
+                size=self._size,
+            )
         return NotImplemented
 
     def __rxor__(self: FT, other: frozenbitset | int) -> FT:
@@ -289,22 +307,36 @@ class frozenbitset:
         return NotImplemented
 
     def __mul__(self: FT, other: int) -> FT:
-        if isinstance(other, int):
-            if other == 2:
-                return self.__class__(
-                    self._value << self._size | self._value,
-                    size=self._size << 1,
-                    _check=False,
-                )
-            return self.from_list(list[BIN](self) * other)
-        return NotImplemented
+        if not isinstance(other, int):
+            return NotImplemented
+
+        if other < 0:
+            raise ValueError
+
+        if other == 0:
+            return self.__class__()
+
+        if other == 1:
+            return self.copy()
+
+        if other == 2:
+            return self + self
+
+        a = other // 2
+        b = other - a
+
+        return (self * a) + (self * b)
 
     def __rmul__(self: FT, other: int) -> FT:
         return self * other
 
     def __mod__(self: FT, other: int) -> FT:
         if isinstance(other, int):
-            return self.__class__(self._value & ((1 << other) - 1), size=other, _check=False)
+            return self.__class__(
+                self._value & ((1 << other) - 1),
+                size=other,
+                _check=False,
+            )
         return NotImplemented
 
     @property
@@ -351,7 +383,21 @@ class frozenbitset:
         return self._value
 
     def strip(self: FT) -> FT:
-        return self.__class__(self._value, size=self._value.bit_length(), _check=False)
+        return self.__class__(
+            self._value,
+            size=self._value.bit_length(),
+            _check=False,
+        )
+
+    def copy(self: FT) -> FT:
+        return self.__class__(
+            self._value,
+            size=self._size,
+            _check=False,
+        )
+
+    __copy__ = copy
+    __deepcopy__ = copy
 
 
 class bitset(frozenbitset):
@@ -396,12 +442,14 @@ class bitset(frozenbitset):
         ...
 
     def __setitem__(self, key: int | slice, value: BIN | list[BIN] | frozenbitset = 1) -> None:
+        self._str = None
+
         if isinstance(key, int):
             if key < 0:
                 key += self._size
 
             if not 0 <= key < self._size:
-                raise IndexError(f'Invalid bitset index: {key}')
+                raise IndexError(f'Invalid {self.__class__.__name__} index: {key}')
 
             if not isinstance(value, int):
                 raise TypeError
@@ -443,6 +491,7 @@ class bitset(frozenbitset):
         raise TypeError(f'unhashable type: {type(self).__name__!r}')
 
     def __iand__(self: BT, other: frozenbitset | int) -> BT:
+        self._str = None
         if isinstance(other, frozenbitset):
             self._size = max(self._size, other._size)
             self._value &= other._value
@@ -455,6 +504,7 @@ class bitset(frozenbitset):
         raise TypeError
 
     def __ior__(self: BT, other: frozenbitset | int) -> BT:
+        self._str = None
         if isinstance(other, frozenbitset):
             self._size = max(self._size, other._size)
             self._value |= other._value
@@ -467,6 +517,7 @@ class bitset(frozenbitset):
         raise TypeError
 
     def __ixor__(self: BT, other: frozenbitset | int) -> BT:
+        self._str = None
         if isinstance(other, frozenbitset):
             self._size = max(self._size, other._size)
             self._value ^= other._value
@@ -479,6 +530,7 @@ class bitset(frozenbitset):
         raise TypeError
 
     def __ilshift__(self: BT, other: int) -> BT:
+        self._str = None
         if isinstance(other, int):
             self._value <<= other
             self._size += other
@@ -487,6 +539,7 @@ class bitset(frozenbitset):
         raise TypeError
 
     def __irshift__(self: BT, other: int) -> BT:
+        self._str = None
         if isinstance(other, int):
             self._value >>= other
             self._size -= other
@@ -495,6 +548,7 @@ class bitset(frozenbitset):
         raise TypeError
 
     def __iadd__(self: BT, other: frozenbitset) -> BT:
+        self._str = None
         if isinstance(other, frozenbitset):
             self._value <<= other._size
             self._size += other._size
@@ -504,16 +558,15 @@ class bitset(frozenbitset):
         raise TypeError
 
     def __imul__(self: BT, other: int) -> BT:
+        self._str = None
         if isinstance(other, int):
-            # FIXME
-            b = self + bitset()
-            for i in range(other):
-                self += b
+            self.copy_from(self * other)
             return self
 
         raise TypeError
 
     def __imod__(self: BT, other: int) -> BT:
+        self._str = None
         if isinstance(other, int):
             if other < 0:
                 raise ValueError
@@ -522,3 +575,6 @@ class bitset(frozenbitset):
             return self
 
         raise TypeError
+
+import sys
+sys._getframe
