@@ -11,12 +11,13 @@ from typing import (
     Sequence,
 )
 from itertools import repeat
+from functools import lru_cache
 
 import os
+import sys
 
-
-_T1 = TypeVar('_T1')
-_T2 = TypeVar('_T2')
+_T = TypeVar('_T')
+_G = TypeVar('_G')
 
 # def sizeof_fmt(num, suffix="B"):
 #     for unit in ["", "K", "M", "G", "T", "P", "E", "Z", "Y"]:
@@ -100,6 +101,8 @@ def fmt_time(time: float) -> tuple[float, str]:
 
 
 def round_to_three_chars(f: float) -> float | int:
+    if abs(f) >= 999.5:
+        return float('inf')
     if abs(f) >= 9.95:
         return round(f)
     return round(f, 1)
@@ -123,7 +126,98 @@ def rand31pm(seed: int) -> Iterator[int]:
         yield seed - 1
 
 
-def coerse_types(cls1: type[_T1], cls2: type[_T2]) -> type[_T1] | type[_T2]:
+def is_dunder(s: str) -> bool:
+    """
+    __x__
+    """
+    return s.startswith('__') and s.endswith('__')
+
+
+def is_sunder(s: str) -> bool:
+    """
+    _x_
+    """
+    return s.startswith('_') and s.endswith('_') and not s.startswith('__') and not s.endswith('__')
+
+
+def is_private(s: str) -> bool:
+    """
+    _x
+    """
+    return s.startswith('_') and not s.startswith('__')
+
+
+def is_mangled(s: str) -> bool:
+    """
+    _cls__x
+    """
+    return is_private(s) and not s.endswith('_') and '__' in s
+
+
+def is_compiled(cls: type, unknown: int = -1) -> int:
+    """!
+    >>> is_compiled(int)
+    1
+    >>> is_compiled(type('X', (), {}))
+    0
+    >>> class X: pass
+    ...
+    >>> is_compiled(X)
+    0
+    >>> is_compiled(__import__('enum').Enum)
+    0
+    """
+
+    try:
+        if any(
+            getattr(cls, attr, None).__class__.__name__ == (lambda: None).__class__.__name__
+            for attr in dir(cls)
+        ):
+            return 0
+
+        if cls.__module__ == '__main__':
+            return 0
+        if cls.__module__ == 'builtins':
+            return 1
+
+        module = sys.modules.get(cls.__module__, None)
+        if module is None:
+            return unknown
+
+        loader = module.__loader__
+        if loader is not None:
+            if loader.__class__.__name__ in {'ExtensionFileLoader'}:
+                return 1
+            if loader.__class__.__name__ in {'SourceFileLoader'}:
+                return 0
+            if getattr(loader, '__name__', None) in {'FrozenImporter', 'BuiltinImporter'}:
+                return 1
+
+        spec = module.__spec__
+        if spec is not None and spec.origin is not None:
+            if spec.origin.endswith('built-in'):
+                return 1
+            if spec.origin.endswith('.pyd'):
+                return 1
+            if spec.origin.endswith('.py'):
+                return 0
+
+        return unknown
+
+    except:
+        return unknown
+
+
+@lru_cache
+def coerce_child(cls1: type[_T], cls2: type[_G], /) -> type[_T] | type[_G] | None:
+    """!
+    >>> coerce_child(int, bool)
+    <class 'bool'>
+    >>> coerce_child(int, object)
+    <class 'int'>
+    >>> coerce_child(int, str)
+    >>>
+    """
     if cls1 is cls2:
         return cls1
 
@@ -133,11 +227,63 @@ def coerse_types(cls1: type[_T1], cls2: type[_T2]) -> type[_T1] | type[_T2]:
     if issubclass(cls2, cls1):
         return cls2
 
-    raise TypeError(f'Cannot coerce types {cls1} and {cls2}')
+    return None
 
 
-def identity(x: Any) -> Any:
+@lru_cache
+def coerce_parent(cls1: type[_T], cls2: type[_G], /) -> type[_T] | type[_G] | None:
+    """!
+    >>> coerce_parent(int, bool)
+    <class 'int'>
+    >>> coerce_parent(int, object)
+    <class 'object'>
+    >>> coerce_parent(int, str)
+    >>>
+    """
+    if cls1 is cls2:
+        return cls1
+
+    if issubclass(cls1, cls2):
+        return cls2
+
+    if issubclass(cls2, cls1):
+        return cls1
+
+    return None
+
+
+def identity(x: _T, /) -> _T:
     return x
+
+
+def create_empty_instance(cls: type[_T], /) -> _T | None:
+    try:
+        return cls()
+    except:
+        pass
+
+    try:
+        return object.__new__(cls)
+    except:
+        pass
+
+    return None
+
+
+def get_attributes(obj: object, /) -> list[tuple[str, object]]:
+    kwarg_pairs = list[tuple[str, Any]]()
+    _missing = object()
+    if (__slots__ := getattr(obj, '__slots__', None)) is not None:
+        for attr in __slots__:
+            value = getattr(obj, attr, _missing)
+            if value is not _missing:
+                kwarg_pairs.append((attr, value))
+
+    if (__dict__ := getattr(obj, '__dict__', None)) is not None:
+        for attr, value in __dict__.items():
+            kwarg_pairs.append((attr, value))
+
+    return kwarg_pairs
 
 
 ##
@@ -183,9 +329,10 @@ def my_mul(x: float, mn: float, mx: float, mul: float) -> float:
     return min(max(result, mn), mx)
 
 
+# FIXME move back to interface colorer
 def recolor(
-    color: tuple[int, int, int, int],
-    mask: tuple[int, int, int, int] | None,
+    color: tuple[int, int, int, int] | list[int],
+    mask: tuple[int, int, int, int] | list[int] | None,
     red_angle: float,
     green_angle: float,
     blue_angle: float,
@@ -261,7 +408,7 @@ def nonlinear_brightness(dn: float, bias: float = 1.0) -> Callable[[float], floa
         dn -= 1
 
     def f(x: float) -> float:
-        return ((1 + dn) * pow(x, bias)) / (dn + pow(x, bias))
+        return ((1 + dn) * (x ** bias)) / (dn + (x ** bias))
 
     return f
 
@@ -281,7 +428,9 @@ def check_dir(path: str) -> None:
             except FileExistsError:
                 pass
 
+
 _tree_walker_def_cond: Callable[[str], bool] = lambda x: True
+
 
 def tree_walker(
     path: str,
@@ -301,10 +450,13 @@ def tree_walker(
     iterator = (
         os.walk(path)
         if not root
-        else [('',
-            [os.path.join(path, x) for x in os.listdir(path) if os.path.isdir(x)],
-            [os.path.join(path, x) for x in os.listdir(path) if os.path.isfile(x)],
-        )]
+        else [
+            (
+                '',
+                [os.path.join(path, x) for x in os.listdir(path) if os.path.isdir(x)],
+                [os.path.join(path, x) for x in os.listdir(path) if os.path.isfile(x)],
+            )
+        ]
     )
 
     for prefix, dirs_, files_ in iterator:
