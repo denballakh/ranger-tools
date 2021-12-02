@@ -3,12 +3,13 @@
 """
 from __future__ import annotations
 
-
-from PIL import Image
 import zlib
 
+from PIL import Image
+
+from ..std.dataclass import ZL
 from .gi import GI
-from ..io import Buffer
+from ..buffer import Buffer
 
 __all__ = ['GAI']
 
@@ -49,7 +50,7 @@ class GAIFrame:
         signature = buf.read(4)
         buf.pop_pos()
         if signature in {b'ZL01', b'ZL02'}:
-            buf = Buffer(buf.read_ZL())
+            buf = Buffer(buf.read_dcls(ZL(mode=1)))
 
         gi = GI.from_buffer(buf)
 
@@ -71,6 +72,13 @@ class GAIFrame:
 
 
 class GAI:
+    start_X: int
+    start_Y: int
+    finish_X: int
+    finish_Y: int
+    have_background: bool
+    frames: list[GAIFrame]
+    delays: list[int]
 
     def __init__(self):
         pass
@@ -114,10 +122,12 @@ class GAI:
 
             self.frames.append(frame)
 
-    def loadGAITimes(self, buf: Buffer) -> list:
+        return self
+
+    def loadGAITimes(self, buf: Buffer) -> list[int]:
         buf.push_pos()
 
-        result = []
+        result: list[int] = []
         pass
 
         buf.pop_pos()

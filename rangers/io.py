@@ -8,11 +8,8 @@ from typing import (
     Generic,
 )
 
-from .buffer import Buffer
-
 __all__ = [
     'AbstractIBuffer',
-    'Buffer',
     'Stack',
 ]
 
@@ -55,4 +52,3 @@ class Stack(Generic[T]):
     def pop(self) -> T:
         assert self.data, 'Stack underflow'
         return self.data.pop()
-

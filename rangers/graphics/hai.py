@@ -4,7 +4,7 @@
 
 from PIL import Image
 
-from ..io import Buffer
+from ..buffer import Buffer
 from .gi import GI
 from .gai import GAI
 

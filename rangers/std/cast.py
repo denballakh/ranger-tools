@@ -4,14 +4,17 @@ from typing import (
     TypeVar,
     TypeGuard,
     Protocol,
+    # runtime_checkable,
     Generic,
     Any,
     overload,
+    ClassVar,
 )
 from types import NotImplementedType
 
 import copy
 
+from ..common import create_empty_instance
 
 __all__ = [
     'cast',
@@ -20,27 +23,28 @@ __all__ = [
 ]
 
 
-T = TypeVar('T')
+T_co = TypeVar('T_co', covariant=True)
 G = TypeVar('G')
+T = TypeVar('T')
 
 
 class CastError(Exception):
     pass
 
 
-class Castable(Generic[T], Protocol):
-    __casts_to__: tuple[type, ...]
-    __casts_from__: tuple[type, ...]
+class Castable(Protocol):
+    __casts_to__: ClassVar[tuple[type, ...]]
+    __casts_from__: ClassVar[tuple[type, ...]]
 
     @classmethod
     def __cast_from__(cls: type[T], value: G) -> T | NotImplementedType:
         ...
 
-    def __cast_to__(self: G, valuecls: type[T]) -> T | NotImplementedType:
+    def __cast_to__(self: T, valuecls: type[G]) -> G | NotImplementedType:
         ...
 
 
-def _is_castable_cls(cls: type) -> TypeGuard[type[Castable]]:
+def _is_castable_cls(cls: type[object]) -> TypeGuard[type[Castable]]:
     return all(
         hasattr(cls, member)
         for member in (
@@ -52,11 +56,12 @@ def _is_castable_cls(cls: type) -> TypeGuard[type[Castable]]:
     )
 
 
-def _is_castable_value(value) -> TypeGuard[Castable]:
-    return _is_castable_cls(type(value))
+def _is_castable_value(value: object) -> TypeGuard[Castable]:
+    return _is_castable_cls(value.__class__)
 
 
-def _cast(value: G, cls: type[T]) -> T:
+def _cast(value: G, cls: type[T]) -> T | NotImplementedType:
+    result: Any
     if _is_castable_value(value):
         casts = value.__casts_to__
         if any(issubclass(cls, C) or C in (Any, object, type(value)) for C in casts):
@@ -99,40 +104,6 @@ def cast(value: Any, /, *clss: type[T]) -> T:
 # fmt: on
 
 
-class M:
-    def __repr__(self):
-        return f'{type(self).__qualname__}({self.val!r})'
-
-    def __init__(self, val):
-        self.val = val
-
-    __casts_to__ = (int,)
-    __casts_from__ = (int, object)
-
-    def __cast_to__(self, cls):
-        if issubclass(cls, int):
-            return cls(self.val)
-        if issubclass(cls, M):
-            return cls(self.val)
-        return NotImplemented
-
-    @classmethod
-    def __cast_from__(cls, val):
-        if isinstance(val, int):
-            return cls(val)
-        if isinstance(val, M):
-            return cls(val.val)
-
-        return cls(id(val))
-
-
-def _create_empty_instance(cls: type[T]) -> T | None:
-    try:
-        return object.__new__(cls)
-    except TypeError:
-        return None
-
-
 class DictCast(dict):
     def __repr__(self):
         return f'{type(self).__name__}({repr(dict(self))})'
@@ -140,8 +111,8 @@ class DictCast(dict):
     __casts_to__ = (object,)
     __casts_from__ = (object,)
 
-    def __cast_to__(self, cls):
-        obj = _create_empty_instance(cls)
+    def __cast_to__(self, cls: type[T]) -> T | NotImplementedType:
+        obj = create_empty_instance(cls)
         if obj is None:
             return NotImplemented
 

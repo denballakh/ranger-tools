@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import os
-import sys
 
 GAME_ROOT = 'D:\\Games\\SteamLibrary\\steamapps\\common\\Space Rangers HD A War Apart\\'
 
