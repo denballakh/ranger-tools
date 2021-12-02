@@ -1,5 +1,15 @@
 # from __future__ import annotations
-from typing import Callable, Optional, overload, TypeVar, ParamSpec, Concatenate
+from typing import (
+    TYPE_CHECKING,
+    Callable,
+    Iterable,
+    Optional,
+    Sequence,
+    overload,
+    TypeVar,
+    ParamSpec,
+    Concatenate,
+)
 
 import sys
 import warnings
@@ -11,27 +21,29 @@ import itertools
 
 from pprint import pprint
 
-from rangers.std.mixins import PrintableMixin
+from rangers.std.mixin import PrintableMixin
+
+TF = TypeVar('TF', bound=Callable)
 
 
 class Repr:
-    def __init__(self, s):
+    def __init__(self, s: str, /):
         self.s = s
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return self.s
 
 
-def resolve_name(obj):
+def resolve_name(obj: object) -> object | Repr:
     if hasattr(obj, '__name__'):
-        return Repr(f'<{obj.__name__}>')
+        return Repr(f'<{obj.__name__}>')  # type: ignore[attr-defined]
     return obj
 
 
-def argskwargs_to_string(args, kwargs=None):
+def argskwargs_to_string(args: Sequence[object], kwargs: dict[str, object] = None) -> str:
     args_l = (f'{resolve_name(arg)!r}' for arg in args)
     kwargs_l = (
-        (f'{key!r}={resolve_name(value)!r}' for key, value in kwargs.items())
+        (f'{key!s}={resolve_name(value)!r}' for key, value in kwargs.items())
         if kwargs is not None
         else ()
     )
@@ -114,6 +126,7 @@ P1 = ParamSpec('P1')
 P2 = ParamSpec('P2')
 T = TypeVar('T')
 
+
 def decorator(func_=None, /, enabled=True):
     if not enabled:
         return lambda f: f
@@ -168,18 +181,26 @@ def deprecated(func, fargs, fkwargs, pred=lambda: True, msg=''):
     return func(*fargs, **fkwargs)
 
 
-@decorator(enabled=__debug__)
-def trace(func, fargs, fkwargs, msg='<trace>: ', timer=time.perf_counter, stream=sys.stdout):
-    print(f'{msg}{func.__name__}({argskwargs_to_string(fargs, fkwargs)}) called', file=stream)
-    t1 = timer()
-    result = func(*fargs, **fkwargs)
-    t2 = timer()
-    tdiff = t2 - t1
-    print(
-        f'{msg}{func.__name__}({argskwargs_to_string(fargs, fkwargs)}) = {result} [{round(tdiff * 10 ** 6, 1)} mcs]',
-        file=stream,
-    )
-    return result
+if TYPE_CHECKING:
+
+    def trace(func: TF) -> TF:
+        return func
+
+
+else:
+
+    @decorator(enabled=__debug__)
+    def trace(func, fargs, fkwargs, msg='<trace>: ', timer=time.perf_counter, stream=sys.stdout):
+        print(f'{msg}{func.__name__}({argskwargs_to_string(fargs, fkwargs)}) called', file=stream)
+        t1 = timer()
+        result = func(*fargs, **fkwargs)
+        t2 = timer()
+        tdiff = t2 - t1
+        print(
+            f'{msg}{func.__name__}({argskwargs_to_string(fargs, fkwargs)}) = {result} [{round(tdiff * 10 ** 6, 1)} mcs]',
+            file=stream,
+        )
+        return result
 
 
 @decorator
@@ -238,7 +259,6 @@ def after(func, fargs, fkwargs, _):
     return result
 
 
-
 def part(iterable, n, fill):
     b = []
     for x in iterable:
@@ -288,6 +308,7 @@ def optimize_inplace(cls):
 
     return cls
 
+
 @decorator
 def profile(func, fargs, fkwargs, filename, sortby='time'):
     # calls cumulative filename line name nfl pcalls stdname time
@@ -311,4 +332,3 @@ def profile(func, fargs, fkwargs, filename, sortby='time'):
 
         with open(filename, 'wt', encoding='utf-8') as file:
             file.write(s.getvalue())
-

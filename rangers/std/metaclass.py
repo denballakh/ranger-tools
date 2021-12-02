@@ -1,5 +1,6 @@
 from abc import ABCMeta
 
+
 def C3(cls, getancestors=lambda c: c.__bases__, root=object):
     if cls is root:
         return [root]
@@ -15,7 +16,10 @@ def C3(cls, getancestors=lambda c: c.__bases__, root=object):
 
         raise TypeError('No legal mro')
 
-    return [cls] + merge([C3(base, getancestors=getancestors, root=root) for base in getancestors(cls)])
+    return [cls] + merge(
+        [C3(base, getancestors=getancestors, root=root) for base in getancestors(cls)]
+    )
+
 
 class SingletonMeta(ABCMeta):
     def __new__(mcls, clsname, bases, clsdict):
@@ -28,6 +32,6 @@ class SingletonMeta(ABCMeta):
             cls.__instance__ = super().__call__(*args, **kwargs)
         return cls.__instance__
 
+
 class Singleton(metaclass=SingletonMeta):
     pass
-
