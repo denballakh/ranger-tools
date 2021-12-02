@@ -3,7 +3,7 @@
 @brief Реализует работу с игровыми датниками
 """
 from __future__ import annotations
-from typing import Iterator, Final, ClassVar, TypeVar
+from typing import Final, ClassVar, TypeVar
 
 import zlib
 
@@ -95,6 +95,7 @@ def sign_data(data: bytes) -> bytes:
         return get_sign(data) + data
     return data
 
+
 # удаляет подпись данных, если данные подписаны, иначе возвращает исходные данные
 def unsign_data(data: bytes) -> bytes:
     if check_signed(data):
@@ -177,8 +178,9 @@ class DAT:
 
         if fmt not in ENCRYPTION_KEYS:
             fmt = guess_format(data)
+        assert fmt is not None
         assert fmt in ENCRYPTION_KEYS, f'Invalid dat format: {fmt}'
-        data_d = Buffer(data).read_obj(
+        data_d = Buffer(data).read_dcls(
             Nested(
                 CryptedRand31pm(key=ENCRYPTION_KEYS[fmt]),
                 ZL(mode=1, length=-1),
@@ -194,12 +196,14 @@ class DAT:
     def to_bytes(self, fmt: str, sign: bool = False) -> bytes:
         prefixlen = (len(self.root.name) + 1) * 2 + 1
         data = self.root.to_bytes(fmt=fmt)[prefixlen:]
-        if fmt is None:
-            fmt = self.fmt
+        # if fmt is None:
+        #     fmt = self.fmt
+
+        assert fmt is not None
         assert fmt in ENCRYPTION_KEYS, f'Invalid dat format: {fmt}'
 
         buf = Buffer()
-        buf.write_obj(
+        buf.write_dcls(
             Nested(
                 CryptedRand31pm(key=ENCRYPTION_KEYS[fmt]),
                 ZL(mode=1, length=-1),
@@ -280,7 +284,7 @@ class DATItem:
     def from_str_buffer(cls, buf: AbstractIBuffer) -> DATItem | None:
         s = buf.get()
         assert '\n' not in s
-        s, _, comment = s.partition('//')
+        s, _, _ = s.partition('//')
         s = s.strip()
 
         if '=' in s:
@@ -365,8 +369,8 @@ class DATItem:
 
             for _ in range(childs_cnt):
                 if item.sorted:
-                    loc_index = buf.read_uint()
-                    glo_index = buf.read_uint()
+                    _ = buf.read_uint()
+                    _ = buf.read_uint()
 
                 child = cls.from_buffer(buf, fmt=fmt)
                 item.childs.append(child)
@@ -394,7 +398,7 @@ class DATItem:
             if fmt in {'HDMain', 'ReloadMain', 'SR1'} and self.sorted:
                 glo_index: int = 0
                 loc_index: int = 1
-                name = self.childs[0].name + '\0'  # unused name
+                name = '\0'  # unused name
                 for child in self.childs:
                     if child.name == name:
                         loc_index += 1
