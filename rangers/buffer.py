@@ -65,7 +65,7 @@ _hex_char_conv: dict[int | str, str] = {
     '\xFF': '##',
 }
 
-_str_rus_chars: str = 'абвгдеёжзийклмонпрстуфхцчшщъыьэюя' 'АБВГДЕЁЖЗИЙКЛМОНПРСТУФХЦЧШЩЪЫЬЭЮЯ'
+_str_rus_chars: str = 'абвгдеёжзийклмонпрстуфхцчшщъыьэюя' + 'АБВГДЕЁЖЗИЙКЛМОНПРСТУФХЦЧШЩЪЫЬЭЮЯ'
 
 _str_readable_chars: str = (
     '!"#$%&\'()*+,-./0123456789:;<=>?@[\\]^_`{|}~'
@@ -494,15 +494,17 @@ class Buffer:
             value += (length - len(value)) * '\0'
         self.write(value.encode('utf-16le'))
 
-    def read_obj(self, dcls: DataClass[T], *, memo: Memo = None) -> T:
+    def read_dcls(self, dcls: DataClass[T], *, memo: Memo = None) -> T:
         if memo is None:
             from .std.dataclass import Memo
+
             memo = Memo()
         return dcls.read(self, memo=memo)
 
-    def write_obj(self, dcls: DataClass[T], obj: T, *, memo: Memo = None) -> None:
+    def write_dcls(self, dcls: DataClass[T], obj: T, *, memo: Memo = None) -> None:
         if memo is None:
             from .std.dataclass import Memo
+
             memo = Memo()
         dcls.write(self, obj, memo=memo)
 
@@ -527,4 +529,3 @@ DCBuffer = IDCBuffer
 #            \      /
 #             V    V
 #            DCBuffer
-
