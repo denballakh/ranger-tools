@@ -1,4 +1,7 @@
 from __future__ import annotations
+from types import FunctionType, MethodType
+
+# from types import GenericAlias
 from typing import Any, Callable, Generic, NoReturn, TypeVar
 
 from pprint import pprint
@@ -8,28 +11,75 @@ CT = TypeVar('CT', bound='constmethod')
 OT = TypeVar('OT', bound='usesconstmethod')
 
 
-class ConstMethodError(Exception):
+class ConstMethodError(TypeError):
     pass
 
 
-class const(Generic[T]):
-    def __new__(cls, *args: Any, **kwargs: Any) -> NoReturn:  # type: ignore[misc]
-        raise TypeError(f'const class cannot be instantiated')
+class const:
+    __origin__: type[usesconstmethod]
 
-    def __class_getitem__(cls, params):
-        return params
+    @classmethod
+    def __class_getitem__(cls, origin: type[usesconstmethod]) -> const:
+        return cls(origin)
 
-def _create_instance(cls: type[T], *args, **kwargs) -> T:
-    pass
+    def __init__(self, origin: type[usesconstmethod]) -> None:
+        self.__origin__ = origin
+
+    def __repr__(self) -> str:
+        return f'const[{self.__origin__!r}]'
+
+    def __hash__(self) -> int:
+        return hash((type(self), self.__origin__))
+
+    def __getattribute__(self, attr: str) -> object:
+        if attr in {
+            '__origin__',
+        }:
+            return super().__getattribute__(attr)
+        return getattr(self.__origin__, attr)
+
+    def __dir__(self) -> list[str]:
+        return dir(self.__origin__)
+
+    def __call__(self, *args: object, **kwargs: object) -> object:
+        obj = self.__origin__(*args, **kwargs)
+        obj.__const__ = True
+        return obj
+
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, const):
+            return NotImplemented
+
+        return self.__origin__ == other.__origin__
+
+    def __ne__(self, other: object) -> bool:
+        if not isinstance(other, const):
+            return NotImplemented
+
+        return not (self == other)
+
+    def __mro_entries__(self, bases: Any) -> NoReturn:
+        raise TypeError
+
+    def __instancecheck__(self, other: object) -> bool:
+        if isinstance(other, self.__origin__):
+            return getattr(other, '__const__', False)
+        return NotImplemented
+
+    def __subclasscheck__(self, other: object) -> bool:
+        if isinstance(other, const):
+            return issubclass(other.__origin__, self.__origin__)
+        return NotImplemented
 
 
 class usesconstmethod:
-    __slots__ = ()
-    __const__: bool = False
+    __slots__ = ('__const__',)
+
+    __const__: bool
 
     def __init_subclass__(cls: type) -> None:
         for attr, value in cls.__dict__.items():
-            if isinstance(value, constmethod):
+            if isinstance(value, constmethod) and not isinstance(value, nonconstmethod):
                 setattr(cls, attr, value.__func__)
                 continue
 
@@ -42,101 +92,142 @@ class usesconstmethod:
             if isinstance(value, type):
                 continue
 
-            if attr not in {'__init__', '__new__'}:
+            if attr not in {'__init__', '__new__', '__mro_entries__'}:
                 setattr(cls, attr, nonconstmethod(value))
 
 
-class boundconstmethod(Generic[T]):
-    def __init__(self, func: Callable[..., T], obj: usesconstmethod) -> None:
-        self.__func__ = func
-        self.__self__ = obj
-
-    def __call__(self, *args: Any, **kwargs: Any) -> T:
-        func = self.__func__
-        obj = self.__self__
-        return func(obj, *args, **kwargs)
-
-    def __repr__(self) -> str:
-        return f'<bound constmethod {self.__self__.__class__.__name__}.{self.__func__.__name__} of <{self.__self__.__class__.__name__!r} object at {id(self.__self__)}>>'
-
-
-class boundnonconstmethod(boundconstmethod[T]):
-    def __call__(self, *args: Any, **kwargs: Any) -> T:
-        func = self.__func__
-        print(f'Calling {func!r}')
-        obj = self.__self__
-        if obj.__const__:
-            raise ConstMethodError
-        return func(obj, *args, **kwargs)
-
-
-class constmethod(Generic[T]):
+class constmethod:
     __slots__ = ('__func__',)
 
-    # __func__: Callable[..., T] # mypy bug
+    # __func__: FunctionType
 
-    def __new__(cls: type[CT], func: Callable[..., T], /) -> CT:
-        return super().__new__(cls)
-
-    def __init__(self, func: Callable[..., T], /) -> None:
+    def __init__(self, func: FunctionType, /) -> None:
         self.__func__ = func
 
-    def __get__(self, obj: OT | None, objcls: type[OT] | None = None, /) -> Callable[..., T]:
-        if obj is None:
-            return self.__func__
-        return boundconstmethod(self.__func__, obj)
+    def __get__(
+        self, obj: OT | None, objcls: type[OT] | None = None, /
+    ) -> MethodType | FunctionType:
+        return self.__func__.__get__(obj, objcls)
 
     def __repr__(self) -> str:
         return f'<{self.__class__.__name__}({self.__func__!r})>'
 
 
-class nonconstmethod(constmethod[T]):
+class nonconstmethod(constmethod):
     __slots__ = ()
 
-    def __get__(self, obj: OT | None, objcls: type[OT] | None = None, /) -> Callable[..., T]:
+    def __get__(
+        self, obj: OT | None, objcls: type[OT] | None = None, /
+    ) -> MethodType | FunctionType:
         if obj is None:
-            return self.__func__
-        return boundnonconstmethod(self.__func__, obj)
+            return self.__func__.__get__(None, objcls)
+
+        if getattr(obj, '__const__', False):
+            raise ConstMethodError(
+                f'Cannot get non-const method {self.__func__.__name__} of const object {obj}'
+            )
+
+        return self.__func__.__get__(obj, objcls)
 
 
-class X(usesconstmethod):
-    def __init__(self, value: int = 0) -> None:
-        self.value = value
+if __name__ == '__main__':
 
-    @constmethod
-    def add(self, value: int) -> X:
-        return X(self.value + value)
+    class Y:
+        def __new__(cls):
+            return super().__new__(cls)
 
-    def iadd(self, value: int) -> X:
-        self.value += value
-        return self
+        def __init__(self):
+            ...
 
-    def __repr__(self) -> str:
-        return f'X({self.value})'
+        def __repr__(self):
+            return super().__repr__()
 
-# class Y:
-#     def __new__(cls): return super().__new__(cls)
-#     def __init__(self): ...
-#     def __repr__(self): return super().__repr__()
-#     def method(self): ...
-#     @staticmethod
-#     def staticmeth(): ...
-#     @classmethod
-#     def classmeth(cls): ...
-#     @property
-#     def prop(self): ...
+        def method(self):
+            ...
 
-# pprint(X.__dict__)
-# pprint(Y.__dict__)
-# print(Y().method)
-# print(Y().staticmeth)
-# print(Y().classmeth)
+        @staticmethod
+        def staticmeth():
+            ...
 
-# x = X()
-# print(x)
-# x.iadd(1)
-# print(x)
-# y = x.add(1)
-# print(y)
+        @classmethod
+        def classmeth(cls):
+            ...
 
+        @property
+        def prop(self):
+            ...
 
+    class X(usesconstmethod):
+        def __init__(self, value: int) -> None:
+            self.value = value
+
+        @constmethod
+        def __str__(self) -> str:
+            return f'<X: {self.value}>'
+
+        @classmethod
+        def from_int(cls, value: int) -> X:
+            return cls(value)
+
+        @constmethod
+        def __repr__(self) -> str:
+            return f'X({self.value})'
+
+        @constmethod
+        def __add__(self, other: X) -> X:
+            return X(self.value + other.value)
+
+        def __iadd__(self, other: X) -> X:
+            self.value += other.value
+            return self
+
+    x = X(0)
+    print(x)
+    print(x + X(1))
+    x += X(2)
+    print(x)
+
+    x = const[X](0)
+    assert isinstance(x, X)
+    assert isinstance(x, const[X])
+    assert not isinstance(x, const)
+    assert not issubclass(X, const)
+    assert issubclass(const[X], const[X])
+    assert issubclass(X, const[X])
+    assert not issubclass(const[X], X)
+    print(x)
+    print(x + X(1))
+    try:
+        x += X(2)  # should raise because x in const
+    except:
+        pass
+    else:
+        raise ConstMethodError
+    print(x)
+
+    x = X.from_int(1)
+    print(x)
+    print(x + X(1))
+    x += X(2)
+    print(x)
+
+    x = const[X].from_int(1)
+    print(x)
+    print(x + X(1))
+    # try:
+    #     x += X(2)  # should raise because x in const
+    # except:
+    #     pass
+    # else:
+    #     raise ConstMethodError
+    print(x)
+
+    # pprint(GenericAlias.__dict__)
+    # pprint(X.__dict__)
+    # pprint(Y.__dict__)
+    # print(Y().method)
+    # print(Y().staticmeth)
+    # print(Y().classmeth)
+
+    # alias = const[X]
+    # print(alias)
