@@ -92,7 +92,7 @@ struct TGalaxy {
     _gap_32 _170;
     _gap_32 _174;
     _gap_32 _178;
-    _gap _17C;
+    bool iron_will;                     ///< флаг железной воли
     _gap _17D;
     bool technic;                       ///< флаг от чита `TECHNIC`
     _gap _17F;

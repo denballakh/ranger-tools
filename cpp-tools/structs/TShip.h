@@ -21,10 +21,7 @@ struct TShip {
     _gap _055;
     _gap _056;
     _gap _057;
-    _gap _058;
-    _gap _059;
-    _gap _05A;
-    _gap _05B;
+    float strength;
     _gap _05C;
     _gap _05D;
     _gap _05E;
@@ -90,12 +87,10 @@ struct TShip {
     _gap _0A9;
     _gap _0AA;
     _gap _0AB;
-    _gap _0AC;
-    _gap _0AD;
-    _gap _0AE;
-    _gap _0AF;
-    _gap_32 _B0;
-    TWeapon* weapons[6];
+    void* _0AC;
+    _gap_32 _0B0;
+    _gap_32 _0B4;
+    TWeapon* weapons[5];
     byte weapon_cnt;
     _gap _0CD;
 

@@ -45,6 +45,7 @@ struct TScriptShip {
 struct TScriptPlace {
     VMT cls;
 
+    // STR name;
     // TPoint* point;
 
     _gap_32 _04;
