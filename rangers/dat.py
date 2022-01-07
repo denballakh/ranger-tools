@@ -3,9 +3,10 @@
 @brief Реализует работу с игровыми датниками
 """
 from __future__ import annotations
-from typing import Final, ClassVar, TypeVar
+from typing import Final, ClassVar, Literal, TypeVar, Union
 
 import zlib
+import json
 
 # import random
 # import enum
@@ -44,6 +45,9 @@ __all__ = [
     'get_sign',
     'check_signed',
 ]
+
+DatDictVal = Union[str, list['DatDictVal'], dict[str, 'DatDictVal']]  # type: ignore[misc]
+DatDict = dict[str, DatDictVal]  # type: ignore[misc]
 
 # class DatFormat(enum.Flag):
 #     SR1 = 0
@@ -156,20 +160,23 @@ def guess_file_format(filename: str) -> str | None:
 
 
 class DAT:
+    root: DATItem
+    fmt: str | None
+
     def __init__(self, root: DATItem = None) -> None:
         self.root = DATItem() if root is None else root
         self.fmt: str | None = None
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return self.to_str()
 
-    def copy(self):
+    def copy(self) -> DAT:
         dat = self.__class__()
         dat.root = self.root.copy()
         dat.fmt = self.fmt
         return dat
 
-    def merge(self, other: DAT):
+    def merge(self, other: DAT) -> None:
         self.root.merge(other.root)
 
     @classmethod
@@ -232,7 +239,7 @@ class DAT:
             data = file.read()
         return cls.from_bytes(data, fmt=fmt)
 
-    def to_dat(self, path: str, fmt: str, sign: bool = False):
+    def to_dat(self, path: str, fmt: str, sign: bool = False) -> None:
         with open(path, 'wb') as file:
             file.write(self.to_bytes(fmt=fmt, sign=sign))
 
@@ -242,14 +249,21 @@ class DAT:
             s = file.read()
         return cls.from_str(s)
 
-    def to_txt(self, path: str):
+    def to_txt(self, path: str) -> None:
         with open(path, 'wt', encoding='utf-8') as file:
             file.write(self.to_str())
 
+    def to_dict(self) -> DatDict:
+        return self.root.to_dict()  # type: ignore[return-value]
+
+    def to_json(self, path: str, indent: int = 4) -> None:
+        with open(path, 'wt', encoding='utf-8') as file:
+            json.dump(self.root.to_dict(), file, indent=indent)
+
 
 class DATItem:
-    PAR: ClassVar = 1
-    BLOCK: ClassVar = 2
+    PAR: ClassVar[Literal[1]] = 1
+    BLOCK: ClassVar[Literal[2]] = 2
 
     type: int
     name: str
@@ -425,3 +439,20 @@ class DATItem:
         self.to_buffer(buf, fmt=fmt)
         data = bytes(buf)
         return data
+
+    def to_dict(self) -> DatDictVal:
+        if self.type == self.PAR:
+            return self.value
+
+        result: DatDict = {}
+        for child in self.childs:
+            if child.name not in result:
+                result[child.name] = child.to_dict()
+            else:
+                if not isinstance(result[child.name], list):
+                    result[child.name] = [result[child.name]]
+
+                assert isinstance(result[child.name], list)
+                result[child.name].append(child.to_dict())  # type: ignore[union-attr]
+
+        return result
