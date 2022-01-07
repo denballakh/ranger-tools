@@ -1,6 +1,9 @@
 from rangers.pkg import PKG
 from rangers.common import tree_walker, check_dir, file_rebase
 
+# 0 - без сжатия
+# 9 - максимальное сжатие
+COMPRESSION = 9
 
 _in = '_input/'
 _out = '_output/'
@@ -16,7 +19,7 @@ for folder in tree_walker(_in, root=True)[1]:
         print(f'{folder} -> {filename}')
 
         pkg = PKG.from_dir(folder)
-        pkg.compress()
+        pkg.compress(COMPRESSION)
         check_dir(filename)
         pkg.to_pkg(filename)
 
