@@ -573,7 +573,7 @@ class CryptedRand31pm(DataClass[bytes]):
 
     def __init__(self, key: int, seed: int = None, prepend_size: bool = False) -> None:
         self.key = key
-        self.seed = random.randint(-(2 ** 31), 2 ** 31 - 1) if seed is None else seed
+        self.seed = random.randint(-0x80000000, 0x7FFFFFFF) if seed is None else seed
         self.prepend_size = prepend_size
 
     def read(self, buf: IBuffer, *, memo: Memo) -> bytes:

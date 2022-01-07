@@ -2,9 +2,11 @@
 @file
 """
 from __future__ import annotations
+from types import MappingProxyType
 from typing import (
     Any,
     Callable,
+    Iterable,
     TypeVar,
     Iterator,
     Container,
@@ -43,6 +45,25 @@ _G = TypeVar('_G')
 
 def make_number(num: float, unit: str, n: int) -> str:
     return f'{round_to_n_chars(num, n)} {unit}'
+
+
+class _ProxyGetter:
+    # bug (or feature?) in mappingproxy implementation
+    # https://bugs.python.org/issue43838
+    def __ror__(self, other: MappingProxyType[_T, _G]) -> dict[_T, _G]:
+        return other  # type: ignore[return-value]
+
+    def __eq__(self, other: MappingProxyType[_T, _G]) -> dict[_T, _G]:  # type: ignore[override]
+        return other  # type: ignore[return-value]
+
+
+def _get_mappingproxy_dict(
+    mp: MappingProxyType[_T, _G], *, __proxy_getter: _ProxyGetter = _ProxyGetter()
+) -> dict[_T, _G]:
+    return mp | __proxy_getter
+
+
+del _ProxyGetter
 
 
 def fmt_file_size(size: float) -> tuple[float, str]:
@@ -109,7 +130,7 @@ def round_to_three_chars(f: float) -> float | int:
 
 
 def round_to_n_chars(f: float, n: int) -> float | int:
-    for i in range(20, -1, -1):
+    for i in reversed(range(21)):
         if len(str(round(f, i))) <= n:
             return round(f, i)
     return round(f)
@@ -169,6 +190,7 @@ def is_compiled(cls: type, unknown: int = -1) -> int:
     """
 
     try:
+        # print(*[getattr(cls, attr, None).__class__.__name__ for attr in dir(cls)])
         if any(
             getattr(cls, attr, None).__class__.__name__ == (lambda: None).__class__.__name__
             for attr in dir(cls)
@@ -177,6 +199,7 @@ def is_compiled(cls: type, unknown: int = -1) -> int:
 
         if cls.__module__ == '__main__':
             return 0
+
         if cls.__module__ == 'builtins':
             return 1
 
@@ -190,7 +213,11 @@ def is_compiled(cls: type, unknown: int = -1) -> int:
                 return 1
             if loader.__class__.__name__ in {'SourceFileLoader'}:
                 return 0
-            if getattr(loader, '__name__', None) in {'FrozenImporter', 'BuiltinImporter'}:
+            if getattr(loader, '__name__', None) in {
+                'FrozenImporter',
+                'BuiltinImporter',
+                'nuitka_module_loader',
+            }:
                 return 1
 
         spec = module.__spec__
@@ -252,6 +279,18 @@ def coerce_parent(cls1: type[_T], cls2: type[_G], /) -> type[_T] | type[_G] | No
     return None
 
 
+def recursive_subclasses(cls: type, /) -> list[type]:
+    subclasses = cls.__subclasses__()
+    result: set[type] = set(subclasses)
+    for c in subclasses:
+        result |= set(recursive_subclasses(c))
+    return list(result)
+
+
+def noop(*_: Any, **__: Any) -> None:
+    pass
+
+
 def identity(x: _T, /) -> _T:
     return x
 
@@ -271,13 +310,17 @@ def create_empty_instance(cls: type[_T], /) -> _T | None:
 
 
 def get_attributes(obj: object, /) -> list[tuple[str, object]]:
-    kwarg_pairs = list[tuple[str, Any]]()
-    _missing = object()
-    if (__slots__ := getattr(obj, '__slots__', None)) is not None:
-        for attr in __slots__:
-            value = getattr(obj, attr, _missing)
-            if value is not _missing:
-                kwarg_pairs.append((attr, value))
+    kwarg_pairs: list[tuple[str, Any]] = []
+
+    for attr_list_attr in {
+        '__slots__',  # classes with slots
+        '__mypyc_attrs__',  # compiled mypyc classes
+        '__attrs_attrs__',  # attrs classes
+    }:
+        if (attr_list := getattr(obj, attr_list_attr, None)) is not None:
+            for attr in attr_list:
+                if hasattr(obj, attr):
+                    kwarg_pairs.append((attr, getattr(obj, attr)))
 
     if (__dict__ := getattr(obj, '__dict__', None)) is not None:
         for attr, value in __dict__.items():

@@ -260,7 +260,7 @@ class PKGItem:
             din.skip(4)
             din.skip(4)
             din.skip(63)
-            child.name = din.read_str(63)
+            child.name = din.read_str(63).rstrip('\0')
             child.type = din.read_uint()
             assert child.type in {PKG_DATATYPE_DIR, PKG_DATATYPE_RAW, PKG_DATATYPE_ZLIB}, f'Invalid item type: {child.type}. Should be in {(PKG_DATATYPE_DIR, PKG_DATATYPE_RAW, PKG_DATATYPE_ZLIB)}'
             din.skip(4)

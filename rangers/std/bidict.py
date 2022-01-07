@@ -28,10 +28,10 @@ B = TypeVar('B', bound=Hashable)
 T = TypeVar('T')
 
 
-def _inv_dict(dict_: dict[A, B], /) -> dict[B, A]:
+def _inv_dict(_dict: dict[A, B], /) -> dict[B, A]:
     inversed = dict[B, A]()
 
-    for key, value in dict_.items():
+    for key, value in _dict.items():
         if value in inversed:
             raise ValueError(f'value {value!r} repeats at key {inversed[value]!r} and {key!r}')
 
@@ -55,6 +55,10 @@ class bidict(Generic[A, B]):
     ) -> None:
         self._dict = {} if _dict is None else _dict
         self._inv = bidict(_inv_dict(self._dict), _inv=self) if _inv is None else _inv
+
+    @classmethod
+    def from_mapping(cls, mapping: Mapping[A, B]) -> bidict[A, B]:
+        return cls(dict(mapping))
 
     def __str__(self, /) -> str:
         return (
@@ -183,14 +187,9 @@ class bidict(Generic[A, B]):
             self[key] = default
         return self._dict[key]
 
-    # fmt: off
-    @overload
-    def update(self, mapping: Mapping[A, B], /) -> None: ...
-    @overload
-    def update(self, iterable: Iterable[tuple[A, B]], /) -> None: ...
-    # fmt: on
-    def update(self, x, /) -> None:
-        pass
+    def update(self, mapping: Mapping[A, B], /) -> None:
+        for key, value in mapping.items():
+            self[key] = value
 
     def keys(self) -> dict_keys[A, B]:
         return self._dict.keys()
@@ -200,11 +199,6 @@ class bidict(Generic[A, B]):
 
     def items(self) -> dict_items[A, B]:
         return self._dict.items()
-
-    @classmethod
-    def fromkeys(cls, iterable: Iterable[A], value: B, /) -> NoReturn:
-        # constructing bidict from keys make no sense
-        raise TypeError(f'{cls.__name__} cannot be constructed from keys')
 
     # fmt: off
     @overload

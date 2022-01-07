@@ -25,10 +25,10 @@ try:
 
 except ImportError:
 
-    def get_sign(data: bytes) -> bytes:
+    def get_sign(data: bytes, /) -> bytes:
         return b''
 
-    def check_signed(data: bytes) -> bool:
+    def check_signed(data: bytes, /) -> bool:
         return False
 
     DAT_SIGN_AVAILABLE = False

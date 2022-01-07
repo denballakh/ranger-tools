@@ -462,7 +462,7 @@ class Buffer:
         else:
             data = self.read(length)
             result = data.decode('utf-8')
-            result = result.rstrip('\0')
+            # result = result.rstrip('\0')
         return result
 
     def write_str(self, value: str, length: int = -1) -> None:
@@ -483,7 +483,7 @@ class Buffer:
         else:
             data = self.read(length * 2)
             result = data.decode('utf-16le')
-            result = result.rstrip('\0')
+            # result = result.rstrip('\0')
         return result
 
     def write_wstr(self, value: str, length: int = -1) -> None:

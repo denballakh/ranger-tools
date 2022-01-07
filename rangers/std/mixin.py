@@ -19,6 +19,7 @@ from ..common import get_attributes
 from ..buffer import Buffer
 
 __all__ = [
+    'Mixin',
     'PrintableMixin',
     'DataMixin',
     'UniqueMixin',

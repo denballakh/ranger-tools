@@ -110,9 +110,6 @@ class GenericAlias:
     __args__: _args
     __parameters: _parameters | None
 
-    def __new__(cls, origin: _origin, args: _args) -> GenericAlias:
-        return super().__new__(cls)
-
     def __init__(self, origin: _origin, args: _args) -> None:
         self.__origin__ = origin
         self.__args__ = args
@@ -185,7 +182,7 @@ class GenericAlias:
         if not isinstance(other, GenericAlias):
             return NotImplemented
 
-        return not self.__eq__(other)
+        return not (self == other)
 
     def __mro_entries__(self, bases: Any) -> tuple[_origin]:
         return (self.__origin__,)
@@ -226,6 +223,9 @@ if __name__ == '__main__':
     ga2 = GA(list, (int,))
 
     assert ga1.__new__ is ga2.__new__ is list.__new__
+    assert ga1.__init__ is ga2.__init__ is list.__init__
+    assert ga1.__repr__ is ga2.__repr__ is list.__repr__
+    assert ga1.__str__ is ga2.__str__ is list.__str__
 
     ga1 = tuple[int]
     ga2 = GA(tuple, (int,))
