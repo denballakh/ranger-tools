@@ -29,6 +29,8 @@ color_texts = {
 
     'Grey':      ('127,127,127', 'серый',          'grey'),
     'DarkGrey':  ('63,63,63',    'темно-серый',    'dark-grey'),
+
+    'Kling':  ('0,127,0',    'клисанский',    'kling'),
 }
 
 priority = 11

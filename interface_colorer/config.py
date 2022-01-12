@@ -1,25 +1,5 @@
-__all__ = [
-    'PROFILE',
-    'randomize',
-    'rewrite',
-
-    '_0', '_1', '_2', '_3', '_4',
-
-    '_dats',
-    'modified_file_delta',
-    'dat_rule_mod',
-    'modified_rules',
-    'dat_file',
-
-    'gi_type',
-    'gi_bit',
-
-    'COMPRESS_PKG',
-
-]
-
 PROFILE = True
-randomize = False
+randomize = True
 rewrite = False
 
 _dats = '_dats/'
@@ -34,7 +14,8 @@ dat_rule_mod = False
 modified_rules: list[str] = []
 dat_file = 'Main.txt'
 
-gi_type = 2
-gi_bit = 16
+gi_type = 0
+gi_bit = 32
+dither = False
 
-COMPRESS_PKG = False
+COMPRESS_PKG = True

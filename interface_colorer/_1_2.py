@@ -1,6 +1,9 @@
 """
 Перекрашивает .png и .txt в соответствии с правилами
 """
+from __future__ import annotations
+from typing import Callable
+
 from math import cos, sin, radians, sqrt
 from random import sample
 import os
@@ -8,7 +11,11 @@ import time
 
 from PIL import Image
 
-from rangers.common import check_dir, identity, _clamp, darken, average, my_mul, nonlinear_brightness, recolor
+from rangers.common import (
+    check_dir,
+    identity,
+)
+from rangers.graphics.dithering import dither_bayer
 
 import config
 
@@ -32,96 +39,94 @@ dat_file = config.dat_file
 modified_rules = config.modified_rules
 dat_rule_mod = config.dat_rule_mod
 
+dither = config.dither
+
 
 def get_rules():
     # transform(red_angle, green_angle, blue_angle, saturation=1.0, value=1.0, brightness=0.0, bias=1.0, gamma=2.2):
 
     rules = {
-        'Red':      transform(-90, 0, 160, saturation=1.08, value=0.98),
-        # 'Green':    transform(0, 90, 280),
-        # 'Blue':     transform(0, 0, 40),
-
-        # 'Yellow':   transform(0, 0, 220),
-        # 'Cyan':     transform(0, 0, 340),
-        # 'Magenta':  transform(0, 0, 100),
-
-        # 'Grey':     to_grey(brightness=0.42),
-        # 'DarkGrey': to_grey(brightness=6.00, bias=1.03)
+        'Red': transform(-100, 0, 160, saturation=1.20, value=1.0),
+        'Green': transform(0, 100, 280, saturation=1.20, value=1.0),
+        'Blue': transform(0, 0, 40),
+        'Yellow': transform(0, 0, 210, saturation=1.2, value=1.2),
+        'Cyan': transform(0, 0, 345),
+        'Magenta': transform(0, 0, 100, saturation=1.2, value=1.2),
+        'Grey': to_grey(brightness=0.42),
+        'DarkGrey': to_grey(brightness=1.00, bias=1.03),
+        'Kling': transform(0, 0, -40, saturation=1.0, brightness=0.0),
     }
     return rules
 
-dat_colors = [
-    ( 91,  91,  91),
 
-    ( 82, 227, 255),
+dat_colors = [
+    (91, 91, 91),
+    (82, 227, 255),
     # (165,182,140),
     # (189,109,107),
-    ( 82, 227, 255),
+    (82, 227, 255),
     # (0,255,0),
     # (255,127,0),
     # (255,0,0),
-    (  0,  40,  57),
-    ( 82, 146, 173),
-    ( 90, 125, 140),
-    ( 57, 117, 140),
-    ( 24,  65,  90),
-    ( 82, 150, 165),
-    ( 41, 101, 123),
+    (0, 40, 57),
+    (82, 146, 173),
+    (90, 125, 140),
+    (57, 117, 140),
+    (24, 65, 90),
+    (82, 150, 165),
+    (41, 101, 123),
     # (173,56,57),
     (198, 239, 255),
-    (  0, 166, 198),
-    ( 49, 239, 255),
-    ( 74, 166, 255),
-    ( 33, 235, 239),
-    (  0,  40,  66),
-    (  0, 255, 255),
-
-    (  0, 135, 192),  #
-    ( 37, 178, 189),  #
-    ( 61,  88,  95),  #
+    (0, 166, 198),
+    (49, 239, 255),
+    (74, 166, 255),
+    (33, 235, 239),
+    (0, 40, 66),
+    (0, 255, 255),
+    (0, 135, 192),  #
+    (37, 178, 189),  #
+    (61, 88, 95),  #
     # (209, 144,  62), #
-
-    (  0,  62,  77),
-    (  0, 204, 117),
-    ( 38, 176, 195),
+    (0, 62, 77),
+    (0, 204, 117),
+    (38, 176, 195),
     (151, 225, 238),
     (171, 198, 207),
-    (  0, 110, 176),
-    (  0,  34,  54),
-
+    (0, 110, 176),
+    (0, 34, 54),
     # (  0,   0,   0), # 0x000000
-    (  0,   0, 255), # 0x0000ff
-    (  0,  24,  41), # 0x001829
-    (  0,  26,  49), # 0x001a31
-    (  0,  44,  70), # 0x002c46
+    (0, 0, 255),  # 0x0000ff
+    (0, 24, 41),  # 0x001829
+    (0, 26, 49),  # 0x001a31
+    (0, 44, 70),  # 0x002c46
     # (  0, 204, 117), # 0x00cc75
     # (  0, 255,   0), # 0x00ff00
-    (  0, 255, 255), # 0x00ffff
-    (  7, 105, 158), # 0x07699e
-    ( 27,  68,  98), # 0x1b4462
+    (0, 255, 255),  # 0x00ffff
+    (7, 105, 158),  # 0x07699e
+    (27, 68, 98),  # 0x1b4462
     # ( 31,  19,   4), # 0x1f1304
-    ( 41, 101, 123), # 0x29657b
-    ( 45, 105, 124), # 0x2d697c
-    ( 50, 240, 252), # 0x32f0fc
-    ( 52, 231, 255), # 0x34e7ff
-    ( 55, 230, 255), # 0x37e6ff
-    ( 57, 103, 103), # 0x396767
-    ( 57, 239, 255), # 0x39efff
-    ( 58,  92, 100), # 0x3a5c64
-    ( 63, 214, 255), # 0x3fd6ff
-    ( 78, 141, 161), # 0x4e8da1
-    ( 85, 113, 128), # 0x557180
+    (41, 101, 123),  # 0x29657b
+    (45, 105, 124),  # 0x2d697c
+    (50, 240, 252),  # 0x32f0fc
+    (52, 231, 255),  # 0x34e7ff
+    (55, 230, 255),  # 0x37e6ff
+    (57, 103, 103),  # 0x396767
+    (57, 239, 255),  # 0x39efff
+    (58, 92, 100),  # 0x3a5c64
+    (63, 214, 255),  # 0x3fd6ff
+    (78, 141, 161),  # 0x4e8da1
+    (85, 113, 128),  # 0x557180
     # ( 86, 214,  14), # 0x56d60e
-    ( 88, 229, 255), # 0x58e5ff
-    ( 97, 149, 168), # 0x6195a8
+    (88, 229, 255),  # 0x58e5ff
+    (97, 149, 168),  # 0x6195a8
     # (101, 171, 137), # 0x65ab89
-    (102, 177, 201), # 0x66b1c9
+    (102, 177, 201),  # 0x66b1c9
     # (140, 140, 140), # 0x8c8c8c
-    (169, 196, 208), # 0xa9c4d0
+    (169, 196, 208),  # 0xa9c4d0
     # (174, 203,  60), # 0xaecb3c
     # (177,  89,   0), # 0xb15900
     # (191, 185, 128), # 0xbfb980
-    (200, 240, 255), # 0xc8f0ff
+    (200, 240, 255),  # 0xc8f0ff
     # (204, 161, 101), # 0xcca165
     # (212, 212, 212), # 0xd4d4d4
     # (219, 218, 156), # 0xdbda9c
@@ -195,12 +200,14 @@ def recolor_dat():
     for rulename, rule in rules.items():
         out_name = _out + rulename + '/' + dat_file
 
-        if not rewrite \
-            and os.path.isfile(out_name) \
-            and os.path.getmtime(out_name) > os.path.getmtime(filename) \
-            and 'test' not in rulename \
-            and rulename not in modified_rules \
-            and not dat_rule_mod:
+        if (
+            not rewrite
+            and os.path.isfile(out_name)
+            and os.path.getmtime(out_name) > os.path.getmtime(filename)
+            and 'test' not in rulename
+            and rulename not in modified_rules
+            and not dat_rule_mod
+        ):
             continue
 
         print(out_name)
@@ -222,6 +229,132 @@ def recolor_dat():
             fp.write(s)
 
 
+# (1 - k / 2) * k == 1 - (1 - (1 - k / 2)) / k
+def darken(k: float) -> Callable[[float], float]:
+    assert 0 < k < 2, f'Value for k should be between 0 and 2: k = {k}'
+
+    k /= 2  # For balance to be at 1 instead of 0.5
+    _k = 1 - k
+    kd = k / _k
+
+    def f(x: float) -> float:
+        if x > _k:
+            return 1 - (1 - x) / kd
+        return x * kd
+
+    return f
+
+
+def average(
+    c1: tuple[float, float, float], c2: tuple[float, float, float], ratio: float = 0.5
+) -> tuple[float, float, float]:
+    return tuple(y * ratio + x * (1 - ratio) for x, y in zip(c1, c2))  # type: ignore[return-value]
+
+
+def my_mul(x: float, mn: float, mx: float, mul: float) -> float:
+    assert mul >= 0
+    if mul < 1:
+        result = mn + (x - mn) * mul
+    elif mul > 1:
+        result = mx - (mx - x) / mul
+    else:
+        result = x
+    return min(max(result, mn), mx)
+
+
+##
+# Clamping to 0, 255
+def _clamp(v: float) -> int:
+    if v < 0:
+        return 0
+    if v > 255:
+        return 255
+    return round(v)
+
+
+# FIXME move back to interface colorer
+def recolor(
+    color: tuple[int, int, int, int] | list[int],
+    mask: tuple[int, int, int, int] | list[int] | None,
+    red_angle: float,
+    green_angle: float,
+    blue_angle: float,
+    brightness: float,
+    lightness: Callable[[float], float],
+    gamma: float,
+    p_matrix: tuple[list[list[float]], list[list[float]], list[list[float]]],
+) -> tuple[float, float, float, float]:
+    size = 5
+    _255 = range(256 - size, 256)
+    _0 = range(0, 0 + size)
+
+    mask = mask or (255, 255, 255, 255)
+
+    r, g, b, a = color
+    mr, mg, mb, ma = mask
+
+    # mask = mr, mg, mb
+
+    if mr in _255 and mg in _0 and mb in _0:
+        angle = red_angle
+        matrix = p_matrix[0]
+    elif mr in _0 and mg in _255 and mb in _0:
+        angle = green_angle
+        matrix = p_matrix[1]
+    else:
+        angle = blue_angle
+        matrix = p_matrix[2]
+
+    # elif mr in _0  and mg in _0 and mb in _255:
+    #     pass
+    # elif mr in _255  and mg in _255 and mb in _255:
+    #     pass
+    # else:
+    #     pass
+
+    # RGB hue rotation
+    result: tuple[float, float, float] = (
+        _clamp(color[0] * matrix[0][0] + color[1] * matrix[0][1] + color[2] * matrix[0][2]),
+        _clamp(color[0] * matrix[1][0] + color[1] * matrix[1][1] + color[2] * matrix[1][2]),
+        _clamp(color[0] * matrix[2][0] + color[1] * matrix[2][1] + color[2] * matrix[2][2]),
+    )
+
+    if angle == blue_angle:
+        ratio = ma / 255
+
+        if brightness != 0.0 or ratio != 1.0:
+            # Linearize RGB from gamma
+            result = tuple((channel / 255) ** gamma for channel in result)  # type: ignore[assignment]
+            # Apply non-linearity
+            result = tuple(lightness(channel) for channel in result)  # type: ignore[assignment]
+
+            if ratio != 1.0:
+                original: tuple[float, float, float] = tuple((channel / 255) ** gamma for channel in (r, g, b))  # type: ignore[assignment]
+                result = average(original, result, ratio)
+
+            # De-linearize to gamma
+            result = tuple(channel ** (1 / gamma) * 255 for channel in result)  # type: ignore[assignment]
+
+    return *result, a
+
+
+##
+# Degree of non-linearity expressed in values `(-∞, +∞)\{0}`. Non-linearity increases when approaching `0`
+# Bias is neutral at `1.0`.
+# Lowering value shifts bias of the non-linearity towards `0` on the x scale, raising shifts bias towards max
+def nonlinear_brightness(dn: float, bias: float = 1.0) -> Callable[[float], float]:
+    assert bias > 0, f'Value for bias should be higher than 0: bias = {bias}'
+    assert dn != 0, 'Value for dn cannot be equal to 0'
+
+    # To reflect behavior of positive dn values
+    if dn < 0:
+        dn -= 1
+
+    def f(x: float) -> float:
+        return ((1 + dn) * (x ** bias)) / (dn + (x ** bias))
+
+    return f
+
 
 def to_grey(brightness, bias=1.0, gamma=2.2):
     size = 5
@@ -239,7 +372,7 @@ def to_grey(brightness, bias=1.0, gamma=2.2):
         r, g, b, a = color
         mr, mg, mb, ma = mask
 
-        #mask = mr, mg, mb
+        # mask = mr, mg, mb
 
         if mr in _255 and mg in _0 and mb in _0:
             return r, g, b, a
@@ -249,7 +382,7 @@ def to_grey(brightness, bias=1.0, gamma=2.2):
         # Linearize RGB from gamma
         original = tuple((channel / 255) ** gamma for channel in (r, g, b))
         # Rec. 709 luma grayscale coefficients
-        v = original[0] * .2126 + original[1] * .7152 + original[2] * .0722
+        v = original[0] * 0.2126 + original[1] * 0.7152 + original[2] * 0.0722
         # Apply non-linearity
         v = lightness(v)
 
@@ -257,7 +390,7 @@ def to_grey(brightness, bias=1.0, gamma=2.2):
         if ratio != 1.0:
             result = v, v, v
             result = average(original, result, ratio)
-        # De-linearize to gamma
+            # De-linearize to gamma
             result = tuple(channel ** (1 / gamma) * 255 for channel in result)
         else:
             v = v ** (1 / gamma) * 255
@@ -268,30 +401,41 @@ def to_grey(brightness, bias=1.0, gamma=2.2):
     return f
 
 
-def transform(red_angle, green_angle, blue_angle, saturation=1.0, value=1.0, brightness=0.0, bias=1.0, gamma=2.2):
+def transform(
+    red_angle,
+    green_angle,
+    blue_angle,
+    saturation=1.0,
+    value=1.0,
+    brightness=0.0,
+    bias=1.0,
+    gamma=2.2,
+):
     size = 5
     _255 = range(256 - size, 256)
     _0 = range(0, 0 + size)
 
     # Precompute RGB hue rotation matrices for "red", "green" and "blue" mask angles at start
-    p_matrix = ([[1., 0., 0.], [0., 1., 0.], [0., 0., 1.]],
-                [[1., 0., 0.], [0., 1., 0.], [0., 0., 1.]],
-                [[1., 0., 0.], [0., 1., 0.], [0., 0., 1.]])
+    p_matrix = (
+        [[1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0]],
+        [[1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0]],
+        [[1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0]],
+    )
     angles = (red_angle, green_angle, blue_angle)
 
     for matrix, angle in zip(p_matrix, angles):
         vsu = value * saturation * cos(radians(angle))
         vsv = value * saturation * sin(radians(angle))
 
-        matrix[0][0] = value *       vsu       + (1 - vsu) /      3
-        matrix[0][1] = value * ((1 - vsu) / 3) -      vsv  / sqrt(3)
-        matrix[0][2] = value * ((1 - vsu) / 3) +      vsv  / sqrt(3)
-        matrix[1][0] = value * ((1 - vsu) / 3) +      vsv  / sqrt(3)
-        matrix[1][1] = value *       vsu       + (1 - vsu) /      3
-        matrix[1][2] = value * ((1 - vsu) / 3) -      vsv  / sqrt(3)
-        matrix[2][0] = value * ((1 - vsu) / 3) -      vsv  / sqrt(3)
-        matrix[2][1] = value * ((1 - vsu) / 3) +      vsv  / sqrt(3)
-        matrix[2][2] = value *       vsu       + (1 - vsu) /      3
+        matrix[0][0] = value * vsu + (1 - vsu) / 3
+        matrix[0][1] = value * ((1 - vsu) / 3) - vsv / sqrt(3)
+        matrix[0][2] = value * ((1 - vsu) / 3) + vsv / sqrt(3)
+        matrix[1][0] = value * ((1 - vsu) / 3) + vsv / sqrt(3)
+        matrix[1][1] = value * vsu + (1 - vsu) / 3
+        matrix[1][2] = value * ((1 - vsu) / 3) - vsv / sqrt(3)
+        matrix[2][0] = value * ((1 - vsu) / 3) - vsv / sqrt(3)
+        matrix[2][1] = value * ((1 - vsu) / 3) + vsv / sqrt(3)
+        matrix[2][2] = value * vsu + (1 - vsu) / 3
 
     if brightness != 0:
         lightness = nonlinear_brightness(brightness, bias)
@@ -299,10 +443,7 @@ def transform(red_angle, green_angle, blue_angle, saturation=1.0, value=1.0, bri
         lightness = identity
 
     return lambda color, mask=None: recolor(
-        color, mask,
-        red_angle, green_angle, blue_angle,
-        brightness, lightness, gamma,
-        p_matrix
+        color, mask, red_angle, green_angle, blue_angle, brightness, lightness, gamma, p_matrix
     )
 
 
@@ -312,6 +453,7 @@ def recolor_two_colors(rule1, rule2):
             return rule1(color, mask)
         else:
             return rule2(color, mask)
+
     return f
 
 
@@ -329,9 +471,12 @@ def process():
         for file in sample(files, k=len(files)) if randomize else files:
             filename = '/'.join([path, file]).replace('//', '/').replace('\\', '/')
 
-            if not filename.endswith('.png'): continue
-            if filename.endswith('_mask.png'): continue
-            if os.stat(filename).st_size == 0: continue
+            if not filename.endswith('.png'):
+                continue
+            if filename.endswith('_mask.png'):
+                continue
+            if os.stat(filename).st_size == 0:
+                continue
 
             path2 = path.replace(_in, '', 1)
 
@@ -346,18 +491,26 @@ def process():
             for rulename in rules:
                 out_name = _out + f'{rulename}/{path2}/{file}'
                 out_name = out_name.replace('\\', '/').replace('//', '/')
-                if not rewrite \
-                   and os.path.isfile(out_name) \
-                   and os.path.getmtime(out_name) > os.path.getmtime(filename) \
-                   and (os.path.isfile(mask_name) and os.path.getmtime(out_name) > os.path.getmtime(mask_name)
-                        or not os.path.isfile(mask_name)) \
-                   and 'test' not in rulename \
-                   and rulename not in modified_rules \
-                        or rulename in modified_rules \
-                       and os.path.isfile(out_name) \
-                       and os.path.getmtime(out_name) > os.path.getmtime(filename) \
-                       and (os.stat(out_name).st_size == 0
-                            or time.time() - os.path.getmtime(out_name) < modified_file_delta): continue
+                if (
+                    not rewrite
+                    and os.path.isfile(out_name)
+                    and os.path.getmtime(out_name) > os.path.getmtime(filename)
+                    and (
+                        os.path.isfile(mask_name)
+                        and os.path.getmtime(out_name) > os.path.getmtime(mask_name)
+                        or not os.path.isfile(mask_name)
+                    )
+                    and 'test' not in rulename
+                    and rulename not in modified_rules
+                    or rulename in modified_rules
+                    and os.path.isfile(out_name)
+                    and os.path.getmtime(out_name) > os.path.getmtime(filename)
+                    and (
+                        os.stat(out_name).st_size == 0
+                        or time.time() - os.path.getmtime(out_name) < modified_file_delta
+                    )
+                ):
+                    continue
 
                 check_dir(out_name)
                 open(out_name, 'wb').close()
@@ -367,7 +520,8 @@ def process():
                     img = Image.open(filename).convert('RGBA')
                 images[rulename] = None  # Just for init
 
-            if not images: continue
+            if not images:
+                continue
 
             mask = None
             if os.path.isfile(mask_name):
@@ -404,6 +558,12 @@ def process():
 
                 out_name = _out + f'{rulename}/{path2}/{file}'
                 images[rulename] = Image.frombytes('RGBA', img.size, bytes(out_data))
+                if dither:
+                    images[rulename] = dither_bayer(
+                        images[rulename],
+                        bit_trunc=2,
+                        matrix_n=3,
+                    )
                 out_data = []
                 images[rulename].save(out_name)
 
@@ -416,6 +576,7 @@ if __name__ == '__main__':
         import pstats
         import io
         from pstats import SortKey
+
         pr = cProfile.Profile()
         pr.enable()
 
