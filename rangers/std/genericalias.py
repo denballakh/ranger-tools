@@ -1,5 +1,13 @@
 from __future__ import annotations
-from typing import Any, NoReturn, TypeAlias, TypeGuard, TypeVar, Union
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    NoReturn,
+    TypeAlias,
+    TypeGuard,
+    TypeVar,
+    Union,
+)
 from types import EllipsisType
 
 __all__ = ('GenericAlias',)
@@ -127,7 +135,7 @@ class GenericAlias:
         if attr in {
             '__origin__',
             '__args__',
-            '_GenericAlias__parameters',  # magnled version of __parameters
+            '_GenericAlias__parameters',  # mangled version of __parameters
             '__parameters__',
             '__mro_entries__',
             '__reduce_ex__',
@@ -197,7 +205,7 @@ class GenericAlias:
         return type(self), (self.__origin__, self.__args__)
 
 
-if __name__ == '__main__':
+if not TYPE_CHECKING and __name__ == '__main__':
 
     class X:
         pass
