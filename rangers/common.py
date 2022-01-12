@@ -1,69 +1,75 @@
-"""!
-@file
-"""
 from __future__ import annotations
 from types import MappingProxyType
 from typing import (
     Any,
     Callable,
     Iterable,
+    Protocol,
     TypeVar,
     Iterator,
     Container,
     Sequence,
 )
-from itertools import repeat
-from functools import lru_cache
 
-import os
 import sys
+import gc
+import os
+
+from functools import lru_cache
+import random
+
+
 
 _T = TypeVar('_T')
 _G = TypeVar('_G')
 
-# def sizeof_fmt(num, suffix="B"):
-#     for unit in ["", "K", "M", "G", "T", "P", "E", "Z", "Y"]:
-#         if abs(num) < 1024.0:
-#             if isinstance(num, int):
-#                 return f"{num} {unit}{suffix}"
-#             return f"{num:3.1f} {unit}{suffix}"
-#         num /= 1024.0
-#     return f"{num:.1f} {unit}{suffix}"
+
+class LessComparable(Protocol):
+    def __lt__(self: _T, other: _T) -> bool:
+        ...
 
 
-# def pretty_size(n, pow=0, b=1024, u='B', pre=[''] + [p + 'i' for p in 'KMGTPEZY']):
-#     from math import log
-
-#     pow, n = min(int(log(max(n * b ** pow, 1), b)), len(pre) - 1), n * b ** pow
-#     return "%%.%if %%s%%s" % abs(pow % (-pow - 1)) % (n / b ** float(pow), pre[pow], u)
+_TLC = TypeVar('_TLC', bound=LessComparable)
 
 
-# def prettier_size(n, pow=0, b=1024, u='B', pre=[''] + [p + 'i' for p in 'KMGTPEZY']):
-#     r, f = min(int(log(max(n * b ** pow, 1), b)), len(pre) - 1), '{:,.%if} %s%s'
-#     return (f % (abs(r % (-r - 1)), pre[r], u)).format(n * b ** pow / b ** float(r))
+def _get_mappingproxy_dict(mp: MappingProxyType[_T, _G], /) -> dict[_T, _G]:
+    """!
+    >>> from types import MappingProxyType as mp
+    >>> d = {}
+    >>> p = mp(d)
+    >>> _get_mappingproxy_dict(p) is d
+    True
+    """
+    referents = gc.get_referents(mp)
+    if len(referents) != 1:
+        raise RuntimeError('Mapping proxy referents to several objects', mp, referents)
+    return referents[0]
 
 
-def make_number(num: float, unit: str, n: int) -> str:
-    return f'{round_to_n_chars(num, n)} {unit}'
+def noop(*_: Any, **__: Any) -> None:
+    pass
 
 
-class _ProxyGetter:
-    # bug (or feature?) in mappingproxy implementation
-    # https://bugs.python.org/issue43838
-    def __ror__(self, other: MappingProxyType[_T, _G]) -> dict[_T, _G]:
-        return other  # type: ignore[return-value]
-
-    def __eq__(self, other: MappingProxyType[_T, _G]) -> dict[_T, _G]:  # type: ignore[override]
-        return other  # type: ignore[return-value]
+def identity(x: _T, /) -> _T:
+    return x
 
 
-def _get_mappingproxy_dict(
-    mp: MappingProxyType[_T, _G], *, __proxy_getter: _ProxyGetter = _ProxyGetter()
-) -> dict[_T, _G]:
-    return mp | __proxy_getter
+def probability(f: float, /, *, __uniform: Callable[[float, float], float] = random.uniform) -> bool:
+    return __uniform(0.0, 1.0) < f
 
 
-del _ProxyGetter
+def minmax(a: _TLC, b: _TLC) -> tuple[_TLC, _TLC]:
+    if a < b:
+        return a, b
+    return b, a
+
+
+def clamp(v: _TLC, lt: _TLC, gt: _TLC) -> _TLC:
+    if v < lt:
+        return lt
+    if gt < v:
+        return gt
+    return v
 
 
 def fmt_file_size(size: float) -> tuple[float, str]:
@@ -119,6 +125,10 @@ def fmt_time(time: float) -> tuple[float, str]:
         unit_p -= 1
 
     return time * sign, units[unit_p]
+
+
+def make_number(num: float, unit: str, n: int) -> str:
+    return f'{round_to_n_chars(num, n)} {unit}'
 
 
 def round_to_three_chars(f: float) -> float | int:
@@ -287,14 +297,6 @@ def recursive_subclasses(cls: type, /) -> list[type]:
     return list(result)
 
 
-def noop(*_: Any, **__: Any) -> None:
-    pass
-
-
-def identity(x: _T, /) -> _T:
-    return x
-
-
 def create_empty_instance(cls: type[_T], /) -> _T | None:
     try:
         return cls()
@@ -310,6 +312,7 @@ def create_empty_instance(cls: type[_T], /) -> _T | None:
 
 
 def get_attributes(obj: object, /) -> list[tuple[str, object]]:
+    cls = type(obj)
     kwarg_pairs: list[tuple[str, Any]] = []
 
     for attr_list_attr in {
@@ -327,133 +330,6 @@ def get_attributes(obj: object, /) -> list[tuple[str, object]]:
             kwarg_pairs.append((attr, value))
 
     return kwarg_pairs
-
-
-##
-# Clamping to 0, 255
-def _clamp(v: float) -> int:
-    if v < 0:
-        return 0
-    if v > 255:
-        return 255
-    return round(v)
-
-
-# (1 - k / 2) * k == 1 - (1 - (1 - k / 2)) / k
-def darken(k: float) -> Callable[[float], float]:
-    assert 0 < k < 2, f'Value for k should be between 0 and 2: k = {k}'
-
-    k /= 2  # For balance to be at 1 instead of 0.5
-    _k = 1 - k
-    kd = k / _k
-
-    def f(x: float) -> float:
-        if x > _k:
-            return 1 - (1 - x) / kd
-        return x * kd
-
-    return f
-
-
-def average(
-    c1: tuple[float, float, float], c2: tuple[float, float, float], ratio: float = 0.5
-) -> tuple[float, float, float]:
-    return tuple(y * ratio + x * (1 - ratio) for x, y in zip(c1, c2))  # type: ignore[return-value]
-
-
-def my_mul(x: float, mn: float, mx: float, mul: float) -> float:
-    assert mul >= 0
-    if mul < 1:
-        result = mn + (x - mn) * mul
-    elif mul > 1:
-        result = mx - (mx - x) / mul
-    else:
-        result = x
-    return min(max(result, mn), mx)
-
-
-# FIXME move back to interface colorer
-def recolor(
-    color: tuple[int, int, int, int] | list[int],
-    mask: tuple[int, int, int, int] | list[int] | None,
-    red_angle: float,
-    green_angle: float,
-    blue_angle: float,
-    brightness: float,
-    lightness: Callable[[float], float],
-    gamma: float,
-    p_matrix: tuple[list[list[float]], list[list[float]], list[list[float]]],
-) -> tuple[float, float, float, float]:
-    size = 5
-    _255 = range(256 - size, 256)
-    _0 = range(0, 0 + size)
-
-    mask = mask or (255, 255, 255, 255)
-
-    r, g, b, a = color
-    mr, mg, mb, ma = mask
-
-    # mask = mr, mg, mb
-
-    if mr in _255 and mg in _0 and mb in _0:
-        angle = red_angle
-        matrix = p_matrix[0]
-    elif mr in _0 and mg in _255 and mb in _0:
-        angle = green_angle
-        matrix = p_matrix[1]
-    else:
-        angle = blue_angle
-        matrix = p_matrix[2]
-
-    # elif mr in _0  and mg in _0 and mb in _255:
-    #     pass
-    # elif mr in _255  and mg in _255 and mb in _255:
-    #     pass
-    # else:
-    #     pass
-
-    # RGB hue rotation
-    result: tuple[float, float, float] = (
-        _clamp(color[0] * matrix[0][0] + color[1] * matrix[0][1] + color[2] * matrix[0][2]),
-        _clamp(color[0] * matrix[1][0] + color[1] * matrix[1][1] + color[2] * matrix[1][2]),
-        _clamp(color[0] * matrix[2][0] + color[1] * matrix[2][1] + color[2] * matrix[2][2]),
-    )
-
-    if angle == blue_angle:
-        ratio = ma / 255
-
-        if brightness != 0.0 or ratio != 1.0:
-            # Linearize RGB from gamma
-            result = tuple((channel / 255) ** gamma for channel in result)  # type: ignore[assignment]
-            # Apply non-linearity
-            result = tuple(lightness(channel) for channel in result)  # type: ignore[assignment]
-
-            if ratio != 1.0:
-                original: tuple[float, float, float] = tuple((channel / 255) ** gamma for channel in (r, g, b))  # type: ignore[assignment]
-                result = average(original, result, ratio)
-
-            # De-linearize to gamma
-            result = tuple(channel ** (1 / gamma) * 255 for channel in result)  # type: ignore[assignment]
-
-    return *result, a
-
-
-##
-# Degree of non-linearity expressed in values `(-∞, +∞)\{0}`. Non-linearity increases when approaching `0`
-# Bias is neutral at `1.0`.
-# Lowering value shifts bias of the non-linearity towards `0` on the x scale, raising shifts bias towards max
-def nonlinear_brightness(dn: float, bias: float = 1.0) -> Callable[[float], float]:
-    assert bias > 0, f'Value for bias should be higher than 0: bias = {bias}'
-    assert dn != 0, 'Value for dn cannot be equal to 0'
-
-    # To reflect behavior of positive dn values
-    if dn < 0:
-        dn -= 1
-
-    def f(x: float) -> float:
-        return ((1 + dn) * (x ** bias)) / (dn + (x ** bias))
-
-    return f
 
 
 def check_dir(path: str) -> None:
@@ -540,14 +416,6 @@ def convert_ini_to_dict(content: str) -> dict[str, str]:
         else:
             result[key] = val
     return result
-
-
-def clamp(v: float, lt: float, gt: float) -> float:
-    if v <= lt:
-        return lt
-    if v >= gt:
-        return gt
-    return v
 
 
 def rgb565le_to_rgb888(rgb16: bytes) -> tuple[int, int, int]:
