@@ -119,9 +119,9 @@ INPUT_ENCODING         = UTF-8
 FILE_PATTERNS          = *.py
 RECURSIVE              = YES
 EXCLUDE                = ../rangers/_test \
-                         ../rangers/_dats \
                          ../rangers/_idea \
-                         ../rangers/dat/dat_sign.py
+                         ../rangers/dat_sign.py
+                         ../rangers/sav.py
 EXCLUDE_SYMLINKS       = NO
 EXCLUDE_PATTERNS       =
 EXCLUDE_SYMBOLS        =
