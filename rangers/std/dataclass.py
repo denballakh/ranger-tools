@@ -311,7 +311,7 @@ class AnyOf(DataClass[T]):
         msg: str = None,
     ) -> None:
         self.dcls = dcls
-        self.values = set(values)
+        self.values = values
         self.msg = msg
 
     def read(self, buf: IBuffer, *, memo: Memo) -> T:
@@ -519,6 +519,22 @@ class Nested(DataClass[T]):
         self.dcls2.write(buf2, obj, memo=memo)
         data = bytes(buf2)
         self.dcls1.write(buf, data, memo=memo)
+
+class Pack(DataClass[list[T]]):
+    __slots__ = ('dcls')
+
+    def __init__(self, dcls: DataClass[T]) -> None:
+        self.dcls = dcls
+
+    def read(self, buf: IBuffer, *, memo: Memo) -> list[T]:
+        result: list[T] = []
+        while buf:
+            result.append(self.dcls.read(buf, memo=memo))
+        return result
+
+    def write(self, buf: OBuffer, obj: list[T], *, memo: Memo) -> None:
+        for item in obj:
+            self.dcls.write(buf, item, memo=memo)
 
 
 class Selector(DataClass[tuple[G, T]]):

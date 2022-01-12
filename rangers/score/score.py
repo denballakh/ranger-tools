@@ -1,185 +1,196 @@
-"""!
-@file
-"""
+from __future__ import annotations
 
 import zlib
 from typing import Generator
 
-from ..io import Buffer
-from ..std.dataclass import BufEC
-from ..std.mixins import PrintableMixin
+import random
+
+from ..buffer import Buffer
+from ..common import rand31pm
+from ..std.mixin import PrintableMixin
 from .fgint import FGInt
+
+from ..std.dataclass import (
+    DataClass,
+    Byte,
+    Int32,
+    UInt32,
+    WStr,
+    Bytes,
+    List,
+    Pack,
+    Const,
+    AnyOf,
+    Repeat,
+    NamedSequence,
+    Nested,
+    CustomCallable,
+    Converted,
+    BufEC,
+    ZL,
+    AddToMemo,
+    Memo,
+)
 
 __all__ = [
     'SCORE',
 ]
 
-
-def _rand31pm(seed: int) -> Generator[int, None, None]:
-    while True:
-        hi, lo = divmod(seed, 0x1F31D)
-        seed = lo * 0x41A7 - hi * 0xB14
-        if seed < 1:
-            seed += 0x7FFFFFFF
-        yield seed - 1
+KEY_MAGIC = 0x140F3F9B
+FG_INT_1 = 'HjwH94fmhClFC1prPy'
+FG_INT_2 = 'DjAVRGx='
+UNK = 0x31304C5A
 
 
-def decipher(data: bytes, key: int) -> bytes:
-    din = Buffer(data)
-    rnd = _rand31pm(key)
-    dout = Buffer()
-    while not din.is_end():
-        dout.write_byte(din.read_byte() ^ (next(rnd) & 0xFF))
-    result = dout.to_bytes()
-    return result
+class CryptedRand31pmMod(DataClass[bytes]):
+    __slots__ = 'key_name'
+
+    def __init__(self, key_name: str) -> None:
+        self.key_name = key_name
+
+    def read(self, buf: Buffer, *, memo: Memo) -> bytes:
+        key = memo[self.key_name]
+        rnd = rand31pm(key)
+
+        out = Buffer()
+
+        while buf:
+            out.write_byte(buf.read_byte() ^ (next(rnd) & 0xFF))
+        result = bytes(out)
+        return result
+
+    def write(self, buf: Buffer, obj: bytes, *, memo: Memo) -> None:
+        key = memo[self.key_name]
+        rnd = rand31pm(key)
+
+        inp = Buffer(obj)
+
+        while inp:
+            buf.write_byte(inp.read_byte() ^ (next(rnd) & 0xFF))
+
+
+ScoreObj = NamedSequence(
+    _three=Const(Int32(), 3, 'invalid magic number'),
+    cipher_key=AddToMemo(
+        'cipher_key',
+        AnyOf(
+            Converted(
+                Int32(),
+                decode=lambda i: i ^ KEY_MAGIC,
+                encode=lambda i: i ^ KEY_MAGIC,
+            ),
+            range(2 * 10 ** 9),
+        ),
+    ),
+    _unknown1=UInt32(),
+    _unknown2=UInt32(),
+    _buf=Nested(
+        CryptedRand31pmMod('cipher_key'),
+        Nested(
+            ZL(1, length=-1),
+            NamedSequence(
+                version=Const(UInt32(), 205),
+                _04=Byte(),
+                difflevels=Repeat(Byte(), 8),
+                name=WStr(),
+                _18=Byte(),
+                race=Byte(),
+                date=UInt32(),
+                rank=Byte(),
+                _25=Byte(),
+                _28=UInt32(),
+                _2C=UInt32(),
+                _30=UInt32(),
+                liberation_system=UInt32(),
+                _44=UInt32(),
+                rewards_cnt=UInt32(),
+                rewards=List(Byte(), lensize=4),
+                _50=UInt32(),
+                skills=Repeat(Byte(), 6),
+                _05=Byte(),
+                _60=Nested(
+                    BufEC(),
+                    Pack(
+                        NamedSequence(
+                            _13=UInt32(),
+                            _bufsize=AddToMemo('bufsize', UInt32()),
+                            _crc32=UInt32(),
+                            _zero=Const(UInt32(), 0, 'not zero'),
+                            _buf=Nested(
+                                CustomCallable(  # type: ignore[call-arg]
+                                    decode=lambda buf, memo: buf.read(memo['bufsize'] - 16),
+                                    encode=lambda buf, data, memo: (
+                                        memo.__setitem__('bufsize', len(data) + 16),  # type: ignore[func-returns-value]
+                                        buf.write(data),  # type: ignore[func-returns-value]
+                                    )[-1],
+                                ),
+                                NamedSequence(
+                                    remains=Converted(
+                                        Bytes(),
+                                        decode=lambda b: b.hex(' ', -4),
+                                        encode=lambda s: bytes.fromhex(s),
+                                    ),
+                                ),
+                            ),
+                        )
+                    ),
+                ),
+                _5c=UInt32(),
+                _64=List(
+                    NamedSequence(
+                        _0=Byte(),
+                        _1=Byte(),
+                        _2=Byte(),
+                    ),
+                    lensize=2,
+                ),
+                _68=UInt32(),
+                _70=Byte(),
+                _71=Byte(),
+                _72=Byte(),
+                _73=Byte(),
+                planetary_battles=List(
+                    NamedSequence(
+                        _0=UInt32(),
+                        _1=Int32(),
+                        _2=UInt32(),
+                        _3=UInt32(),
+                        _4=UInt32(),
+                        _5=UInt32(),
+                        _6=UInt32(),
+                        _7=Byte(),
+                        _8=Byte(),
+                        _9=UInt32(),
+                    ),
+                    lensize=2,
+                ),
+                _remains=Bytes(),
+            ),
+        ),
+    ),
+)
 
 
 class SCORE(PrintableMixin):
-    KEY_MAGIC = 0x140F3F9B
-    FG_INT_1 = 'HjwH94fmhClFC1prPy'
-    FG_INT_2 = 'DjAVRGx='
-    UNK = 0x31304C5A
-
     def __init__(self):
         self.data = {}
 
     @classmethod
-    def from_txt(cls, filename):
-        self = cls()
+    def from_txt(cls, path: str) -> SCORE:
 
-        with open(filename, 'rt', encoding='cp1251') as file:
+        with open(path, 'rt', encoding='cp1251') as file:
             text = file.read()
 
         text = text.split('*************** Protect database ****************')[-1]
 
-        buf = Buffer(bytes.fromhex(text))
+        return cls.from_bytes(bytes.fromhex(text))
 
-        buf.pos = 0
-        _three = buf.read_int()
-        key_xored = buf.read_int()
-        unknown1 = buf.read_uint()
-        unknown2 = buf.read_uint()
-        assert _three == 3, _three
+    @classmethod
+    def from_bytes(cls, data: bytes) -> SCORE:
+        return cls.from_buffer(Buffer(data))
 
-        key = key_xored ^ cls.KEY_MAGIC
-        assert key in range(0, 2000000000), key
-
-        buf = Buffer(decipher(buf.read(), key))
-        zl01 = buf.read(4)
-        assert zl01 == b'ZL01', zl01
-        decompressed_size = buf.read_uint()
-
-        data = zlib.decompress(buf.read())
-        assert decompressed_size == len(data), (decompressed_size, len(data))
-
-        self.data['_three'] = _three
-        self.data['_key'] = key
-        self.data['_crc1'] = unknown1
-        self.data['_crc2'] = unknown2
-
-        self.load_from_buf(Buffer(data))
-
+    @classmethod
+    def from_buffer(cls, buf: Buffer) -> SCORE:
+        self = cls()
+        self.data = buf.read_dcls(ScoreObj)
         return self
-
-    def load_from_buf(self, buf: Buffer):
-        d = self.data
-
-        d['_version'] = buf.read_uint()
-        assert d['_version'] == 205
-
-        d['_04'] = buf.read_byte()
-
-        d['difflevels'] = []
-        for _ in range(8):
-            d['difflevels'].append(buf.read_byte())
-
-        d['name'] = buf.read_wstr()
-        d['_18'] = buf.read_byte()
-        d['race'] = buf.read_byte()
-        d['date'] = buf.read_uint()
-        d['rank'] = buf.read_byte()
-        d['_25'] = buf.read_byte()
-        d['_28'] = buf.read_uint()
-        d['_2C'] = buf.read_uint()
-        d['_30'] = buf.read_uint()
-        d['liberation_system'] = buf.read_uint()
-        d['_44'] = buf.read_uint()
-        d['rewards'] = buf.read_uint()
-
-        n = buf.read_uint()
-        d['rewards_list'] = []
-        for _ in range(n):
-            d['rewards_list'].append(buf.read_byte())
-
-        d['_50'] = buf.read_uint()
-        d['skills'] = []
-        for _ in range(6):
-            d['skills'].append(buf.read_byte())
-
-        d['_05'] = buf.read_byte()
-        d['_60'] = self.decode_buf1(buf.read_obj(BufEC()))
-        d['_5C'] = buf.read_uint()
-
-        n = buf.read_ushort()
-        d['_64'] = []
-        for _ in range(n):
-            d['_64'].append(
-                [
-                    buf.read_byte(),
-                    buf.read_byte(),
-                    buf.read_byte(),
-                ]
-            )
-
-        d['_68'] = buf.read_uint()
-        d['_70'] = buf.read_byte()
-        d['_71'] = buf.read_byte()
-        d['_72'] = buf.read_byte()
-        d['_73'] = buf.read_byte()
-
-        n = buf.read_ushort()
-        d['planetary_battles'] = []
-        for _ in range(n):
-            d['planetary_battles'].append(
-                [
-                    buf.read_uint(),
-                    buf.read_int(),
-                    buf.read_uint(),
-                    buf.read_uint(),
-                    buf.read_uint(),
-                    buf.read_uint(),
-                    buf.read_uint(),
-                    buf.read_byte(),
-                    buf.read_byte(),
-                    buf.read_uint(),
-                ]
-            )
-
-        d['__'] = buf.read()
-        # print(buf)
-
-    @classmethod
-    def decode_buf1(cls, data: bytes) -> list[dict]:
-        dd: list[dict] = []
-        b = Buffer(data)
-        while b.bytes_remains():
-            d: dict = {}
-            dd.append(d)
-
-            d['_13'] = b.read_uint()
-            d['_bufsize'] = b.read_uint()
-            d['_crc32'] = b.read_uint()
-            d['_zero'] = b.read_uint()
-
-            data1 = b.read(d['_bufsize'] - 16)
-
-            d['buf'] = cls.decode_buf2(data1)
-
-        return dd
-
-    @classmethod
-    def decode_buf2(cls, data: bytes) -> dict:
-        d = {}
-        d['_'] = data.hex(' ', -4)
-
-        return d
