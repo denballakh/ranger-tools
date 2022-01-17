@@ -13,6 +13,7 @@ from .std.dataclass import (
     List,
     Converted,
     Nested,
+    UInt32,
 )
 
 __all__ = [
@@ -22,7 +23,7 @@ __all__ = [
 RCObj: DataClass[list[dict[str, int]]] = Nested(
     CRC(),
     Converted(
-        List(Int32(), lensize=4),
+        List(Int32, UInt32),
         decode=lambda l: [
             {
                 'time': a,
