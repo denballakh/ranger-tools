@@ -4,20 +4,23 @@ from typing import (
     Any,
     Callable,
     Iterable,
+    Literal,
+    NoReturn,
     Protocol,
     TypeVar,
     Iterator,
     Container,
     Sequence,
+    overload,
 )
 
 import sys
 import gc
 import os
 
+from collections import defaultdict
 from functools import lru_cache
 import random
-
 
 
 _T = TypeVar('_T')
@@ -32,6 +35,65 @@ class LessComparable(Protocol):
 _TLC = TypeVar('_TLC', bound=LessComparable)
 
 
+class TypedEqual:
+    __slots__ = ('obj',)
+    obj: Any
+
+    def __init__(self, obj: Any) -> None:
+        self.obj = obj
+
+    def __eq__(self, obj: Any) -> bool:
+        return type(obj) is type(self.obj) and (self.obj is obj or self.obj == obj)
+
+    def __ne__(self, obj: Any) -> bool:
+        return type(obj) is not type(self.obj) or self.obj is not obj and self.obj != obj
+
+    def __hash__(self) -> int:
+        return hash(self.obj)
+
+    def __repr__(self) -> str:
+        return f'<typed equality wrapper: {self.obj!r}>'
+
+
+class IdentityEqual:
+    __slots__ = ('obj',)
+    obj: Any
+
+    def __init__(self, obj: Any) -> None:
+        self.obj = obj
+
+    def __eq__(self, obj: Any) -> bool:
+        return obj is self.obj
+
+    def __ne__(self, obj: Any) -> bool:
+        return obj is not self.obj
+
+    def __hash__(self) -> int:
+        return hash(self.obj)
+
+    def __repr__(self) -> str:
+        return f'<identity equality wrapper: {self.obj!r}>'
+
+
+class Truthy(Protocol):
+    def __bool__(self) -> Literal[True]:
+        ...
+
+
+class Falsy(Protocol):
+    def __bool__(self) -> Literal[False]:
+        ...
+
+
+def typed_memory_usage() -> dict[type, int]:
+    gc.collect()
+    objs = gc.get_objects()
+    d: defaultdict[type, int] = defaultdict(int)
+    for x in objs:
+        d[type(x)] += sys.getsizeof(x)
+    return dict(sorted(d.items(), key=lambda pair: -pair[1]))
+
+
 def _get_mappingproxy_dict(mp: MappingProxyType[_T, _G], /) -> dict[_T, _G]:
     """!
     >>> from types import MappingProxyType as mp
@@ -42,19 +104,51 @@ def _get_mappingproxy_dict(mp: MappingProxyType[_T, _G], /) -> dict[_T, _G]:
     """
     referents = gc.get_referents(mp)
     if len(referents) != 1:
-        raise RuntimeError('Mapping proxy referents to several objects', mp, referents)
+        raise RuntimeError('Mapping proxy refers to several objects', mp, referents)
     return referents[0]
+
+
+# fmt: off
+@overload
+def assert_(condition: Truthy, msg: Any = None) -> None: ...
+@overload
+def assert_(condition: Falsy, msg: Any = None) -> NoReturn: ...
+@overload
+def assert_(condition: Any, msg: Any = None) -> None | NoReturn: ...
+# fmt: on
+def assert_(condition: Any, msg: Any = None) -> None:
+    if not condition:
+        if msg is not None:
+            raise AssertionError(msg)
+        else:
+            raise AssertionError
+
+
+def raise_(
+    exc: BaseException | type[BaseException] | None = None,
+    from_: BaseException | type[BaseException] | None = None,
+) -> NoReturn:
+    if exc is not None:
+        raise exc from from_
+    else:
+        raise
 
 
 def noop(*_: Any, **__: Any) -> None:
     pass
 
 
+def call(c: Callable[[], _T]) -> _T:
+    return c()
+
+
 def identity(x: _T, /) -> _T:
     return x
 
 
-def probability(f: float, /, *, __uniform: Callable[[float, float], float] = random.uniform) -> bool:
+def probability(
+    f: float, /, *, __uniform: Callable[[float, float], float] = random.uniform
+) -> bool:
     return __uniform(0.0, 1.0) < f
 
 
