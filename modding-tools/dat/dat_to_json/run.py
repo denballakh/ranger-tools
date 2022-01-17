@@ -10,7 +10,7 @@ check_dir(_out)
 
 for filename in tree_walker(_in, exts=('.dat',))[0]:
     try:
-        output_name = change_ext(file_rebase(filename, _in, _out), '.dat', '.txt')
+        output_name = change_ext(file_rebase(filename, _in, _out), '.dat', '.json')
 
         print(f'{filename} -> {output_name}')
 
