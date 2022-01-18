@@ -1,100 +1,190 @@
-"""!
-@file
-"""
+from __future__ import annotations
+import os
+import itertools
+from types import ModuleType
 
 from PIL import Image
 
+
+# cv2: ModuleType | None
+# np: ModuleType | None
+# try:
+#     import numpy as np  # type: ignore[no-redef]
+#     import cv2  # type: ignore[no-redef]
+# except ImportError:
+#     cv2 = None
+#     np = None
+
+
+from ..std.mixin import DataMixin
 from ..buffer import Buffer
-from .gi import GI
-from .gai import GAI
 
-__all__ = ['HAI']
+# from ..std.decorator import profile
 
-# struct HAIHeader
-# {
-#     uint32_t signature;  //!< Signature
-#     uint32_t width;  //!< Animation width
-#     uint32_t height;  //!< Animation height
-#     uint32_t rowBytes;  //!< Bytes in one line
-#     uint32_t count;  //!< Number of frames in animation
-#     uint32_t frameSize;  //!< Size of one frame
-#     uint32_t unknown1;
-#     uint32_t unknown2;
-#     uint32_t unknown3;
-#     uint32_t unknown4;
-#     uint32_t unknown5;
-#     uint32_t unknown6;
-#     uint32_t palSize;  //!< Size of pallete
-# };
+__all__ = ('HAI',)
 
-class HAIFrame:
-    def __init__(self):
-        pass
+HAI_MAGIC = 0x4210420
 
-    def __repr__(self) -> str:
-        return f'<HAIFrame: {vars(self)}>'
+
+class HAI(DataMixin):
+    width: int
+    height: int
+    pal_size: int
+    frames: list[tuple[bytes, bytes]]
+
+    def __init__(self) -> None:
+        self.width = 0
+        self.height = 0
+        self.pal_size = 0
+        self.frames = []
 
     @classmethod
-    def from_buffer(cls, buf: Buffer) -> 'HAIFrame':
-        raise NotImplementedError
+    def from_buffer(cls, buf: Buffer) -> HAI:
+        self = cls()
+        magic = buf.read_uint()
+        if magic != HAI_MAGIC:
+            raise ValueError('Invalid magic:', magic)
 
-    def to_buffer(self, buf: Buffer):
-        raise NotImplementedError
-
-    @classmethod
-    def from_bytes(cls, data: bytes):
-        buf = Buffer(data)
-        return cls.from_buffer(buf)
-
-    def to_bytes(self) -> bytes:
-        buf = Buffer()
-        self.to_buffer(buf)
-        return buf.to_bytes()
-
-class HAI:
-    def __init__(self):
-        pass
-
-    def __repr__(self) -> str:
-        return f'<HAI: {vars(self)}>'
-
-    @classmethod
-    def from_buffer(cls, buf: Buffer) -> 'HAI':
-        signature = buf.read(4)
-        print(f'{signature = }')
-        width = buf.read_uint()
-        height = buf.read_uint()
+        self.width = buf.read_uint()
+        self.height = buf.read_uint()
         row_bytes = buf.read_uint()
-        franes_count = buf.read_uint()
-        unknown1 = buf.read_uint(); print(f'{unknown1 = }')
-        unknown2 = buf.read_uint(); print(f'{unknown2 = }')
-        unknown3 = buf.read_uint(); print(f'{unknown3 = }')
-        unknown4 = buf.read_uint(); print(f'{unknown4 = }')
-        unknown5 = buf.read_uint(); print(f'{unknown5 = }')
-        unknown6 = buf.read_uint(); print(f'{unknown6 = }')
-        pallete_size = buf.read_uint()
+        assert row_bytes == self.width == self.height
+        frame_count = buf.read_uint()
+        frame_size = buf.read_uint()
+        _unk1 = buf.read_uint()
+        _unk2 = buf.read_uint()
+        _unk3 = buf.read_uint()
+        _unk4 = buf.read_uint()
+        _unk5 = buf.read_uint()
+        _unk6 = buf.read_uint()
+        # assert (_unk1, _unk2, _unk2, _unk2, _unk2, _unk2) == (1, 8, 0, 0, 0, 0) # ???
+        self.pal_size = buf.read_uint() // 4
 
-        raise NotImplementedError
+        assert frame_size == self.width * self.height + self.pal_size * 4
 
-    def to_buffer(self, buf: Buffer):
-        raise NotImplementedError
+        for _ in range(frame_count):
+            data = buf.read(self.width * self.height)
+            palette = buf.read(4 * self.pal_size)
+            self.frames.append((data, palette))
+
+        return self
+
+    def to_buffer(self, buf: Buffer) -> None:
+        buf.write_uint(HAI_MAGIC)
+        buf.write_uint(self.width)
+        buf.write_uint(self.height)
+        buf.write_uint(self.width)
+        buf.write_uint(len(self.frames))
+        buf.write_uint(self.width * self.height + self.pal_size * 4)
+        buf.write_uint(1)
+        buf.write_uint(8)
+        buf.write_uint(0)
+        buf.write_uint(0)
+        buf.write_uint(0)
+        buf.write_uint(0)
+        buf.write_uint(self.pal_size * 4)
+
+        for data, palette in self.frames:
+            assert len(data) == self.width * self.height
+            assert len(palette) == 4 * self.pal_size
+            buf.write(data)
+            buf.write(palette)
 
     @classmethod
-    def from_bytes(cls, data: bytes):
-        buf = Buffer(data)
-        return cls.from_buffer(buf)
+    def from_images(cls, images: list[Image.Image]) -> HAI:
+        self = cls()
 
-    def to_bytes(self) -> bytes:
-        buf = Buffer()
-        self.to_buffer(buf)
-        return buf.to_bytes()
+        self.width = max(img.size[0] for img in images)
+        self.height = max(img.size[1] for img in images)
+        assert self.width > 0
+        assert self.height > 0
+
+        self.pal_size = 256
+
+        for img in images:
+            img = img.convert('RGBA')
+            img = img.resize((self.width, self.height))
+            img = img.quantize(self.pal_size)
+
+            pal = img.getpalette()
+            assert pal is not None
+            palbuf = Buffer(bytearray(pal))
+            assert len(palbuf.data) == self.pal_size * 3, len(palbuf.data)
+
+            data = bytes(img.getdata())
+            palette = bytearray()
+
+            while palbuf:
+                rgb = palbuf.read(3)
+                palette.extend(rgb)
+                palette.append(255 * any(x > 1 for x in rgb))
+
+            assert len(palette) == self.pal_size * 4, len(palette)
+            self.frames.append((data, bytes(palette)))
+
+        return self
+
+    def to_images(self) -> list[Image.Image]:
+        result: list[Image.Image] = []
+        size = self.width, self.height
+
+        for data, palette in self.frames:
+            img = Image.new('RGBA', size, (0, 0, 0, 0))
+            result.append(img)
+            palbuf = Buffer(palette)
+            pal: list[tuple[int, int, int, int]] = []
+            while palbuf:
+                pal.append(
+                    (
+                        palbuf.read_byte(),
+                        palbuf.read_byte(),
+                        palbuf.read_byte(),
+                        palbuf.read_byte(),
+                    )
+                )
+
+            for (j, i), index in zip(
+                itertools.product(
+                    range(self.width),
+                    range(self.height),
+                ),
+                data,
+            ):
+                img.putpixel((i, j), pal[index])
+
+        return result
 
     @classmethod
-    def from_hai(cls, path: str):
-        with open(path, 'rb') as file:
-            data = file.read()
-        return cls.from_bytes(data)
+    def from_image_folder(cls, path: str) -> HAI:
+        images: list[Image.Image] = []
+        for filename in sorted(os.listdir(path)):
+            images.append(Image.open(os.path.join(path, filename)))
+        return cls.from_images(images)
 
-    def to_hai(self, path: str):
-        with open(path, 'wb') as file:
-            file.write(self.to_bytes())
+    def to_image_folder(self, path: str) -> None:
+        if not path.endswith('/') and not path.endswith('\\'):
+            path += '/'
+
+        images = self.to_images()
+        for i, img in enumerate(images):
+            filename = path + f'{i:03}.png'
+            img.save(filename)
+
+
+# def get_pallete(
+#     img: list[tuple[int, int, int, int]],
+#     pal_size: int = 256,
+# ) -> tuple[list[int], list[tuple[int, int, int, int]]]:
+#     # bad pallete
+#     # palette: list[tuple[int, int, int, int]] = [
+#     #     (r * 255 // 3, g * 255 // 3, b * 255 // 3, a * 255 // 3)
+#     #     for r, g, b, a in itertools.product(range(4), range(4), range(4), range(4))
+#     # ]
+#     # S = 63
+#     # R = lambda x: clamp(round(x), 0, 3)
+#     # data: list[int] = [
+#     #     (R(r / S) + R(g / S) * 4 + R(b / S) * 16 + R(a / S) * 64) % 256
+#     #     for y, x in itertools.product(range(height), range(width))
+#     #     for r, g, b, a in [img.getpixel((x, y))]
+#     # ]
+#     ...
