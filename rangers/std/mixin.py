@@ -11,10 +11,9 @@ from typing import (
     ClassVar,
     Literal,
 )
-
 import sys
+import json
 
-# from functools import wraps
 from ..common import get_attributes
 from ..buffer import Buffer
 
@@ -26,6 +25,7 @@ __all__ = [
 ]
 
 T = TypeVar('T')
+MT = TypeVar('MT', bound='Mixin')
 
 
 class Mixin:
@@ -184,6 +184,30 @@ class DataMixin(Mixin):
     def to_file(self: DMT, path: str) -> None:
         with open(path, 'wb') as file:
             file.write(self.to_bytes())
+
+
+JT = TypeVar('JT', bound='JSONMixin')
+
+
+class JSONMixin(Mixin):
+    __slots__ = ()
+    data: dict[str, Any] | list[Any]
+
+    @classmethod
+    def from_json(cls: type[JT], filename: str) -> JT:
+        self = cls()
+        with open(filename, 'rt', encoding='utf-8') as file:
+            self.data = json.load(file)
+        return self
+
+    def to_json(self: JT, filename: str) -> None:
+        with open(filename, 'wt', encoding='utf-8') as file:
+            json.dump(
+                self.data,
+                file,
+                ensure_ascii=False,
+                indent=2,
+            )
 
 
 class UniqueMixin(Mixin):

@@ -5,7 +5,7 @@
 import os
 import ctypes
 
-from msl.loadlib import Client64
+from msl.loadlib import Client64  # type: ignore[import]
 
 __all__ = [
     'OKGF',

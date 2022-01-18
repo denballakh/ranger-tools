@@ -1,6 +1,3 @@
-"""!
-@file
-"""
 from __future__ import annotations
 
 import time
@@ -8,12 +5,11 @@ import time
 from PIL import Image
 from PIL.Image import Image as ImageType
 
+from ..std.mixin import DataMixin
 from ..buffer import Buffer
 from ..common import rgb565le_to_rgb888, rgb24_to_rgb16, rgb888_to_rgb565le
 
-__all__ = [
-    'GI',
-]
+__all__ = ('GI',)
 
 
 class Point:
@@ -180,7 +176,7 @@ class Header:
         return s
 
 
-class GI:
+class GI(DataMixin):
     header: Header
     layers: list[Layer]
     metadata: bytes
@@ -196,15 +192,6 @@ class GI:
 
     def __repr__(self) -> str:
         return '\n'.join([repr(self.header)] + [repr(layer) for layer in self.layers])
-
-    @classmethod
-    def from_bytes(cls, data: bytes) -> GI:
-        return cls.from_buffer(Buffer(data))
-
-    def to_bytes(self) -> bytes:
-        buf = Buffer()
-        self.to_buffer(buf)
-        return bytes(buf)
 
     @classmethod
     def from_buffer(cls, buf: Buffer) -> GI:

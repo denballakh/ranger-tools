@@ -2,6 +2,7 @@ from __future__ import annotations
 from typing import Any, Final, TypeVar, cast
 import json
 
+from .std.mixin import DataMixin, JSONMixin
 from .buffer import Buffer
 from .std.dataclass import (
     # base
@@ -26,7 +27,6 @@ from .std.dataclass import (
     ConstValue,
     AnyOf,
     MemoSelectedDataClass,
-    ReadOnlySelector,
     Converted,
     HexBytes,
     # memo
@@ -115,7 +115,7 @@ def VER_SEL(qm: DataClass[T], qmm: DataClass[T], minversion: int = VER_QMM_6) ->
         lambda memo: {
             False: qm,
             True: qmm,
-        }[memo[TAG_VERSION] >= VER_QMM_6],
+        }[memo[TAG_VERSION] >= minversion],
     )
 
 
@@ -408,14 +408,11 @@ QuestObj: DataClass[dict[str, Any]] = NamedSequence(
 )
 
 
-class QM:
+class QM(DataMixin, JSONMixin):
     data: dict[str, Any]
 
     def __init__(self, data: dict[str, Any] = None) -> None:
         self.data = {} if data is None else data
-
-    def __repr__(self) -> str:
-        return f'QM({self.data!r})'
 
     @classmethod
     def from_buffer(cls, buf: Buffer) -> QM:
@@ -425,41 +422,3 @@ class QM:
 
     def to_buffer(self, buf: Buffer) -> None:
         buf.write_dcls(QuestObj, self.data)
-
-    @classmethod
-    def from_bytes(cls, data: bytes) -> QM:
-        return cls.from_buffer(Buffer(data))
-
-    def to_bytes(self) -> bytes:
-        buf = Buffer()
-        self.to_buffer(buf)
-        return bytes(buf)
-
-    @classmethod
-    def from_file(cls, filename: str) -> QM:
-        with open(filename, 'rb') as file:
-            data = file.read()
-        return cls.from_bytes(data)
-
-    def to_file(self, filename: str) -> None:
-        data = self.to_bytes()
-        with open(filename, 'wb') as file:
-            file.write(data)
-
-    @classmethod
-    def from_json(cls, filename: str) -> QM:
-        self = cls()
-        with open(filename, 'rt', encoding='utf-8') as file:
-            self.data = json.load(
-                file,
-            )
-        return self
-
-    def to_json(self, filename: str) -> None:
-        with open(filename, 'wt', encoding='utf-8') as file:
-            json.dump(
-                self.data,
-                file,
-                ensure_ascii=False,
-                indent=2,
-            )

@@ -7,11 +7,13 @@ import zlib
 
 from PIL import Image
 
-from ..std.dataclass import ZL
-from .gi import GI
-from ..buffer import Buffer
 
-__all__ = ['GAI']
+from ..std.mixin import DataMixin
+from ..std.dataclass import ZL
+from ..buffer import Buffer
+from .gi import GI
+
+__all__ = ('GAI',)
 
 # //! Header of animation in *.gai file
 # struct GAIHeader
@@ -37,6 +39,7 @@ __all__ = ['GAI']
 #     QVector<int> times;
 # };
 
+
 class GAIFrame:
     def __init__(self):
         pass
@@ -54,7 +57,6 @@ class GAIFrame:
 
         gi = GI.from_buffer(buf)
 
-
         raise NotImplementedError
 
     def to_buffer(self, buf: Buffer):
@@ -71,7 +73,7 @@ class GAIFrame:
         return buf.to_bytes()
 
 
-class GAI:
+class GAI(DataMixin):
     start_X: int
     start_Y: int
     finish_X: int
@@ -111,7 +113,6 @@ class GAI:
             size = buf.read_uint()
             gi_seek_size.append([seek, size])
 
-
         self.delays = self.loadGAITimes(buf)
 
         for i in range(frame_count):
@@ -133,19 +134,8 @@ class GAI:
         buf.pop_pos()
         return result
 
-
     def to_buffer(self, buf: Buffer):
         raise NotImplementedError
-
-    @classmethod
-    def from_bytes(cls, data: bytes):
-        buf = Buffer(data)
-        return cls.from_buffer(buf)
-
-    def to_bytes(self) -> bytes:
-        buf = Buffer()
-        self.to_buffer(buf)
-        return buf.to_bytes()
 
     @classmethod
     def from_gai(cls, path: str):

@@ -575,6 +575,3 @@ class bitset(frozenbitset):
             return self
 
         raise TypeError
-
-import sys
-sys._getframe

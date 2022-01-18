@@ -120,8 +120,7 @@ def assert_(condition: Any, msg: Any = None) -> None:
     if not condition:
         if msg is not None:
             raise AssertionError(msg)
-        else:
-            raise AssertionError
+        raise AssertionError
 
 
 def raise_(
@@ -130,8 +129,7 @@ def raise_(
 ) -> NoReturn:
     if exc is not None:
         raise exc from from_
-    else:
-        raise
+    raise
 
 
 def noop(*_: Any, **__: Any) -> None:
@@ -394,12 +392,12 @@ def recursive_subclasses(cls: type, /) -> list[type]:
 def create_empty_instance(cls: type[_T], /) -> _T | None:
     try:
         return cls()
-    except:
+    except TypeError:
         pass
 
     try:
         return object.__new__(cls)
-    except:
+    except TypeError:
         pass
 
     return None
@@ -461,13 +459,13 @@ def tree_walker(
     files = list[str]()
     dirs = list[str]()
     iterator = (
-        os.walk(path)
+        list(os.walk(path))
         if not root
         else [
             (
                 '',
-                [os.path.join(path, x) for x in os.listdir(path) if os.path.isdir(x)],
-                [os.path.join(path, x) for x in os.listdir(path) if os.path.isfile(x)],
+                [os.path.join(path, x) for x in os.listdir(path) if os.path.isdir(os.path.join(path, x))],
+                [os.path.join(path, x) for x in os.listdir(path) if os.path.isfile(os.path.join(path, x))],
             )
         ]
     )

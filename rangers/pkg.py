@@ -22,7 +22,7 @@ __all__ = [
 MIN_SIZE_TO_COMPRESS = 32
 COMPRESS_PNG = False
 COMPRESS_CHUNK_SIZE = 2 ** 16
-COMPRESS_CHUNK_MAX_SIZE = 2 ** 16 # 64 KB
+COMPRESS_CHUNK_MAX_SIZE = 2 ** 16  # 64 KB
 DEFAULT_COMPRESSION_LEVEL = 9
 
 PKG_DATATYPE_RAW = 1
@@ -30,6 +30,7 @@ PKG_DATATYPE_ZLIB = 2
 PKG_DATATYPE_DIR = 3
 
 T = TypeVar('T')
+
 
 class PKGItem:
     def __init__(self):
@@ -39,21 +40,11 @@ class PKGItem:
         self.childs: list[PKGItem] = []
         self.parent: PKGItem | None = None
 
-    def __repr__(self) -> str:
-        s = '' + \
-        'Package item:' + '\n' + \
-        f' Name: {self.name!r}' + '\n' + \
-        f' Type: {self.type} ({["raw file", "compressed file", "directory"][self.type - 1]})' + '\n' + \
-        f' Size: {len(self.data)} b' + '\n' + \
-        f' Number of childs: {len(self.childs)}' + '\n' + \
-        f' Childs names: {[child.name for child in self.childs]!r}' + '\n' + \
-        f' Parent name: {None if self.parent is None else self.parent.name!r}' + '\n' + \
-        ''
-        return s
-
     @classmethod
     def _compress(cls, data, compression_level=DEFAULT_COMPRESSION_LEVEL) -> bytes:
-        assert 0 < COMPRESS_CHUNK_SIZE <= COMPRESS_CHUNK_MAX_SIZE, f'Invalid COMPRESS_CHUNK_SIZE: {COMPRESS_CHUNK_SIZE}. Should be in range from 1 to {COMPRESS_CHUNK_MAX_SIZE}'
+        assert (
+            0 < COMPRESS_CHUNK_SIZE <= COMPRESS_CHUNK_MAX_SIZE
+        ), f'Invalid COMPRESS_CHUNK_SIZE: {COMPRESS_CHUNK_SIZE}. Should be in range from 1 to {COMPRESS_CHUNK_MAX_SIZE}'
         chunks = []
         din = Buffer(data)
         while din:
@@ -111,8 +102,10 @@ class PKGItem:
 
     def compress(self, compression_level=DEFAULT_COMPRESSION_LEVEL):
         if self.type == PKG_DATATYPE_RAW:
-            if not COMPRESS_PNG and self.name.endswith('.png'): return
-            if len(self.data) < MIN_SIZE_TO_COMPRESS: return
+            if not COMPRESS_PNG and self.name.endswith('.png'):
+                return
+            if len(self.data) < MIN_SIZE_TO_COMPRESS:
+                return
             self.data = self._compress(self.data, compression_level=compression_level)
             self.type = PKG_DATATYPE_ZLIB
 
@@ -223,9 +216,9 @@ class PKGItem:
 
     def to_buffer(self, buf: Buffer, offsets: dict[str, int]) -> Buffer:
         if self.type == PKG_DATATYPE_DIR:
-            buf.write(b'\xaa\0\0\0') # zero1
+            buf.write(b'\xaa\0\0\0')  # zero1
             buf.write_uint(len(self.childs))
-            buf.write(b'\x9e\0\0\0') # zero2
+            buf.write(b'\x9e\0\0\0')  # zero2
 
             for child in self.childs:
                 data = child.header(offsets)
@@ -238,7 +231,6 @@ class PKGItem:
             buf.write_uint(len(self.data))
             buf.write(self.data)
         return buf
-
 
     @classmethod
     def from_bytes(cls, data: bytes, offset: int) -> list['PKGItem']:
@@ -262,7 +254,11 @@ class PKGItem:
             din.skip(63)
             child.name = din.read_str(63).rstrip('\0')
             child.type = din.read_uint()
-            assert child.type in {PKG_DATATYPE_DIR, PKG_DATATYPE_RAW, PKG_DATATYPE_ZLIB}, f'Invalid item type: {child.type}. Should be in {(PKG_DATATYPE_DIR, PKG_DATATYPE_RAW, PKG_DATATYPE_ZLIB)}'
+            assert child.type in {
+                PKG_DATATYPE_DIR,
+                PKG_DATATYPE_RAW,
+                PKG_DATATYPE_ZLIB,
+            }, f'Invalid item type: {child.type}. Should be in {(PKG_DATATYPE_DIR, PKG_DATATYPE_RAW, PKG_DATATYPE_ZLIB)}'
             din.skip(4)
             din.skip(4)
             din.skip(4)
@@ -299,16 +295,6 @@ class PKG:
         else:
             self.metadata = bytes(metadata)
 
-    def __repr__(self) -> str:
-        return '' + \
-        'Package:' + '\n' + \
-        f' Current size: {self.size()}' + '\n' + \
-        f' Decompressed size: {self.decompressed_size()}' + '\n' + \
-        f' Number of items: {self.count()}' + '\n' + \
-        f' Number of items in root: {len(self.root.childs)}' + '\n' + \
-        f' Metadata: {self.metadata!r}' + '\n' + \
-        ''
-
     @classmethod
     def from_pkg(cls, filename: str):
         with open(filename, 'rb') as fp:
@@ -341,7 +327,6 @@ class PKG:
         with open(filename, 'wb') as fp:
             fp.write(bytes(result))
 
-
     @classmethod
     def from_dir(cls, path: str, f: Callable[[str], bool] = lambda _: True):
         '''
@@ -358,7 +343,8 @@ class PKG:
         dirs = [f for f in os.listdir(path) if not os.path.isfile(os.path.join(path, f))]
 
         for file in files:
-            if not f(file): continue
+            if not f(file):
+                continue
 
             filename = os.path.join(path, file)
             with open(filename, 'rb') as fp:
@@ -402,13 +388,23 @@ class PKG:
                 with open(filename, 'wb') as fp:
                     fp.write(item.data)
 
+    def size(self):
+        return self.root.size() + len(self.metadata)
 
-    def size(self): return self.root.size() + len(self.metadata)
-    def decompressed_size(self): return sum(item.decompressed_size() for item in self.items_list())
-    def count(self): return self.root.count()
+    def decompressed_size(self):
+        return sum(item.decompressed_size() for item in self.items_list())
 
-    def compress(self, compression_level=DEFAULT_COMPRESSION_LEVEL): self.root.compress(compression_level=compression_level)
-    def decompress(self): self.root.decompress()
-    def copy(self): return self.root.copy()
-    def items_list(self): return self.root.items_list()
+    def count(self):
+        return self.root.count()
 
+    def compress(self, compression_level=DEFAULT_COMPRESSION_LEVEL):
+        self.root.compress(compression_level=compression_level)
+
+    def decompress(self):
+        self.root.decompress()
+
+    def copy(self):
+        return self.root.copy()
+
+    def items_list(self):
+        return self.root.items_list()

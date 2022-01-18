@@ -1,11 +1,7 @@
-"""!
-@file
-"""
 from __future__ import annotations
 
-import json
-
 from .buffer import Buffer
+from .std.mixin import DataMixin, JSONMixin
 from .std.dataclass import (
     DataClass,
     Int32,
@@ -16,9 +12,7 @@ from .std.dataclass import (
     UInt32,
 )
 
-__all__ = [
-    'RC',
-]
+__all__ = ('RC',)
 
 RCObj: DataClass[list[dict[str, int]]] = Nested(
     CRC(),
@@ -45,17 +39,11 @@ RCObj: DataClass[list[dict[str, int]]] = Nested(
 )
 
 
-class RC:
+class RC(DataMixin, JSONMixin):
     data: list[dict[str, int]]
 
     def __init__(self) -> None:
         self.data = []
-
-    def __repr__(self) -> str:
-        return str(self.data)
-
-    def __str__(self) -> str:
-        return str(self.data)
 
     @classmethod
     def from_buffer(cls, buf: Buffer) -> RC:
@@ -65,41 +53,3 @@ class RC:
 
     def to_buffer(self, buf: Buffer) -> None:
         buf.write_dcls(RCObj, self.data)
-
-    @classmethod
-    def from_bytes(cls, data: bytes) -> RC:
-        return cls.from_buffer(Buffer(data))
-
-    def to_bytes(self) -> bytes:
-        buf = Buffer()
-        self.to_buffer(buf)
-        return bytes(buf)
-
-    @classmethod
-    def from_file(cls, filename: str) -> RC:
-        with open(filename, 'rb') as file:
-            data = file.read()
-        return cls.from_bytes(data)
-
-    def to_file(self, filename: str) -> None:
-        data = self.to_bytes()
-        with open(filename, 'wb') as file:
-            file.write(data)
-
-    @classmethod
-    def from_json(cls, filename: str) -> RC:
-        self = cls()
-        with open(filename, 'rt', encoding='utf-8') as file:
-            self.data = json.load(
-                file,
-            )
-        return self
-
-    def to_json(self, filename: str) -> None:
-        with open(filename, 'wt', encoding='utf-8') as file:
-            json.dump(
-                self.data,
-                file,
-                ensure_ascii=False,
-                indent=2,
-            )

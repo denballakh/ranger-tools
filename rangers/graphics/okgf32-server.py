@@ -5,7 +5,7 @@
 import os
 import ctypes
 
-from msl.loadlib import Server32
+from msl.loadlib import Server32  # type: ignore[import]
 
 
 class OKGF32(Server32):
