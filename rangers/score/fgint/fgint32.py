@@ -34,7 +34,7 @@ from ctypes import (
     cast,
 )
 
-from msl.loadlib import Server32
+from msl.loadlib import Server32  # type: ignore[import]
 
 libname = R'FGIntWrapper.dll'
 
