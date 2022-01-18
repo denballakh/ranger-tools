@@ -173,7 +173,7 @@ class DataMixin(Mixin):
             data = file.read()
         return cls.from_bytes(data)
 
-    def to_buffer(self: DMT, buf: Buffer):
+    def to_buffer(self: DMT, buf: Buffer) -> None:
         raise NotImplementedError(f'Method {type(self).__name__}.to_buffer is abstract.')
 
     def to_bytes(self: DMT) -> bytes:

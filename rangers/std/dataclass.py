@@ -1,4 +1,5 @@
 from __future__ import annotations
+import struct
 
 from typing import (
     Any,
@@ -36,7 +37,7 @@ class DataClassError(Exception):
     pass
 
 
-class Memo(dict):
+class Memo(dict[Hashable, Any]):
     pass
 
 
@@ -164,70 +165,41 @@ class SizedInt(DataClass[int]):
         )
 
 
-class SizedBool(DataClass[bool]):
-    __slots__ = ('idcls',)
-    size: int
+class StructFormat(DataClass[T]):
+    __slots__ = ('struct',)
+    struct: struct.Struct
 
-    def __init__(
-        self,
-        idcls: DataClass[int] = SizedInt(1),
-    ) -> None:
-        self.idcls = idcls
+    def __init__(self, fmt: str) -> None:
+        self.struct = struct.Struct(fmt)
 
-    def read(self, buf: IBuffer, memo: Memo) -> bool:
-        x = self.idcls.read(buf, memo=memo)
-        if x not in {0, 1}:
-            raise ValueError(x)
-        return bool(x)
+    def read(self, buf: IBuffer, memo: Memo) -> T:
+        return buf.read_struct(self.struct)[0]
 
-    def write(self, buf: OBuffer, obj: bool, memo: Memo) -> None:
-        self.idcls.write(buf, int(obj), memo=memo)
-
-
-class _Float(DataClass[float]):
-    __slots__ = ()
-
-    def read(self, buf: IBuffer, *, memo: Memo) -> float:
-        return buf.read_float()
-
-    def write(self, buf: OBuffer, obj: float, *, memo: Memo) -> None:
-        buf.write_float(obj)
-
-
-class _Double(DataClass[float]):
-    __slots__ = ()
-
-    def read(self, buf: IBuffer, *, memo: Memo) -> float:
-        return buf.read_double()
-
-    def write(self, buf: OBuffer, obj: float, *, memo: Memo) -> None:
-        buf.write_double(obj)
+    def write(self, buf: OBuffer, obj: T, memo: Memo) -> None:
+        buf.write_struct(self.struct)
 
 
 DNone = NullDataClass()
 
-# class StructFormat # FIXME: implement this and reimplement ints and floats via this class
+Byte = StructFormat[int]('b')
+Bool = Bool8 = StructFormat[bool]('?')
 
+Int8 = StructFormat[int]('b')
+UInt8 = StructFormat[int]('B')
 
-Byte = SizedInt(size=1, signed=False)
+Int16 = StructFormat[int]('<h')
+UInt16 = StructFormat[int]('<H')
 
-Int8 = SizedInt(size=1, signed=True)
-UInt8 = SizedInt(size=1, signed=False)
+Int32 = StructFormat[int]('<i')
+UInt32 = StructFormat[int]('<I')
 
-Int16 = SizedInt(size=2, signed=True)
-UInt16 = SizedInt(size=2, signed=False)
+Int64 = StructFormat[int]('<q')
+UInt64 = StructFormat[int]('<Q')
 
-Int32 = SizedInt(size=4, signed=True)
-UInt32 = SizedInt(size=4, signed=False)
+Float = StructFormat[int]('<f')
+Double = StructFormat[int]('<d')
 
-Int64 = SizedInt(size=8, signed=True)
-UInt64 = SizedInt(size=8, signed=False)
-
-Float = _Float()
-Double = _Double()
-
-Bool = SizedBool(Byte)
-Bool32 = SizedBool(UInt32)
+Bool32 = UInt32  # FIXME
 
 
 class Str(DataClass[str]):
@@ -320,19 +292,12 @@ def ConstValue(value: T) -> DataClass[T]:
     )
 
 
-class ShadowedConst(DataClass[T]):
-    __slots__ = ('dcls', 'value')
-
-    def __init__(self, dcls: DataClass[T], value: T) -> None:
-        self.dcls = dcls
-        self.value = value
-
-    def read(self, buf: IBuffer, *, memo: Memo) -> T:
-        self.dcls.read(buf, memo=memo)
-        return self.value
-
-    def write(self, buf: OBuffer, obj: T, *, memo: Memo) -> None:
-        self.dcls.write(buf, self.value, memo=memo)
+def ShadowedConst(dcls: DataClass[T], value: T) -> DataClass[T]:
+    return Converted(
+        dcls,
+        decode=lambda obj: value,
+        encode=lambda obj: value,
+    )
 
 
 class List(DataClass[list[T]]):
@@ -549,7 +514,9 @@ class Selector(DataClass[tuple[G, T]]):
             return n, self.dclss[...].read(buf, memo=memo)
         return n, self.dclss[n].read(buf, memo=memo)
 
-    def write(self: Selector[G, T], buf: OBuffer, obj: tuple[G, T] | list, *, memo: Memo) -> None:
+    def write(
+        self: Selector[G, T], buf: OBuffer, obj: tuple[G, T] | list[Any], *, memo: Memo
+    ) -> None:
         n = obj[0]
         self.base.write(buf, n, memo=memo)
         if n not in self.dclss:
@@ -765,7 +732,7 @@ class Raise(NullDataClass):
         self.exc = (
             exc
             if exc is not None
-            else DataClassError(f'Exception from {self.__class__.__name__} dataclass')
+            else DataClassError(f'Exception from {self.__class__.__name__!r} dataclass')
         )
         self.cnt = cnt
 
@@ -826,7 +793,7 @@ class _Skip(NullDataClass):
 
 
 class _Log(NullDataClass):
-    def __init__(self, msg: str = '<log>', before: int = 20, after: int = 20) -> None:
+    def __init__(self, msg: str = '<log>', before: int | None = 20, after: int | None = 20) -> None:
         self.msg = msg
         self.before = before
         self.after = after

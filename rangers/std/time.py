@@ -205,7 +205,7 @@ class AdaptiveTimeMeasurer:
             cnt = max(round(cnt), 1)
 
         history = history + [value]
-        history = history[-self.history_len:]
+        history = history[-self.history_len :]
 
         self.config[case_id] = cnt, history
 

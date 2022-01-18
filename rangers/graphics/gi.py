@@ -90,7 +90,7 @@ class Layer:
 
 
 class Header:
-    def __init__(self):
+    def __init__(self) -> None:
         self.start_X: int = 0
         self.start_Y: int = 0
         self.finish_X: int = 0
@@ -181,7 +181,7 @@ class GI(DataMixin):
     layers: list[Layer]
     metadata: bytes
 
-    def __init__(self, *, metadata: bytes = None):
+    def __init__(self, *, metadata: bytes = None) -> None:
         self.header = Header()
         self.layers = []
 

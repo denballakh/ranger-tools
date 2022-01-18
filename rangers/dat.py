@@ -295,7 +295,7 @@ class DATItem:
         raise NotImplementedError
 
     @classmethod
-    def from_str_buffer(cls, buf: AbstractIBuffer) -> DATItem | None:
+    def from_str_buffer(cls, buf: AbstractIBuffer[str]) -> DATItem | None:
         s = buf.get()
         assert '\n' not in s
         s, _, _ = s.partition('//')

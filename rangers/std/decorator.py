@@ -186,7 +186,6 @@ if TYPE_CHECKING:
     def trace(func: TF) -> TF:
         return func
 
-
 else:
 
     @decorator(enabled=__debug__)

@@ -33,7 +33,7 @@ T = TypeVar('T')
 
 
 class PKGItem:
-    def __init__(self):
+    def __init__(self) -> None:
         self.data: bytes = b''
         self.name: str = ''
         self.type: int = -1
@@ -41,7 +41,7 @@ class PKGItem:
         self.parent: PKGItem | None = None
 
     @classmethod
-    def _compress(cls, data, compression_level=DEFAULT_COMPRESSION_LEVEL) -> bytes:
+    def _compress(cls, data: bytes, compression_level: int = DEFAULT_COMPRESSION_LEVEL) -> bytes:
         assert (
             0 < COMPRESS_CHUNK_SIZE <= COMPRESS_CHUNK_MAX_SIZE
         ), f'Invalid COMPRESS_CHUNK_SIZE: {COMPRESS_CHUNK_SIZE}. Should be in range from 1 to {COMPRESS_CHUNK_MAX_SIZE}'
@@ -61,7 +61,7 @@ class PKGItem:
         return result
 
     @classmethod
-    def _decompress(cls, data) -> bytes:
+    def _decompress(cls, data: bytes) -> bytes:
         din = Buffer(data)
         dout = Buffer()
 
@@ -81,7 +81,7 @@ class PKGItem:
         result = bytes(dout)
         return result
 
-    def decompressed_size(self):
+    def decompressed_size(self) -> int:
         if self.type == PKG_DATATYPE_ZLIB:
             result = 158
             din = Buffer(self.data)
@@ -100,7 +100,7 @@ class PKGItem:
 
         raise TypeError(f'Unknown item type: {self.type}')
 
-    def compress(self, compression_level=DEFAULT_COMPRESSION_LEVEL):
+    def compress(self, compression_level: int = DEFAULT_COMPRESSION_LEVEL) -> None:
         if self.type == PKG_DATATYPE_RAW:
             if not COMPRESS_PNG and self.name.endswith('.png'):
                 return
@@ -113,7 +113,7 @@ class PKGItem:
             for child in self.childs:
                 child.compress(compression_level=compression_level)
 
-    def decompress(self):
+    def decompress(self) -> None:
         if self.type == PKG_DATATYPE_ZLIB:
             self.data = self._decompress(self.data)
             self.type = PKG_DATATYPE_RAW
@@ -122,7 +122,7 @@ class PKGItem:
             for child in self.childs:
                 child.decompress()
 
-    def copy(self):
+    def copy(self) -> PKGItem:
         new = PKGItem()
         new.data = self.data
         new.name = self.name
@@ -131,12 +131,12 @@ class PKGItem:
         new.parent = self.parent
         return new
 
-    def size(self):
+    def size(self) -> int:
         if self.type == PKG_DATATYPE_DIR:
             return sum(child.size() for child in self.childs)
         return len(self.data)
 
-    def count(self):
+    def count(self) -> int:
         if self.type == PKG_DATATYPE_DIR:
             return 1 + sum(child.count() for child in self.childs)
         return 1
@@ -165,7 +165,7 @@ class PKGItem:
             result += '/'
         return result
 
-    def find_in_childs(self, name: str):
+    def find_in_childs(self, name: str) -> int:
         for i, child in enumerate(self.childs):
             if child.name == name:
                 return i
@@ -197,12 +197,12 @@ class PKGItem:
 
         return bytes(result)
 
-    def to_bytes(self, offsets: dict[str, int]):
+    def to_bytes(self, offsets: dict[str, int]) -> bytes:
         buf = Buffer()
         self.to_buffer(buf, offsets)
         return bytes(buf)
 
-    def check_offsets(self, offset: int, offsets: dict[str, int]):
+    def check_offsets(self, offset: int, offsets: dict[str, int]) -> int:
         size = 0
         if self.type == PKG_DATATYPE_DIR:
             size += 12 + len(self.childs) * 158
@@ -233,7 +233,7 @@ class PKGItem:
         return buf
 
     @classmethod
-    def from_bytes(cls, data: bytes, offset: int) -> list['PKGItem']:
+    def from_bytes(cls, data: bytes, offset: int) -> list[PKGItem]:
         result = []
 
         din = Buffer(data)
@@ -277,8 +277,8 @@ class PKGItem:
 
         return result
 
-    def items_list(self):
-        result = []
+    def items_list(self) -> list[PKGItem]:
+        result: list[PKGItem] = []
         for child in self.childs:
             if child.type == PKG_DATATYPE_DIR and child.childs:
                 result += child.items_list()
@@ -288,7 +288,7 @@ class PKGItem:
 
 
 class PKG:
-    def __init__(self, root: PKGItem, metadata: bytes = None):
+    def __init__(self, root: PKGItem, metadata: bytes = None) -> None:
         self.root = root
         if metadata is None:
             self.metadata = b'[timestamp: ' + str(int(time.time())).encode() + b']'
@@ -296,7 +296,7 @@ class PKG:
             self.metadata = bytes(metadata)
 
     @classmethod
-    def from_pkg(cls, filename: str):
+    def from_pkg(cls, filename: str) -> PKG:
         with open(filename, 'rb') as fp:
             data = fp.read()
         din = Buffer(data)
@@ -312,7 +312,7 @@ class PKG:
         pkg = cls(root, metadata=metadata)
         return pkg
 
-    def to_pkg(self, filename: str):
+    def to_pkg(self, filename: str) -> None:
         root = self.root
 
         result = Buffer()
@@ -328,7 +328,7 @@ class PKG:
             fp.write(bytes(result))
 
     @classmethod
-    def from_dir(cls, path: str, f: Callable[[str], bool] = lambda _: True):
+    def from_dir(cls, path: str, f: Callable[[str], bool] = lambda _: True) -> PKG:
         '''
         f - лямбда для исключения файлов из включения в пакет
             для каждого файла вызывается f(file) [file -  имя файла, без пути]
@@ -376,7 +376,7 @@ class PKG:
 
         return pkg
 
-    def to_dir(self, path: str):
+    def to_dir(self, path: str) -> None:
         self.decompress()
         for item in self.items_list():
             filename = path + '/' + item.full_path()
@@ -388,23 +388,23 @@ class PKG:
                 with open(filename, 'wb') as fp:
                     fp.write(item.data)
 
-    def size(self):
+    def size(self) -> int:
         return self.root.size() + len(self.metadata)
 
-    def decompressed_size(self):
+    def decompressed_size(self) -> int:
         return sum(item.decompressed_size() for item in self.items_list())
 
-    def count(self):
+    def count(self) -> int:
         return self.root.count()
 
-    def compress(self, compression_level=DEFAULT_COMPRESSION_LEVEL):
+    def compress(self, compression_level: int = DEFAULT_COMPRESSION_LEVEL) -> None:
         self.root.compress(compression_level=compression_level)
 
-    def decompress(self):
+    def decompress(self) -> None:
         self.root.decompress()
 
-    def copy(self):
+    def copy(self) -> PKGItem:
         return self.root.copy()
 
-    def items_list(self):
+    def items_list(self) -> list[PKGItem]:
         return self.root.items_list()

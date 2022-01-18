@@ -105,7 +105,9 @@ def _get_mappingproxy_dict(mp: MappingProxyType[_T, _G], /) -> dict[_T, _G]:
     referents = gc.get_referents(mp)
     if len(referents) != 1:
         raise RuntimeError('Mapping proxy refers to several objects', mp, referents)
-    return referents[0]
+    dct = referents[0]
+    assert isinstance(dct, dict)
+    return dct
 
 
 # fmt: off
@@ -464,8 +466,16 @@ def tree_walker(
         else [
             (
                 '',
-                [os.path.join(path, x) for x in os.listdir(path) if os.path.isdir(os.path.join(path, x))],
-                [os.path.join(path, x) for x in os.listdir(path) if os.path.isfile(os.path.join(path, x))],
+                [
+                    os.path.join(path, x)
+                    for x in os.listdir(path)
+                    if os.path.isdir(os.path.join(path, x))
+                ],
+                [
+                    os.path.join(path, x)
+                    for x in os.listdir(path)
+                    if os.path.isfile(os.path.join(path, x))
+                ],
             )
         ]
     )

@@ -111,7 +111,7 @@ ScoreObj = NamedSequence(
                             _crc32=UInt32,
                             _zero=Const(UInt32, 0, 'not zero'),
                             _buf=Nested(
-                                CustomCallable(  # type: ignore[call-arg]
+                                CustomCallable(
                                     decode=lambda buf, memo: buf.read(memo['bufsize'] - 16),
                                     encode=lambda buf, data, memo: (
                                         memo.__setitem__('bufsize', len(data) + 16),  # type: ignore[func-returns-value]
@@ -168,7 +168,7 @@ ScoreObj = NamedSequence(
 class SCORE(PrintableMixin, DataMixin, JSONMixin):
     data: dict[str, Any]
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.data = {}
 
     @classmethod

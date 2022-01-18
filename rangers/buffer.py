@@ -332,10 +332,10 @@ class Buffer:
     def skip(self, n: int) -> None:
         self.pos += n
 
-    def load(self, buf: Buffer | IO) -> None:
+    def load(self, buf: Buffer | IO[bytes]) -> None:
         self.write(buf.read())
 
-    def save(self, buf: Buffer | IO) -> None:
+    def save(self, buf: Buffer | IO[bytes]) -> None:
         buf.write(self.read())
 
     def load_file(self, path: str) -> None:

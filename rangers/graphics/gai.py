@@ -41,7 +41,7 @@ __all__ = ('GAI',)
 
 
 class GAIFrame:
-    def __init__(self):
+    def __init__(self) -> None:
         pass
 
     def __repr__(self) -> str:
@@ -59,11 +59,11 @@ class GAIFrame:
 
         raise NotImplementedError
 
-    def to_buffer(self, buf: Buffer):
+    def to_buffer(self, buf: Buffer) -> None:
         raise NotImplementedError
 
     @classmethod
-    def from_bytes(cls, data: bytes):
+    def from_bytes(cls, data: bytes) -> GAIFrame:
         buf = Buffer(data)
         return cls.from_buffer(buf)
 
@@ -82,7 +82,7 @@ class GAI(DataMixin):
     frames: list[GAIFrame]
     delays: list[int]
 
-    def __init__(self):
+    def __init__(self) -> None:
         pass
 
     def __repr__(self) -> str:
@@ -138,11 +138,11 @@ class GAI(DataMixin):
         raise NotImplementedError
 
     @classmethod
-    def from_gai(cls, path: str):
+    def from_gai(cls, path: str) -> GAI:
         with open(path, 'rb') as file:
             data = file.read()
         return cls.from_bytes(data)
 
-    def to_gai(self, path: str):
+    def to_gai(self, path: str) -> None:
         with open(path, 'wb') as file:
             file.write(self.to_bytes())

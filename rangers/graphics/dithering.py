@@ -163,7 +163,7 @@ def dither_error_diff(img: ImageType, *, bit_trunc: int = 20) -> ImageType:
     return img
 
 
-def _main():
+def _main() -> None:
     _in = 'pic.png'
     _out = 'out.png'
 

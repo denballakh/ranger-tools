@@ -27,7 +27,7 @@ def _is_typevar(arg: _arg) -> TypeGuard[TypeVar]:
     return t.__module__ == 'typing'
 
 
-def _subs_tvars(obj: _arg, params: _parameters, items: _args):
+def _subs_tvars(obj: _arg, params: _parameters, items: _args) -> _arg:
     if (
         (subparams := getattr(obj, '__parameters__', None)) is not None
         and isinstance(subparams, tuple)

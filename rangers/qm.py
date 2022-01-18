@@ -40,6 +40,7 @@ __all__ = ('QM',)
 
 T = TypeVar('T')
 
+
 class MaybeUndefinedSizedWStr(DataClass[str | None]):
     """
     0000 -> None
