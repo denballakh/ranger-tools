@@ -17,6 +17,8 @@ from typing import (
     Collection,
 )
 import struct
+from struct import Struct
+
 
 if TYPE_CHECKING:
     from .std.dataclass import DataClass, Memo
@@ -110,13 +112,12 @@ def _bytes_to_str(d: bytes | bytearray) -> str:
 
         try:
             b = bytes([byte, d[i + 1]])
-            # print(b.decode('utf-16le'))
             if b.decode('utf-16le') in _str_rus_chars:
                 result.append(b.decode('utf-16le'))
                 nxt = ' '
                 continue
 
-        except:
+        except UnicodeDecodeError:
             pass
 
         if chr(byte) in _str_readable_chars:
@@ -126,14 +127,6 @@ def _bytes_to_str(d: bytes | bytearray) -> str:
         else:
             result.append('.')
     return ''.join(result)
-
-
-def _part(s: str, n: int) -> list[str]:
-    res: list[str] = []
-    while s:
-        res.append(s[:n])
-        s = s[n:]
-    return res
 
 
 class Buffer:
@@ -169,6 +162,9 @@ class Buffer:
 
     def __str__(self) -> str:
         return self.format_str()
+
+    def __repr__(self) -> str:
+        return f'Buffer({self.data!r}, pos={self._pos})'
 
     def format_str(
         self,
@@ -236,13 +232,10 @@ class Buffer:
             with open(filename, 'wb') as fileb:
                 fileb.write(self.data)
 
-    def __repr__(self) -> str:
-        return f'Buffer({self.data!r}, pos={self._pos})'
-
-    def __eq__(self, other) -> bool:
+    def __eq__(self, other: Buffer | object) -> bool:
         if isinstance(other, Buffer):
             return self.data == other.data
-        return NotImplemented
+        return False
 
     def __bool__(self) -> bool:
         return not self.is_end()
@@ -295,24 +288,27 @@ class Buffer:
         self.pos = pos
         return result
 
-    def read(self, n: int = None, pos: int = None) -> bytes:
+    def read(self, n: int = None, pos: int = None) -> bytearray | bytes:
         if pos is not None:
             self.push_pos(pos)
 
+        data = self.data
+        _pos = self._pos
+
         if n is None:
-            n = len(self.data) - self._pos
+            n = len(data) - _pos
         elif n < 0:
-            n = len(self.data) - self._pos + n
+            n = len(data) - _pos + n
 
         assert n >= 0
 
-        if not 0 <= self._pos <= len(self.data) - n:
+        if _pos > len(data) - n:
             raise ValueError(
-                f'Cannot read {n} bytes from buffer (pos={self._pos} len={len(self.data)})'
+                f'Cannot read {n!r} bytes from buffer (pos={self._pos!r} len={len(self.data)!r})',
             )
 
-        result = bytes(self.data[self._pos : self._pos + n])
-        self._pos += n
+        result = data[_pos : _pos + n]
+        self._pos = _pos + n
 
         if pos is not None:
             self.pop_pos()
@@ -356,142 +352,127 @@ class Buffer:
             data = file.read()
         return cls(data)
 
-    def write_format(self, fmt: str, *values: Any, pos: int = None):
-        if pos is not None:
-            self.push_pos(pos)
+    def write_format(self, fmt: str, *values: Any, pos: int = None) -> None:
+        return self.write(struct.pack(fmt, *values), pos=pos)
 
-        try:
-            self.write(struct.pack(fmt, *values))
-        except struct.error as e:
-            raise Exception(f'Error in struct.pack: fmt={fmt!r}, values={values!r}') from e
-        if pos is not None:
-            self.pop_pos()
+    def read_format(self, fmt: str, pos: int = None) -> tuple[Any, ...]:
+        return struct.unpack(fmt, self.read(struct.calcsize(fmt), pos=pos))
 
-    def read_format(self, fmt: str, pos: int = None) -> Any:
-        if pos is not None:
-            self.push_pos(pos)
+    def write_struct(self, s: Struct, *values: Any, pos: int = None) -> None:
+        return self.write(s.pack(*values), pos=pos)
 
-        try:
-            result = struct.unpack(fmt, self.read(struct.calcsize(fmt)))
-        except struct.error as e:
-            raise Exception(f'Error in struct.unpack: fmt={fmt!r}') from e
-
-        if pos is not None:
-            self.pop_pos()
-        return result
+    def read_struct(self, s: Struct, pos: int = None) -> tuple[Any, ...]:
+        return s.unpack(self.read(s.size, pos=pos))
 
     def read_byte(self, pos: int = None) -> int:
-        return self.read_format('B', pos=pos)[0]
+        return self.read(1, pos=pos)[0]
 
     def write_byte(self, value: int, pos: int = None) -> None:
-        return self.write_format('B', value, pos=pos)
+        return self.write(bytes((value,)), pos=pos)
 
-    def read_bool(self, pos: int = None) -> bool:
-        return self.read_format('?', pos=pos)[0]
+    def read_bool(self, pos: int = None, *, __s: Struct = Struct('?')) -> bool:
+        return self.read_struct(__s, pos=pos)[0]
 
-    def write_bool(self, value: bool, pos: int = None) -> None:
-        return self.write_format('?', value, pos=pos)
+    def write_bool(self, value: bool, pos: int = None, *, __s: Struct = Struct('?')) -> None:
+        return self.write_struct(__s, value, pos=pos)
 
-    def read_char(self, pos: int = None) -> int:
-        return self.read_format('b', pos=pos)[0]
+    def read_char(self, pos: int = None, *, __s: Struct = Struct('b')) -> int:
+        return self.read_struct(__s, pos=pos)[0]
 
-    def write_char(self, value: int, pos: int = None) -> None:
-        return self.write_format('b', value, pos=pos)
+    def write_char(self, value: int, pos: int = None, *, __s: Struct = Struct('b')) -> None:
+        return self.write_struct(__s, value, pos=pos)
 
-    def read_uchar(self, pos: int = None) -> int:
-        return self.read_format('B', pos=pos)[0]
+    def read_uchar(self, pos: int = None, *, __s: Struct = Struct('B')) -> int:
+        return self.read_struct(__s, pos=pos)[0]
 
-    def write_uchar(self, value: int, pos: int = None) -> None:
-        return self.write_format('B', value, pos=pos)
+    def write_uchar(self, value: int, pos: int = None, *, __s: Struct = Struct('B')) -> None:
+        return self.write_struct(__s, value, pos=pos)
 
-    def read_short(self, pos: int = None) -> int:
-        return self.read_format('<h', pos=pos)[0]
+    def read_short(self, pos: int = None, *, __s: Struct = Struct('<h')) -> int:
+        return self.read_struct(__s, pos=pos)[0]
 
-    def write_short(self, value: int, pos: int = None) -> None:
-        return self.write_format('<h', value, pos=pos)
+    def write_short(self, value: int, pos: int = None, *, __s: Struct = Struct('<h')) -> None:
+        return self.write_struct(__s, value, pos=pos)
 
-    def read_ushort(self, pos: int = None) -> int:
-        return self.read_format('<H', pos=pos)[0]
+    def read_ushort(self, pos: int = None, *, __s: Struct = Struct('<H')) -> int:
+        return self.read_struct(__s, pos=pos)[0]
 
-    def write_ushort(self, value: int, pos: int = None) -> None:
-        return self.write_format('<H', value, pos=pos)
+    def write_ushort(self, value: int, pos: int = None, *, __s: Struct = Struct('<H')) -> None:
+        return self.write_struct(__s, value, pos=pos)
 
-    def read_int(self, pos: int = None) -> int:
-        return self.read_format('<i', pos=pos)[0]
+    def read_int(self, pos: int = None, *, __s: Struct = Struct('<i')) -> int:
+        return self.read_struct(__s, pos=pos)[0]
 
-    def write_int(self, value: int, pos: int = None) -> None:
-        return self.write_format('<i', value, pos=pos)
+    def write_int(self, value: int, pos: int = None, *, __s: Struct = Struct('<i')) -> None:
+        return self.write_struct(__s, value, pos=pos)
 
-    def read_uint(self, pos: int = None) -> int:
-        return self.read_format('<I', pos=pos)[0]
+    def read_uint(self, pos: int = None, *, __s: Struct = Struct('<I')) -> int:
+        return self.read_struct(__s, pos=pos)[0]
 
-    def write_uint(self, value: int, pos: int = None) -> None:
-        return self.write_format('<I', value, pos=pos)
+    def write_uint(self, value: int, pos: int = None, *, __s: Struct = Struct('<I')) -> None:
+        return self.write_struct(__s, value, pos=pos)
 
-    def read_long(self, pos: int = None) -> int:
-        return self.read_format('<q', pos=pos)[0]
+    def read_long(self, pos: int = None, *, __s: Struct = Struct('<q')) -> int:
+        return self.read_struct(__s, pos=pos)[0]
 
-    def write_long(self, value: int, pos: int = None) -> None:
-        return self.write_format('<q', value, pos=pos)
+    def write_long(self, value: int, pos: int = None, *, __s: Struct = Struct('<q')) -> None:
+        return self.write_struct(__s, value, pos=pos)
 
-    def read_ulong(self, pos: int = None) -> int:
-        return self.read_format('<Q', pos=pos)[0]
+    def read_ulong(self, pos: int = None, *, __s: Struct = Struct('<Q')) -> int:
+        return self.read_struct(__s, pos=pos)[0]
 
-    def write_ulong(self, value: int, pos: int = None) -> None:
-        return self.write_format('<Q', value, pos=pos)
+    def write_ulong(self, value: int, pos: int = None, *, __s: Struct = Struct('<Q')) -> None:
+        return self.write_struct(__s, value, pos=pos)
 
-    def read_float(self, pos: int = None) -> float:
-        return self.read_format('<f', pos=pos)[0]
+    def read_float(self, pos: int = None, *, __s: Struct = Struct('<f')) -> float:
+        return self.read_struct(__s, pos=pos)[0]
 
-    def write_float(self, value: float, pos: int = None) -> None:
-        return self.write_format('<f', value, pos=pos)
+    def write_float(self, value: float, pos: int = None, *, __s: Struct = Struct('<f')) -> None:
+        return self.write_struct(__s, value, pos=pos)
 
-    def read_double(self, pos: int = None) -> float:
-        return self.read_format('<d', pos=pos)[0]
+    def read_double(self, pos: int = None, *, __s: Struct = Struct('<d')) -> float:
+        return self.read_struct(__s, pos=pos)[0]
 
-    def write_double(self, value: float, pos: int = None) -> None:
-        return self.write_format('<d', value, pos=pos)
+    def write_double(self, value: float, pos: int = None, *, __s: Struct = Struct('<d')) -> None:
+        return self.write_struct(__s, value, pos=pos)
 
-    def read_str(self, length: int = -1) -> str:
-        if length == -1:
-            result = ''
-            x = self.read(1).decode('utf-8')
-            while x != '\0':
-                result += x
-                x = self.read(1).decode('utf-8')
-        else:
-            data = self.read(length)
-            result = data.decode('utf-8')
-            # result = result.rstrip('\0')
-        return result
+    def read_str(self, length: int = None) -> str:
+        """
+        length = None - read null-terminated string
+        length = n - read n chars
+        """
+        if length is not None:
+            return self.read(length).decode('utf-8')
+        parts: list[str] = []
+        while (x := self.read(1).decode('utf-8')) != '\0':
+            parts.append(x)
+        return ''.join(parts)
 
-    def write_str(self, value: str, length: int = -1) -> None:
-        if length == -1:
+    def write_str(self, value: str, length: int = None) -> None:
+        """
+        length = None - write null-terminated string
+        length = n - write string, filled with zeros
+            if len(value) > length, string is truncated
+        """
+        if length is None:
             value += '\0'
         else:
-            value = value[:length]
-            value += (length - len(value)) * '\0'
+            value = value[:length].ljust(length, '\0')
         self.write(value.encode('utf-8'))
 
-    def read_wstr(self, length: int = -1) -> str:
-        if length == -1:
-            result = ''
-            x = self.read(2).decode('utf-16le')
-            while x != '\0':
-                result += x
-                x = self.read(2).decode('utf-16le')
-        else:
-            data = self.read(length * 2)
-            result = data.decode('utf-16le')
-            # result = result.rstrip('\0')
-        return result
+    def read_wstr(self, length: int = None) -> str:
+        if length is not None:
+            return self.read(length * 2).decode('utf-16le')
+        parts: list[str] = []
+        while (x := self.read(2).decode('utf-16le')) != '\0':
+            parts.append(x)
+        return ''.join(parts)
 
-    def write_wstr(self, value: str, length: int = -1) -> None:
-        if length == -1:
+    def write_wstr(self, value: str, length: int = None) -> None:
+        if length is None:
             value += '\0'
         else:
-            value = value[:length]
-            value += (length - len(value)) * '\0'
+            value = value[:length].ljust(length, '\0')
         self.write(value.encode('utf-16le'))
 
     def read_dcls(self, dcls: DataClass[T], *, memo: Memo = None) -> T:
