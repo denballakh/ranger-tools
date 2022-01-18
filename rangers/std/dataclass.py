@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from typing import (
-    TYPE_CHECKING,
     Any,
     Container,
     Sized,
@@ -9,14 +8,10 @@ from typing import (
     Literal,
     Generic,
     Callable,
-    # Iterator,
     final,
     NoReturn,
-    # Protocol,
     Hashable,
     ClassVar,
-    overload,
-    Collection,
 )
 
 from types import EllipsisType
@@ -136,9 +131,6 @@ class NullDataClass(DataClass[None]):
             raise ValueError(obj)
 
 
-# atomic dataclasses:
-
-
 class SizedInt(DataClass[int]):
     __slots__ = ('size', 'byteorder', 'signed')
     size: int
@@ -172,15 +164,24 @@ class SizedInt(DataClass[int]):
         )
 
 
-class _Bool(DataClass[bool]):
-    __slots__ = ()
+class SizedBool(DataClass[bool]):
+    __slots__ = ('idcls',)
+    size: int
 
-    def read(self, buf: IBuffer, *, memo: Memo) -> bool:
-        return buf.read_bool()
+    def __init__(
+        self,
+        idcls: DataClass[int] = SizedInt(1),
+    ) -> None:
+        self.idcls = idcls
 
-    def write(self, buf: OBuffer, obj: bool, *, memo: Memo) -> None:
-        assert obj in {True, False}
-        buf.write_bool(obj)
+    def read(self, buf: IBuffer, memo: Memo) -> bool:
+        x = self.idcls.read(buf, memo=memo)
+        if x not in {0, 1}:
+            raise ValueError(x)
+        return bool(x)
+
+    def write(self, buf: OBuffer, obj: bool, memo: Memo) -> None:
+        self.idcls.write(buf, int(obj), memo=memo)
 
 
 class _Float(DataClass[float]):
@@ -203,12 +204,10 @@ class _Double(DataClass[float]):
         buf.write_double(obj)
 
 
-# class StructFormat # FIXME implement this and reimplement ints via this class
-
 DNone = NullDataClass()
 
-Bool = _Bool()
-Bool32 = SizedInt(size=4, signed=False)  # FIXME
+# class StructFormat # FIXME: implement this and reimplement ints and floats via this class
+
 
 Byte = SizedInt(size=1, signed=False)
 
@@ -227,11 +226,14 @@ UInt64 = SizedInt(size=8, signed=False)
 Float = _Float()
 Double = _Double()
 
+Bool = SizedBool(Byte)
+Bool32 = SizedBool(UInt32)
+
 
 class Str(DataClass[str]):
     __slots__ = ('length',)
 
-    def __init__(self, length: int = -1) -> None:
+    def __init__(self, length: int = None) -> None:
         self.length = length
 
     def read(self, buf: IBuffer, *, memo: Memo) -> str:
@@ -244,7 +246,7 @@ class Str(DataClass[str]):
 class WStr(DataClass[str]):
     __slots__ = ('length',)
 
-    def __init__(self, length: int = -1) -> None:
+    def __init__(self, length: int = None) -> None:
         self.length = length
 
     def read(self, buf: IBuffer, *, memo: Memo) -> str:
@@ -486,7 +488,7 @@ def HexBytes(dcls: DataClass[bytes], *, sep: str = ' ', bytes_per_sep: int = -4)
     return Converted(
         dcls,
         decode=lambda b: b.hex(sep=sep, bytes_per_sep=bytes_per_sep),
-        encode=lambda s: bytes.fromhex(s),
+        encode=bytes.fromhex,
     )
 
 
@@ -510,7 +512,7 @@ class Nested(DataClass[T]):
 
 
 class Pack(DataClass[list[T]]):
-    __slots__ = 'dcls'
+    __slots__ = ('dcls',)
 
     def __init__(self, dcls: DataClass[T]) -> None:
         self.dcls = dcls
@@ -824,7 +826,7 @@ class _Skip(NullDataClass):
 
 
 class _Log(NullDataClass):
-    def __init__(self, msg: str = '<log>', before: int = 170, after: int = 10) -> None:
+    def __init__(self, msg: str = '<log>', before: int = 20, after: int = 20) -> None:
         self.msg = msg
         self.before = before
         self.after = after
