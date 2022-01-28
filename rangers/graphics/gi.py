@@ -6,7 +6,7 @@ from PIL import Image
 from PIL.Image import Image as ImageType
 
 from ..std.mixin import DataMixin
-from ..buffer import Buffer
+from ..buffer import Buffer, IBuffer, OBuffer
 from ..common import rgb565le_to_rgb888, rgb24_to_rgb16, rgb888_to_rgb565le
 
 __all__ = ('GI',)
@@ -40,7 +40,7 @@ class Layer:
         return bytes(buf)
 
     @classmethod
-    def from_buffer(cls, buf: Buffer) -> Layer:
+    def from_buffer(cls, buf: IBuffer) -> Layer:
         layer = cls()
 
         seek = buf.read_uint()
@@ -60,7 +60,7 @@ class Layer:
 
         return layer
 
-    def to_buffer(self, buf: Buffer) -> int:
+    def to_buffer(self, buf: OBuffer) -> int:
         seek_pos = buf.pos
         buf.write(b'\xFF' * 4)
         buf.write_uint(len(self.data))
@@ -72,7 +72,7 @@ class Layer:
         buf.write_uint(0)
         return seek_pos
 
-    def data_to_buffer(self, buf: Buffer, seek_pos: int) -> None:
+    def data_to_buffer(self, buf: OBuffer, seek_pos: int) -> None:
         pos = buf.pos
         buf.write(self.data)
 
@@ -112,7 +112,7 @@ class Header:
         return bytes(buf)
 
     @classmethod
-    def from_buffer(cls, buf: Buffer) -> Header:
+    def from_buffer(cls, buf: IBuffer) -> Header:
         header = cls()
 
         signature = buf.read(4)
@@ -140,7 +140,7 @@ class Header:
 
         return header
 
-    def to_buffer(self, buf: Buffer) -> None:
+    def to_buffer(self, buf: OBuffer) -> None:
         buf.write(b'gi\x00\x00')
         buf.write_uint(1)
         buf.write_int(self.start_X)
@@ -194,7 +194,7 @@ class GI(DataMixin):
         return '\n'.join([repr(self.header)] + [repr(layer) for layer in self.layers])
 
     @classmethod
-    def from_buffer(cls, buf: Buffer) -> GI:
+    def from_buffer(cls, buf: IBuffer, **kwargs: object) -> GI:
         gi = cls()
         gi.header = Header.from_buffer(buf)
 
@@ -205,7 +205,7 @@ class GI(DataMixin):
 
         return gi
 
-    def to_buffer(self, buf: Buffer) -> None:
+    def to_buffer(self, buf: OBuffer, **kwargs: object) -> None:
         self.header.to_buffer(buf)
         data_positions = []
         for l in self.layers:

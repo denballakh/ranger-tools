@@ -1,6 +1,7 @@
 from __future__ import annotations
+from typing import Any
 
-from .buffer import Buffer
+from .buffer import IBuffer, OBuffer
 from .std.mixin import DataMixin, JSONMixin
 from .std.dataclass import (
     DataClass,
@@ -46,10 +47,10 @@ class RC(DataMixin, JSONMixin):
         self.data = []
 
     @classmethod
-    def from_buffer(cls, buf: Buffer) -> RC:
+    def from_buffer(cls, buf: IBuffer, **kwargs: Any) -> RC:
         self = cls()
         self.data = buf.read_dcls(RCObj)
         return self
 
-    def to_buffer(self, buf: Buffer) -> None:
+    def to_buffer(self, buf: OBuffer, **kwargs: Any) -> None:
         buf.write_dcls(RCObj, self.data)

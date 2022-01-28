@@ -1,4 +1,5 @@
 from __future__ import annotations
+from abc import abstractmethod
 from typing import (
     Any,
     Container,
@@ -14,8 +15,10 @@ from typing import (
 import sys
 import json
 
+from mypy_extensions import trait
+
 from ..common import get_attributes
-from ..buffer import Buffer
+from ..buffer import Buffer, IBuffer, OBuffer
 
 __all__ = [
     'Mixin',
@@ -28,6 +31,7 @@ T = TypeVar('T')
 MT = TypeVar('MT', bound='Mixin')
 
 
+@trait
 class Mixin:
     """Base class for all mixins"""
 
@@ -128,6 +132,7 @@ class PrintFormat:
         return self.__class__(**{**self.as_dict(), **kwargs})
 
 
+@trait
 class PrintableMixin(Mixin):
     __slots__ = ()
 
@@ -155,40 +160,43 @@ class PrintableMixin(Mixin):
 DMT = TypeVar('DMT', bound='DataMixin')
 
 
+@trait
 class DataMixin(Mixin):
     __slots__ = ()
 
     @classmethod
-    def from_buffer(cls: Type[DMT], buf: Buffer) -> DMT:
+    @abstractmethod
+    def from_buffer(cls: Type[DMT], buf: IBuffer, **kwargs: Any) -> DMT:
         raise NotImplementedError(f'Method {cls.__name__}.from_buffer is abstract')
 
     @classmethod
-    def from_bytes(cls: Type[DMT], data: bytes) -> DMT:
-        buf = Buffer(data)
-        return cls.from_buffer(buf)
+    def from_bytes(cls: Type[DMT], data: bytes, **kwargs: Any) -> DMT:
+        return cls.from_buffer(IBuffer(data), **kwargs)
 
     @classmethod
-    def from_file(cls: Type[DMT], path: str) -> DMT:
+    def from_file(cls: Type[DMT], path: str, **kwargs: Any) -> DMT:
         with open(path, 'rb') as file:
             data = file.read()
-        return cls.from_bytes(data)
+        return cls.from_bytes(data, **kwargs)
 
-    def to_buffer(self: DMT, buf: Buffer) -> None:
+    @abstractmethod
+    def to_buffer(self: DMT, buf: OBuffer, **kwargs: Any) -> None:
         raise NotImplementedError(f'Method {type(self).__name__}.to_buffer is abstract.')
 
-    def to_bytes(self: DMT) -> bytes:
-        buf = Buffer()
-        self.to_buffer(buf)
+    def to_bytes(self: DMT, **kwargs: Any) -> bytes:
+        buf = OBuffer()
+        self.to_buffer(buf, **kwargs)
         return buf.to_bytes()
 
-    def to_file(self: DMT, path: str) -> None:
+    def to_file(self: DMT, path: str, **kwargs: Any) -> None:
         with open(path, 'wb') as file:
-            file.write(self.to_bytes())
+            file.write(self.to_bytes(**kwargs))
 
 
 JT = TypeVar('JT', bound='JSONMixin')
 
 
+@trait
 class JSONMixin(Mixin):
     __slots__ = ()
     data: dict[str, Any] | list[Any]
@@ -210,6 +218,7 @@ class JSONMixin(Mixin):
             )
 
 
+@trait
 class UniqueMixin(Mixin):
     __slots__ = ()
 

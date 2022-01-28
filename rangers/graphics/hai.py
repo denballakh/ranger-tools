@@ -17,7 +17,7 @@ from PIL import Image
 
 
 from ..std.mixin import DataMixin
-from ..buffer import Buffer
+from ..buffer import Buffer, IBuffer, OBuffer
 
 # from ..std.decorator import profile
 
@@ -39,7 +39,7 @@ class HAI(DataMixin):
         self.frames = []
 
     @classmethod
-    def from_buffer(cls, buf: Buffer) -> HAI:
+    def from_buffer(cls, buf: IBuffer, **kwargs: object) -> HAI:
         self = cls()
         magic = buf.read_uint()
         if magic != HAI_MAGIC:
@@ -69,7 +69,7 @@ class HAI(DataMixin):
 
         return self
 
-    def to_buffer(self, buf: Buffer) -> None:
+    def to_buffer(self, buf: OBuffer, **kwargs: object) -> None:
         buf.write_uint(HAI_MAGIC)
         buf.write_uint(self.width)
         buf.write_uint(self.height)
@@ -140,7 +140,7 @@ class HAI(DataMixin):
                         palbuf.read_byte(),
                         palbuf.read_byte(),
                         palbuf.read_byte(),
-                    )
+                    ),
                 )
 
             for (j, i), index in zip(

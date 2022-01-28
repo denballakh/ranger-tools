@@ -1,9 +1,9 @@
 from __future__ import annotations
 from typing import Any, Final, TypeVar, cast
-import json
+import copy
 
 from .std.mixin import DataMixin, JSONMixin
-from .buffer import Buffer
+from .buffer import IBuffer, OBuffer
 from .std.dataclass import (
     # base
     DataClass,
@@ -47,14 +47,14 @@ class MaybeUndefinedSizedWStr(DataClass[str | None]):
     1000 ui32 wstr -> str
     """
 
-    def read(self, buf: Buffer, memo: Memo) -> str | None:
+    def read(self, buf: IBuffer, memo: Memo) -> str | None:
         flag = buf.read_uint()
         if not flag:
             return None
         size = buf.read_uint()
         return buf.read_wstr(size)
 
-    def write(self, buf: Buffer, obj: str | None, memo: Memo) -> None:
+    def write(self, buf: OBuffer, obj: str | None, memo: Memo) -> None:
         if obj is None:
             buf.write_uint(0)
             return
@@ -416,10 +416,22 @@ class QM(DataMixin, JSONMixin):
         self.data = {} if data is None else data
 
     @classmethod
-    def from_buffer(cls, buf: Buffer) -> QM:
+    def from_buffer(cls, buf: IBuffer, **kwargs: Any) -> QM:
         self = cls()
         self.data = buf.read_dcls(QuestObj)
         return self
 
-    def to_buffer(self, buf: Buffer) -> None:
+    def to_buffer(self, buf: OBuffer, **kwargs: Any) -> None:
         buf.write_dcls(QuestObj, self.data)
+
+    def __deepcopy__(self, memo: Any) -> QM:
+        return QM(copy.deepcopy(self.data, memo))
+
+    def update(self) -> QM:
+        OLD_VER: int = self.data['version']
+        NEW_VER = VER_QMM_7
+
+        new = copy.deepcopy(self)
+        new.data['version'] = NEW_VER
+
+        return new

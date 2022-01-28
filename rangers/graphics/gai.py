@@ -1,6 +1,3 @@
-"""!
-@file
-"""
 from __future__ import annotations
 
 import zlib
@@ -10,7 +7,7 @@ from PIL import Image
 
 from ..std.mixin import DataMixin
 from ..std.dataclass import ZL
-from ..buffer import Buffer
+from ..buffer import Buffer, IBuffer, OBuffer
 from .gi import GI
 
 __all__ = ('GAI',)
@@ -48,7 +45,7 @@ class GAIFrame:
         return f'<GAIFrame: {vars(self)}>'
 
     @classmethod
-    def from_buffer(cls, buf: Buffer) -> GAIFrame:
+    def from_buffer(cls, buf: IBuffer, **kwargs: object) -> GAIFrame:
         buf.push_pos()
         signature = buf.read(4)
         buf.pop_pos()
@@ -59,7 +56,7 @@ class GAIFrame:
 
         raise NotImplementedError
 
-    def to_buffer(self, buf: Buffer) -> None:
+    def to_buffer(self, buf: OBuffer, **kwargs: object) -> None:
         raise NotImplementedError
 
     @classmethod
@@ -89,7 +86,7 @@ class GAI(DataMixin):
         return f'<GAI: {vars(self)}>'
 
     @classmethod
-    def from_buffer(cls, buf: Buffer) -> GAI:
+    def from_buffer(cls, buf: IBuffer, **kwargs: object) -> GAI:
         self = cls()
 
         signature = buf.read(4)
@@ -125,7 +122,7 @@ class GAI(DataMixin):
 
         return self
 
-    def loadGAITimes(self, buf: Buffer) -> list[int]:
+    def loadGAITimes(self, buf: IBuffer) -> list[int]:
         buf.push_pos()
 
         result: list[int] = []
@@ -134,7 +131,7 @@ class GAI(DataMixin):
         buf.pop_pos()
         return result
 
-    def to_buffer(self, buf: Buffer):
+    def to_buffer(self, buf: OBuffer, **kwargs: object):
         raise NotImplementedError
 
     @classmethod
