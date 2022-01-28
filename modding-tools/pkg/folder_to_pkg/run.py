@@ -18,10 +18,10 @@ for folder in tree_walker(_in, root=True)[1]:
 
         print(f'{folder} -> {filename}')
 
-        pkg = PKG.from_dir(folder)
+        pkg = PKG.from_folder(folder)
         pkg.compress(COMPRESSION)
         check_dir(filename)
-        pkg.to_pkg(filename)
+        pkg.to_file(filename)
 
     except:
         import traceback

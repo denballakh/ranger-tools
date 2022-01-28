@@ -1,47 +1,47 @@
-"""!
-@file
-"""
 from __future__ import annotations
-from typing import Callable, TypeVar
+from typing import Any, Callable, Final, TypeVar, cast
 
 import zlib
 import os
 import time
 
-from .buffer import Buffer
+from .buffer import Buffer, IBuffer, OBuffer
 from .common import check_dir
+from .std.mixin import DataMixin
 
-__all__ = [
-    'PKG',
-    'PKGItem',
-    'MIN_SIZE_TO_COMPRESS',
-    'COMPRESS_PNG',
-    'COMPRESS_CHUNK_SIZE',
-]
+__all__ = ('PKG',)
 
-MIN_SIZE_TO_COMPRESS = 32
-COMPRESS_PNG = False
-COMPRESS_CHUNK_SIZE = 2 ** 16
-COMPRESS_CHUNK_MAX_SIZE = 2 ** 16  # 64 KB
-DEFAULT_COMPRESSION_LEVEL = 9
+MIN_SIZE_TO_COMPRESS: Final = 32
+COMPRESS_PNG: Final = False
+COMPRESS_CHUNK_SIZE: Final = 2 ** 16
+COMPRESS_CHUNK_MAX_SIZE: Final = 2 ** 16  # 64 KB
+DEFAULT_COMPRESSION_LEVEL: Final = 9
 
-PKG_DATATYPE_RAW = 1
-PKG_DATATYPE_ZLIB = 2
-PKG_DATATYPE_DIR = 3
-
-T = TypeVar('T')
+PKG_RAW: Final = 1
+PKG_COMP: Final = 2
+PKG_DIR: Final = 3
 
 
-class PKGItem:
-    def __init__(self) -> None:
-        self.data: bytes = b''
-        self.name: str = ''
-        self.type: int = -1
-        self.childs: list[PKGItem] = []
-        self.parent: PKGItem | None = None
+class PKG(DataMixin):
+    name: str
+    type: int
+    data: bytes | list[PKG]
+    metadata: bytes
 
-    @classmethod
-    def _compress(cls, data: bytes, compression_level: int = DEFAULT_COMPRESSION_LEVEL) -> bytes:
+    def __init__(
+        self,
+        name: str,
+        type_: int,
+        data: bytes | list[PKG],
+        metadata: bytes = b'',
+    ) -> None:
+        self.name = name
+        self.type = type_
+        self.data = data
+        self.metadata = metadata
+
+    @staticmethod
+    def _compress(data: bytes, compression_level: int = DEFAULT_COMPRESSION_LEVEL) -> bytes:
         assert (
             0 < COMPRESS_CHUNK_SIZE <= COMPRESS_CHUNK_MAX_SIZE
         ), f'Invalid COMPRESS_CHUNK_SIZE: {COMPRESS_CHUNK_SIZE}. Should be in range from 1 to {COMPRESS_CHUNK_MAX_SIZE}'
@@ -60,8 +60,8 @@ class PKGItem:
         result = bytes(dout)
         return result
 
-    @classmethod
-    def _decompress(cls, data: bytes) -> bytes:
+    @staticmethod
+    def _decompress(data: bytes) -> bytes:
         din = Buffer(data)
         dout = Buffer()
 
@@ -81,330 +81,242 @@ class PKGItem:
         result = bytes(dout)
         return result
 
-    def decompressed_size(self) -> int:
-        if self.type == PKG_DATATYPE_ZLIB:
-            result = 158
-            din = Buffer(self.data)
-            while din:
-                bufsize = din.read_uint()
-                din.read(4)
-                result += din.read_uint()
-                din.pos += bufsize - 8
-            return result
-
-        if self.type == PKG_DATATYPE_RAW:
-            return len(self.data) + 158
-
-        if self.type == PKG_DATATYPE_DIR:
-            return 158
-
-        raise TypeError(f'Unknown item type: {self.type}')
-
     def compress(self, compression_level: int = DEFAULT_COMPRESSION_LEVEL) -> None:
-        if self.type == PKG_DATATYPE_RAW:
+        if self.type == PKG_RAW:
             if not COMPRESS_PNG and self.name.endswith('.png'):
                 return
             if len(self.data) < MIN_SIZE_TO_COMPRESS:
                 return
+            assert isinstance(self.data, (bytes, bytearray))
             self.data = self._compress(self.data, compression_level=compression_level)
-            self.type = PKG_DATATYPE_ZLIB
+            self.type = PKG_COMP
 
-        elif self.type == PKG_DATATYPE_DIR:
-            for child in self.childs:
+        elif self.type == PKG_DIR:
+            assert isinstance(self.data, list)
+            for child in self.data:
                 child.compress(compression_level=compression_level)
 
     def decompress(self) -> None:
-        if self.type == PKG_DATATYPE_ZLIB:
+        if self.type == PKG_DIR:
+            assert isinstance(self.data, list)
+            for item in self.data:
+                item.decompress()
+
+        elif self.type == PKG_COMP:
+            assert isinstance(self.data, (bytes, bytearray))
             self.data = self._decompress(self.data)
-            self.type = PKG_DATATYPE_RAW
+            self.type = PKG_RAW
 
-        elif self.type == PKG_DATATYPE_DIR:
-            for child in self.childs:
-                child.decompress()
+    def decompressed_size(self) -> int:
+        assert self.type != PKG_DIR
+        if self.type == PKG_RAW:
+            return len(self.data)
 
-    def copy(self) -> PKGItem:
-        new = PKGItem()
-        new.data = self.data
-        new.name = self.name
-        new.type = self.type
-        new.childs = [child.copy() for child in self.childs]
-        new.parent = self.parent
-        return new
-
-    def size(self) -> int:
-        if self.type == PKG_DATATYPE_DIR:
-            return sum(child.size() for child in self.childs)
-        return len(self.data)
-
-    def count(self) -> int:
-        if self.type == PKG_DATATYPE_DIR:
-            return 1 + sum(child.count() for child in self.childs)
-        return 1
-
-    def __getitem__(self, key: str) -> PKGItem:
-        assert self.type == PKG_DATATYPE_DIR, f'Cannot get item of non-dir item: {self}'
-        if '/' in key:
-            key, *child_key_ = key.split('/')
-            child_key = '/'.join(child_key_)
-        else:
-            child_key = ''
-
-        for child in self.childs:
-            if child.name == key:
-                if child_key:
-                    return child[child_key]
-                return child
-
-        raise KeyError(f'Invalid key: {key}')
-
-    def full_path(self) -> str:
-        result = self.name
-        if self.parent:
-            result = self.parent.full_path() + result
-        if self.type == PKG_DATATYPE_DIR:
-            result += '/'
+        assert isinstance(self.data, (bytes, bytearray))
+        result = 0
+        buf = IBuffer(self.data)
+        while buf:
+            bufsize = buf.read_uint()
+            buf.pos += 4
+            result += buf.read_uint()
+            buf.pos += bufsize - 8
         return result
 
-    def find_in_childs(self, name: str) -> int:
-        for i, child in enumerate(self.childs):
-            if child.name == name:
-                return i
-        return -1
-
-    def header(self, offsets: dict[str, int]) -> bytes:
-        if self.type == PKG_DATATYPE_DIR:
-            size = 0
-        else:
-            size = len(self.data) + 4
-
-        original_size = self.decompressed_size()
-
-        full_path = self.full_path()
-        assert full_path in offsets, f'Unknown error while calculating offsets: {offsets}'
-        offset = offsets[full_path]
-
-        result = Buffer()
-        result.write_uint(size)
-        result.write_uint(original_size)
-        result.write_str(self.name.upper(), 63)
-        result.write_str(self.name, 63)
-        result.write_uint(self.type)
-        result.write_uint(self.type)
-        result.write(b'\0\0\0\0')
-        result.write(b'\0\0\0\0')
-        result.write_uint(offset)
-        result.write(b'\0\0\0\0')
-
-        return bytes(result)
-
-    def to_bytes(self, offsets: dict[str, int]) -> bytes:
-        buf = Buffer()
-        self.to_buffer(buf, offsets)
-        return bytes(buf)
-
-    def check_offsets(self, offset: int, offsets: dict[str, int]) -> int:
+    def calculate_offsets(self, offset: int, offsets: dict[int, int]) -> int:
         size = 0
-        if self.type == PKG_DATATYPE_DIR:
-            size += 12 + len(self.childs) * 158
-            offsets[self.full_path()] = offset
-            for child in self.childs:
-                size += child.check_offsets(offset + size, offsets)
+        if self.type == PKG_DIR:
+            assert isinstance(self.data, list)
+            size += 12 + len(self.data) * 158
+            offsets[id(self)] = offset
+            for child in self.data:
+                size += child.calculate_offsets(offset + size, offsets)
         else:
-            offsets[self.full_path()] = offset + size
+            offsets[id(self)] = offset + size
             size += 4 + len(self.data)
         return size
 
-    def to_buffer(self, buf: Buffer, offsets: dict[str, int]) -> Buffer:
-        if self.type == PKG_DATATYPE_DIR:
-            buf.write(b'\xaa\0\0\0')  # zero1
-            buf.write_uint(len(self.childs))
-            buf.write(b'\x9e\0\0\0')  # zero2
+    @classmethod
+    def from_buffer(
+        cls,
+        buf: IBuffer,
+        root: bool = False,
+        **kwargs: Any,
+    ) -> PKG:
+        if root:
+            offset = buf.read_uint()
+            assert offset >= 4
+            metadata = buf.read(offset - 4)
+            buf.seek(offset)
+            return cls(
+                name='<root>',
+                type_=PKG_DIR,
+                data=cls.read_childs(buf),
+                metadata=metadata,
+            )
 
-            for child in self.childs:
-                data = child.header(offsets)
-                buf.write(data)
+        size = buf.read_uint()
+        _ = buf.read_uint()
+        _ = buf.read_str(63).rstrip('\0')
+        name = buf.read_str(63).rstrip('\0')
+        assert name.upper() == _
+        datatype = buf.read_uint()
+        assert datatype in {PKG_DIR, PKG_COMP, PKG_RAW}
+        _ = buf.read_uint()
+        assert _ == datatype
+        _ = buf.read_uint()
+        assert _ == 0
+        _ = buf.read_uint()
+        assert _ == 0
+        offset = buf.read_uint()
+        _ = buf.read_uint()
+        assert _ == 0
 
-            for child in self.childs:
-                child.to_buffer(buf, offsets)
+        self = cls(
+            name=name,
+            type_=datatype,
+            data=[] if datatype == PKG_DIR else b'',
+        )
+
+        buf.push_pos(offset)
+        if datatype == PKG_DIR:
+            assert size == 0
+            assert isinstance(self.data, list)
+            self.data = cls.read_childs(buf)
 
         else:
+            buf_size = buf.read_uint()
+            assert buf_size == size - 4
+            self.data = buf.read(buf_size)
+
+        buf.pop_pos()
+        return self
+
+    @classmethod
+    def read_childs(cls, buf: IBuffer) -> list[PKG]:
+        childs: list[PKG] = []
+        _ = buf.read_uint()
+        assert _ == 0xAA
+        cnt = buf.read_uint()
+        _ = buf.read_uint()
+        assert _ == 0x9E
+        for _ in range(cnt):
+            childs.append(cls.from_buffer(buf))
+        return childs
+
+    def to_buffer(
+        self,
+        buf: OBuffer,
+        root: bool = False,
+        offsets: dict[int, int] = None,
+        **kwargs: Any,
+    ) -> None:
+        if root:
+            assert offsets is None
+            assert self.type == PKG_DIR
+            data_start_pos = len(self.metadata) + 4
+            offsets = {}
+            self.calculate_offsets(
+                data_start_pos,
+                offsets,
+            )
+            buf.write_uint(data_start_pos)
+            buf.write(self.metadata)
+            self.write_childs(buf, offsets)
+            return
+        assert offsets is not None
+        assert id(self) in offsets
+        buf.write_uint(len(self.data) + 4 if self.type != PKG_DIR else 0)
+        buf.write_uint(
+            self.decompressed_size() if self.type != PKG_DIR else 0
+        )  # FIXME decompressed size
+        buf.write_str(self.name.upper(), 63)
+        buf.write_str(self.name, 63)
+
+        buf.write_uint(self.type)
+        buf.write_uint(self.type)
+        buf.write_uint(0)
+        buf.write_uint(0)
+        buf.write_uint(offsets[id(self)])
+        buf.write_uint(0)
+
+        buf.push_pos(offsets[id(self)], expand=True)
+        if self.type == PKG_DIR:
+            self.write_childs(buf, offsets=offsets)
+
+        else:
+            assert isinstance(self.data, (bytes, bytearray))
             buf.write_uint(len(self.data))
             buf.write(self.data)
-        return buf
+        buf.pop_pos()
+
+    def write_childs(self, buf: OBuffer, offsets: dict[int, int]) -> None:
+        assert self.type == PKG_DIR
+        assert isinstance(self.data, list)
+        buf.write_uint(0xAA)
+        buf.write_uint(len(self.data))
+        buf.write_uint(0x9E)
+        for child in self.data:
+            child.to_buffer(buf, offsets=offsets)
 
     @classmethod
-    def from_bytes(cls, data: bytes, offset: int) -> list[PKGItem]:
-        result = []
+    def from_file(cls, path: str, **kwargs: Any) -> PKG:
+        return super().from_file(path, root=True)
 
-        din = Buffer(data)
-        din.pos = offset
-
-        din.skip(4)
-        items_count = din.read_uint()
-        din.skip(4)
-
-        for i in range(items_count):
-            child = PKGItem()
-            result.append(child)
-
-            din.pos = offset + 12 + 158 * i
-
-            din.skip(4)
-            din.skip(4)
-            din.skip(63)
-            child.name = din.read_str(63).rstrip('\0')
-            child.type = din.read_uint()
-            assert child.type in {
-                PKG_DATATYPE_DIR,
-                PKG_DATATYPE_RAW,
-                PKG_DATATYPE_ZLIB,
-            }, f'Invalid item type: {child.type}. Should be in {(PKG_DATATYPE_DIR, PKG_DATATYPE_RAW, PKG_DATATYPE_ZLIB)}'
-            din.skip(4)
-            din.skip(4)
-            din.skip(4)
-            child_offset = din.read_uint()
-            din.skip(4)
-
-            if child.type == PKG_DATATYPE_DIR:
-                child.childs = cls.from_bytes(data, child_offset)
-                for child_child in child.childs:
-                    child_child.parent = child
-
-            else:
-                din.pos = child_offset
-                size = din.read_uint()
-                child.data = din.read(size)
-
-        return result
-
-    def items_list(self) -> list[PKGItem]:
-        result: list[PKGItem] = []
-        for child in self.childs:
-            if child.type == PKG_DATATYPE_DIR and child.childs:
-                result += child.items_list()
-            else:
-                result += [child]
-        return result
-
-
-class PKG:
-    def __init__(self, root: PKGItem, metadata: bytes = None) -> None:
-        self.root = root
-        if metadata is None:
-            self.metadata = b'[timestamp: ' + str(int(time.time())).encode() + b']'
-        else:
-            self.metadata = bytes(metadata)
+    def to_file(self, path: str, **kwargs: Any) -> None:
+        super().to_file(path, root=True)
 
     @classmethod
-    def from_pkg(cls, filename: str) -> PKG:
-        with open(filename, 'rb') as fp:
-            data = fp.read()
-        din = Buffer(data)
-        offset = din.read_uint()
-        metadata = din.read(offset - 4)
-
-        root = PKGItem()
-        root.type = PKG_DATATYPE_DIR
-        root.childs = PKGItem.from_bytes(data, offset)
-        for child in root.childs:
-            child.parent = root
-
-        pkg = cls(root, metadata=metadata)
-        return pkg
-
-    def to_pkg(self, filename: str) -> None:
-        root = self.root
-
-        result = Buffer()
-        result.write_uint(4 + len(self.metadata))
-        result.write(self.metadata)
-
-        offsets: dict[str, int] = {}
-        root.check_offsets(4 + len(self.metadata), offsets)
-        root.to_buffer(result, offsets)
-
-        check_dir(filename)
-        with open(filename, 'wb') as fp:
-            fp.write(bytes(result))
-
-    @classmethod
-    def from_dir(cls, path: str, f: Callable[[str], bool] = lambda _: True) -> PKG:
-        '''
-        f - лямбда для исключения файлов из включения в пакет
-            для каждого файла вызывается f(file) [file -  имя файла, без пути]
-            если значение истинно, то файл включается в пакет, иначе - нет
-        '''
-        root = PKGItem()
-        root.type = PKG_DATATYPE_DIR
-
-        pkg = cls(root)
+    def from_folder(cls, path: str) -> PKG:
+        print(path)
+        self = PKG('<root>', PKG_DIR, [])
+        assert isinstance(self.data, list)
 
         files = [f for f in os.listdir(path) if os.path.isfile(os.path.join(path, f))]
         dirs = [f for f in os.listdir(path) if not os.path.isfile(os.path.join(path, f))]
 
         for file in files:
-            if not f(file):
-                continue
-
             filename = os.path.join(path, file)
+            print(filename)
             with open(filename, 'rb') as fp:
                 data = fp.read()
-
-            item = PKGItem()
-            item.data = data
-            item.name = file
-            item.type = PKG_DATATYPE_RAW
-            item.childs = []
-            item.parent = root
-            root.childs.append(item)
+            self.data.append(PKG(file, PKG_RAW, data))
 
         for directory in dirs:
             dirname = os.path.join(path, directory)
-
-            sub_item = cls.from_dir(dirname, f).root
-
-            item = PKGItem()
-            item.data = b''
+            print(dirname)
+            item = cls.from_folder(dirname)
             item.name = directory
-            item.type = PKG_DATATYPE_DIR
-            item.childs = sub_item.childs
-            for child in item.childs:
-                child.parent = item
+            self.data.append(item)
 
-            item.parent = root
-            root.childs.append(item)
+        return self
 
-        return pkg
-
-    def to_dir(self, path: str) -> None:
+    def to_folder(self, path: str) -> None:
         self.decompress()
-        for item in self.items_list():
-            filename = path + '/' + item.full_path()
-            check_dir(filename)
-            if item.type == PKG_DATATYPE_DIR:
-                if not os.path.isdir(filename):
-                    os.mkdir(filename)
+        assert isinstance(self.data, list)
+        for item in self.data:
+            assert item.type != PKG_COMP
+
+            if item.type == PKG_DIR:
+                directory = os.path.join(path, item.name)
+                if not os.path.isdir(directory):
+                    os.mkdir(directory)
+                item.to_folder(directory)
+
             else:
+                filename = os.path.join(path, item.name)
+                assert isinstance(item.data, (bytes, bytearray))
                 with open(filename, 'wb') as fp:
                     fp.write(item.data)
 
-    def size(self) -> int:
-        return self.root.size() + len(self.metadata)
+    def copy(self) -> PKG:
+        if self.type == PKG_DIR:
+            assert isinstance(self.data, list)
+            return PKG(self.name, self.type, [child.copy() for child in self.data], self.metadata)
+        else:
+            return PKG(self.name, self.type, self.data, self.metadata)
 
-    def decompressed_size(self) -> int:
-        return sum(item.decompressed_size() for item in self.items_list())
+    def __copy__(self) -> PKG:
+        return PKG(self.name, self.type, self.data, self.metadata)
 
-    def count(self) -> int:
-        return self.root.count()
-
-    def compress(self, compression_level: int = DEFAULT_COMPRESSION_LEVEL) -> None:
-        self.root.compress(compression_level=compression_level)
-
-    def decompress(self) -> None:
-        self.root.decompress()
-
-    def copy(self) -> PKGItem:
-        return self.root.copy()
-
-    def items_list(self) -> list[PKGItem]:
-        return self.root.items_list()
+    def __deepcopy__(self, memo: object) -> PKG:
+        return self.copy()

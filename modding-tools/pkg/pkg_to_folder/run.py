@@ -14,9 +14,9 @@ for filename in tree_walker(_in, exts=('.pkg',))[0]:
 
         print(f'{filename} -> {folder}')
 
-        pkg = PKG.from_pkg(filename)
+        pkg = PKG.from_file(filename)
         check_dir(folder)
-        pkg.to_dir(folder)
+        pkg.to_folder(folder)
 
     except:
         import traceback
