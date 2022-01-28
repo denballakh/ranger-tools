@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from typing import (
+    Any,
     Iterator,
     Mapping,
     NoReturn,
@@ -23,11 +24,10 @@ __all__ = ('bidict',)
 
 A = TypeVar('A', bound=Hashable)
 B = TypeVar('B', bound=Hashable)
-T = TypeVar('T')
 
 
 def _inv_dict(_dict: dict[A, B], /) -> dict[B, A]:
-    inversed = dict[B, A]()
+    inversed: dict[B, A] = {}
 
     for key, value in _dict.items():
         if value in inversed:
@@ -39,40 +39,31 @@ def _inv_dict(_dict: dict[A, B], /) -> dict[B, A]:
 
 
 class bidict(Generic[A, B]):
-    __slots__ = '_dict', '_inv'
+    __slots__ = ('_dict', '_inv')
 
     _dict: dict[A, B]
     _inv: bidict[B, A]
 
     def __init__(
-        self,
-        _dict: dict[A, B] | None = None,
-        /,
-        *,
-        _inv: bidict[B, A] | None = None,
+        self: bidict[A, B], _dict: dict[A, B] = None, /, *, _inv: bidict[B, A] = None
     ) -> None:
         self._dict = {} if _dict is None else _dict
-        self._inv = bidict(_inv_dict(self._dict), _inv=self) if _inv is None else _inv
+        cls: type[bidict[B, A]] = self.__class__  # type: ignore[assignment]
+        self._inv = cls(_inv_dict(self._dict), _inv=self) if _inv is None else _inv
 
     @classmethod
     def from_mapping(cls, mapping: Mapping[A, B]) -> bidict[A, B]:
         return cls(dict(mapping))
 
     def __str__(self, /) -> str:
-        return (
-            f'<{type(self).__name__!s}'
-            + (
-                f': {content!s}'
-                if (
-                    content := ', '.join(f'{key!r}->{value!r}' for key, value in self._dict.items())
-                )
-                else ''
-            )
-            + '>'
-        )
+        if not self._dict:
+            return f'<{self.__class__.__name__}>'
+
+        content = ', '.join(f'{key!r}->{value!r}' for key, value in self._dict.items())
+        return f'<{self.__class__.__name__!s}: {content!s}>'
 
     def __repr__(self) -> str:
-        return f'{type(self).__name__!s}({repr(self._dict) if self._dict else str()})'
+        return f'{self.__class__.__name__!s}({self._dict!r})'
 
     def __len__(self) -> int:
         return len(self._dict)
@@ -89,9 +80,10 @@ class bidict(Generic[A, B]):
     def __hash__(self) -> NoReturn:
         raise TypeError(f'unhashable type: {type(self).__name__!r}')
 
-    def __eq__(self, other: object) -> bool:
+    def __eq__(self, other: bidict | dict | object) -> bool:
         if isinstance(other, bidict):
             return self._dict == other._dict and self._inv._dict == other._inv._dict
+            # return self._dict == other._dict  # ?
 
         if isinstance(other, dict):
             return self._dict == other
@@ -144,14 +136,18 @@ class bidict(Generic[A, B]):
         d1 = self._dict.copy()
         d2 = self._inv._dict.copy()
 
-        new: bidict[A, B] = bidict(d1, _inv=self._inv)
-        inv: bidict[B, A] = bidict(d2, _inv=new)
+        new: bidict[A, B] = self.__class__(d1, _inv=self._inv)
+        cls: type[bidict[B, A]] = self.__class__  # type: ignore[assignment]
+        inv: bidict[B, A] = cls(d2, _inv=new)
         new._inv = inv
 
         return new
 
-    __copy__ = copy
-    __deepcopy__ = copy  # FIXME
+    def __copy__(self) -> bidict[A, B]:
+        return self.copy()
+
+    def __deepcopy__(self, memo: dict[int, Any]) -> bidict[A, B]:
+        return self.copy()
 
     # fmt: off
     @overload
@@ -165,20 +161,20 @@ class bidict(Generic[A, B]):
         default: B | SentinelType = sentinel,
         /,
     ) -> B:
-        if default is sentinel:
-            b = self._dict.pop(key)
-            self._inv._dict.pop(b)
+        if key not in self._dict:
+            if default is sentinel:
+                raise KeyError(key)
+            return default
 
-        else:
-            b = self._dict.pop(key, default)
-            self._inv._dict.pop(b, key)
+        b = self._dict.pop(key)
+        self._inv._dict.pop(b)
 
         return b
 
     def popitem(self) -> tuple[A, B]:
-        a, b = self._dict.popitem()
-        del self._inv._dict[b]
-        return a, b
+        kv = self._dict.popitem()
+        del self._inv._dict[kv[1]]
+        return kv
 
     def setdefault(self, key: A, default: B, /) -> B:
         if key not in self._dict:

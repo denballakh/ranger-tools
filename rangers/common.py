@@ -3,13 +3,13 @@ from types import MappingProxyType
 from typing import (
     Any,
     Callable,
-    Iterable,
+    Hashable,
     Literal,
     NoReturn,
     Protocol,
+    TypeGuard,
     TypeVar,
     Iterator,
-    Container,
     Sequence,
     overload,
 )
@@ -132,6 +132,15 @@ def raise_(
     if exc is not None:
         raise exc from from_
     raise
+
+
+def hashable(obj: object) -> TypeGuard[Hashable]:
+    try:
+        hash(obj)
+    except TypeError:
+        return False
+    else:
+        return True
 
 
 def noop(*_: Any, **__: Any) -> None:
@@ -335,7 +344,7 @@ def is_compiled(cls: type, unknown: int = -1) -> int:
 
         return unknown
 
-    except:
+    except Exception:
         return unknown
 
 
@@ -384,7 +393,7 @@ def coerce_parent(cls1: type[_T], cls2: type[_G], /) -> type[_T] | type[_G] | No
 
 
 def recursive_subclasses(cls: type, /) -> list[type]:
-    subclasses = cls.__subclasses__()
+    subclasses = type.__subclasses__(cls)
     result: set[type] = set(subclasses)
     for c in subclasses:
         result |= set(recursive_subclasses(c))
@@ -414,7 +423,7 @@ def get_attributes(obj: object, /) -> list[tuple[str, object]]:
         '__mypyc_attrs__',  # compiled mypyc classes
         '__attrs_attrs__',  # attrs classes
     }:
-        if (attr_list := getattr(obj, attr_list_attr, None)) is not None:
+        if (attr_list := getattr(cls, attr_list_attr, None)) is not None:
             for attr in attr_list:
                 if hasattr(obj, attr):
                     kwarg_pairs.append((attr, getattr(obj, attr)))
