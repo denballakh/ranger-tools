@@ -1,0 +1,36 @@
+//------------------------------------------------
+//--- 010 Editor v12.0 Binary Template
+//
+//      File: 
+//   Authors: 
+//   Version: 
+//   Purpose: 
+//  Category: 
+// File Mask: *.hai
+//  ID Bytes: 20 04 21 04
+//   History: 
+//------------------------------------------------
+struct HAIHeader
+{
+    long signature;  //!< Signature
+    long width;  //!< Animation width
+    long height;  //!< Animation height
+    long rowBytes;  //!< Bytes in one line
+    long count;  //!< Number of frames in animation
+    long frameSize;  //!< Size of one frame
+    long unknown1;
+    long unknown2;
+    long unknown3;
+    long unknown4;
+    long unknown5;
+    long unknown6;
+    long palSize;  //!< Size of pallete
+} hh <bgcolor=cLtBlue>;
+local int pos = FTell();
+local int fr;
+struct HAIFrame(HAIHeader &hh) {
+    byte frame[hh.height*hh.rowBytes+hh.palSize];
+};
+for (fr = 0; fr<hh.count; fr++){
+    HAIFrame hf(hh) <bgcolor=cDkBlue>;
+}

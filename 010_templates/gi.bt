@@ -1,0 +1,43 @@
+//------------------------------------------------
+//--- 010 Editor v12.0 Binary Template
+//
+//      File: 
+//   Authors: 
+//   Version: 
+//   Purpose: 
+//  Category: 
+// File Mask: *.gi
+//  ID Bytes: 67 69 00 00
+//   History: 
+//------------------------------------------------
+struct GIHeader
+{
+    long signature;
+    long version;
+    long start_x;
+    long start_y;
+    long finish_x;
+    long finish_y;
+    long r_bitmask;
+    long g_bitmask;
+    long b_bitmask;
+    long a_bitmask;
+    long frame_type;
+    long layer_count;
+    long unknown[4];
+    
+} giheader <bgcolor=cLtRed>;
+
+struct GILayer 
+{
+    long seek <bgcolor=cRed>;
+    long size <bgcolor=cRed>;
+    local int pos = FTell();
+    FSeek(seek);
+    byte data[size] <bgcolor=cDkRed>;
+    FSeek(pos);
+};
+local int i;
+for (i = 0; i< giheader.layer_count; i++){
+    GILayer gl ;
+}

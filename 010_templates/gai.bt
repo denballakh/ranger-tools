@@ -1,0 +1,88 @@
+//------------------------------------------------
+//--- 010 Editor v12.0 Binary Template
+//
+//      File: 
+//   Authors: 
+//   Version: 
+//   Purpose: 
+//  Category: 
+// File Mask: *.gai
+//  ID Bytes: 67 61 69 00
+//   History: 
+//------------------------------------------------
+struct GIHeader
+{
+    long signature;
+    long version;
+    long start_x;
+    long start_y;
+    long finish_x;
+    long finish_y;
+    long r_bitmask;
+    long g_bitmask;
+    long b_bitmask;
+    long a_bitmask;
+    long frame_type;
+    long layer_count;
+    long unknown[4];
+    
+};
+struct GILayer 
+{
+    
+    long seek;
+    long size;
+    local int pos = FTell();
+    FSeek(pos+seek);
+    byte data[size] <bgcolor=cLtRed>;
+    FSeek(pos);
+};
+struct GI {
+    GIHeader gh <bgcolor=cDkGreen>;
+    local int i;
+    for (i = 0; i< gh.layer_count; i++){
+        GILayer gl <bgcolor=cLtGreen>;
+    }
+};
+struct GAIHeader
+ {
+     long signature;  //!< File signature
+     long version;  //!< Format version
+     long startX;  //!< Left corner
+     long startY;  //!< Top corner
+     long finishX;  //!< Right corner
+     long finishY;  //!< Bottom corner
+     long frameCount; //!< Number of frames in animation
+     long haveBackground; //!< Animation a background in separate file
+     long waitSeek;  //!< Wait seek?
+     long waitSize;  //!< Wait size?
+     long unknown1;
+     long unknown2;
+} header <bgcolor=cLtBlue>;
+if (header.signature !=6906215) {
+    // throw error
+}
+
+struct GIFrame
+{
+    long seek;
+    long size;
+    local int pos = FTell();
+    FSeek(seek);
+    GI gi;
+    FSeek(pos);
+
+};
+
+if (header.waitSize) {
+    local int pos = FTell();
+    FSeek(header.waitSeek);
+    char wd[header.waitSize];
+    FSeek(pos);
+    
+}
+
+local int i=0;
+for (i=0; i<header.frameCount; i++){
+    GIFrame gf <bgcolor=cDkBlue>;
+}
