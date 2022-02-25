@@ -4,12 +4,12 @@ struct TGalaxy {
 
     _gap_32 _004;
     _gap_32 _008;
-    _gap_32 _00C;
+    _gap_32 _00C;  // id_hole;  // ID последней ЧД
     _gap_32 _010;
     _gap_32 _014;
     _gap_32 _018;
     int id_ship;                        ///< ID последнего созданного корабля
-    _gap_32 _020;
+    int save_cnt;
     _gap_32 _024;
     int player_index;                   ///< номер игрока в списке рейнджеров
     TList* stars;                       ///< список звезд
@@ -93,13 +93,13 @@ struct TGalaxy {
     _gap_32 _174;
     _gap_32 _178;
     bool iron_will;                     ///< флаг железной воли
-    _gap _17D;
-    bool technic;                       ///< флаг от чита `TECHNIC`
-    _gap _17F;
-    _gap _180;
-    bool ultrascan;                     ///< флаг от чита `ULTRASCAN`
-    bool zawarudo;                      ///< флаг от чита `ZAWARUDO`
-    bool dump;                          ///< нужен для создания дампа вместе с сейвом?
+    byte cheat_kling_strength;
+    bool cheat_technic;                 ///< флаг от чита `TECHNIC`
+    bool cheat_ammo;
+    bool cheat_god;
+    bool cheat_ultrascan;               ///< флаг от чита `ULTRASCAN`
+    bool cheat_zawarudo;                ///< флаг от чита `ZAWARUDO`
+    bool cheat_dump;                    ///< нужен для создания дампа вместе с сейвом?
     STR finalization_name;
 
     // Тонкие настройки:

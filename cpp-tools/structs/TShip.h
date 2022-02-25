@@ -710,7 +710,7 @@ struct TShip {
     _gap _3D5;
     _gap _3D6;
     _gap _3D7;
-    TList* _3D8;
+    TList* items_to_pick;
     TList* recently_dropped_items;
     _gap _3E0;
     _gap _3E1;
@@ -794,7 +794,7 @@ struct TShip {
     _gap _45D;
     _gap _45E;
     _gap _45F;
-    _gap _460;  // destroy=true
+    bool destroy;
     _gap _461;
     _gap _462;
     _gap _463;

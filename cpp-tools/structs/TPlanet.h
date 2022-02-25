@@ -71,10 +71,7 @@ struct TPlanet {
     _gap _121;
     _gap _122;
     _gap _123;
-    _gap _124;
-    _gap _125;
-    _gap _126;
-    _gap _127;
+    int _124;
     _gap _128;
     _gap _129;
     _gap _12A;

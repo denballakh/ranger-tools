@@ -174,6 +174,16 @@ struct TPos_pair {
     TPos p2;
 };
 
+struct RacesConfig {
+    int _0;
+    int _1;
+    float _2;
+    float _3;
+    int _4;
+    int _5;
+    float _6;
+    int _7;
+};
 
 /*
 

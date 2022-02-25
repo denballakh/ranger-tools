@@ -318,10 +318,7 @@ struct TArtefactTransmitter: TArtefact {
 };
 
 struct TArtefactTranclucator: TArtefact {
-    _gap _78;
-    _gap _79;
-    _gap _7A;
-    _gap _7B;
+    TShip* ship;
 };
 
 struct TArtefactCustom: TArtefact {
