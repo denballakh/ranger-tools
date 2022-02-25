@@ -5,10 +5,9 @@ from itertools import repeat
 
 import rangers.common as common
 
-def test_doc():
-    """!
 
-    """
+def test_doc():
+    """!"""
 
 
 if __name__ == '__main__':
@@ -20,5 +19,3 @@ if __name__ == '__main__':
 
     input('Press enter to exit...')
     os._exit(0)
-
-vars.__self__
