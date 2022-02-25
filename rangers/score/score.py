@@ -1,7 +1,7 @@
 from __future__ import annotations
 from typing import Any
 
-from ..buffer import Buffer
+from ..buffer import IBuffer, OBuffer, Buffer
 from ..common import rand31pm
 from ..std.mixin import DataMixin, JSONMixin, PrintableMixin
 
@@ -42,7 +42,7 @@ class CryptedRand31pmMod(DataClass[bytes]):
     def __init__(self, key_name: str) -> None:
         self.key_name = key_name
 
-    def read(self, buf: Buffer, *, memo: Memo) -> bytes:
+    def read(self, buf: IBuffer, *, memo: Memo) -> bytes:
         key = memo[self.key_name]
         rnd = rand31pm(key)
 
@@ -53,7 +53,7 @@ class CryptedRand31pmMod(DataClass[bytes]):
         result = bytes(out)
         return result
 
-    def write(self, buf: Buffer, obj: bytes, *, memo: Memo) -> None:
+    def write(self, buf: OBuffer, obj: bytes, *, memo: Memo) -> None:
         key = memo[self.key_name]
         rnd = rand31pm(key)
 
@@ -86,7 +86,7 @@ ScoreObj = NamedSequence(
                 version=Const(UInt32, 205),
                 _04=Byte,
                 difflevels=Repeat(Byte, 8),
-                name=WStr(),
+                name=WStr,
                 _18=Byte,
                 race=Byte,
                 date=UInt32,
@@ -182,10 +182,10 @@ class SCORE(PrintableMixin, DataMixin, JSONMixin):
         return cls.from_bytes(bytes.fromhex(text))
 
     @classmethod
-    def from_buffer(cls, buf: Buffer) -> SCORE:
+    def from_buffer(cls, buf: IBuffer, **kwargs: object) -> SCORE:
         self = cls()
         self.data = buf.read_dcls(ScoreObj)
         return self
 
-    def to_buffer(self, buf: Buffer) -> None:
+    def to_buffer(self, buf: OBuffer, **kwargs: object) -> None:
         buf.write_dcls(ScoreObj, self.data)

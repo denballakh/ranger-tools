@@ -14,9 +14,9 @@ from typing import (
 )
 import sys
 import json
+import reprlib
 
 from mypy_extensions import trait
-
 from ..common import get_attributes
 from ..buffer import Buffer, IBuffer, OBuffer
 
@@ -60,9 +60,7 @@ class PrintFormat:
     ) -> None:
         assert frozenset(pos_only_attrs) <= frozenset(attrs), (attrs, pos_only_attrs)
         self.fmt = fmt
-        # print(fmt_empty)
         self.fmt_empty = fmt_empty if fmt_empty is not None else fmt
-        # print(self.fmt_empty)
         self.attr_sep = attr_sep
         self.value_sep = value_sep
         self.use_private_attrs = use_private_attrs
@@ -70,7 +68,6 @@ class PrintFormat:
         self.pos_only_attrs = tuple(pos_only_attrs)
 
     def format(self, obj: object) -> str:
-        # print(self.fmt_empty)
         assert frozenset(self.pos_only_attrs) <= frozenset(self.attrs), (
             self.attrs,
             self.pos_only_attrs,
@@ -149,10 +146,12 @@ class PrintableMixin(Mixin):
     )
 
     @final
+    @reprlib.recursive_repr()
     def __str__(self) -> str:
         return self.__str_fmt__.format(self)
 
     @final
+    @reprlib.recursive_repr()
     def __repr__(self) -> str:
         return self.__repr_fmt__.format(self)
 

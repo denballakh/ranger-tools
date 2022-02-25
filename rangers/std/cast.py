@@ -104,8 +104,8 @@ def cast(value: Any, /, *clss: type[T]) -> T:
 # fmt: on
 
 
-class DictCast(dict):
-    def __repr__(self):
+class DictCast(dict[str, Any]):
+    def __repr__(self) -> str:
         return f'{type(self).__name__}({repr(dict(self))})'
 
     __casts_to__ = (object,)
@@ -121,7 +121,7 @@ class DictCast(dict):
         return obj
 
     @classmethod
-    def __cast_from__(cls, val):
+    def __cast_from__(cls, val: object) -> DictCast:
         self = cls()
 
         if (d := getattr(val, '__dict__', None)) is not None:

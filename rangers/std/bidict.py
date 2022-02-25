@@ -80,7 +80,7 @@ class bidict(Generic[A, B]):
     def __hash__(self) -> NoReturn:
         raise TypeError(f'unhashable type: {type(self).__name__!r}')
 
-    def __eq__(self, other: bidict | dict | object) -> bool:
+    def __eq__(self, other: bidict[A, B] | dict[A, B] | object) -> bool:
         if isinstance(other, bidict):
             return self._dict == other._dict and self._inv._dict == other._inv._dict
             # return self._dict == other._dict  # ?
