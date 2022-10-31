@@ -1,9 +1,0 @@
-__history
-__recovery
-*.dproj
-*.dproj.local
-*.res
-*.stat
-*.identcache
-Win32/
-
