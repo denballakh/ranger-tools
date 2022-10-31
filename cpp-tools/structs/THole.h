@@ -2,7 +2,7 @@
 struct THole {
     VMT cls;
 
-    UNK index;
+    uint32_t id;
     TStar* star_1;
     _pair_float pos_1;
     TStar* star_2;

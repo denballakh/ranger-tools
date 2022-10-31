@@ -223,7 +223,7 @@ struct TVarArrayEC {
     VMT cls;
 
     int count;
-    TVarEC* item;
+    TVarEC** item;
     void* index;
 };
 

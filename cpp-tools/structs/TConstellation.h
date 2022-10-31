@@ -1,11 +1,8 @@
 /** @file */
 struct TConstellation {
     VMT cls;
+    uint32_t id;
 
-    _gap _04;
-    _gap _05;
-    _gap _06;
-    _gap _07;
     _gap _08;
     _gap _09;
     _gap _0A;

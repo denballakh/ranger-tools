@@ -96,8 +96,8 @@ struct TabObject {
 };
 
 struct TabHit: TabObject {
-    _gap_32 _B0;
-    _gap_32 _B4;
+    _gap_32 _B0; // HP
+    _gap_32 _B4; // max HP
     _gap_32 _B8;
     _gap_32 _BC;
     _gap_32 _C0;
@@ -253,7 +253,7 @@ struct TabSpace {
     _gap_32 _40;
     _gap_32 _44;
     _gap_32 _48;
-    _gap_32 _4C;
+    float _4C;
     _gap_32 _50;
     _gap_32 _54;
     _gap_32 _58;

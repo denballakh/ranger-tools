@@ -14,7 +14,7 @@ struct TGalaxy {
     int player_index;                   ///< номер игрока в списке рейнджеров
     TList* stars;                       ///< список звезд
     TList* holes;                       ///< список черных дыр
-    TList* _034;                        ///< список ?
+    TList* stored_items;                ///< список предметов в хранилище
     TList* planets;                     ///< список планет
     TList* rangers;                     ///< список рейнджеров
     int pirate_cnt;                     ///< кол-во пиратов
@@ -139,7 +139,11 @@ struct TGalaxy {
     bool AA_ruins_use_shops;
     bool AA_duplicate_arts;
     byte AA_hull_growth;
-
+    //#if EXE_VER > ...
+    bool AA_AB_equip_change;
+    bool AA_linear_speed_formula;
+    bool AA_missiles_bonus_not_split;
+    //#endif
     _gap_32 _1AC;
     TList* events;                      ///< список галактических событий
     TList* interface_state_overrides;   ///< список оверрайдов состояния

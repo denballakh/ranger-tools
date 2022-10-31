@@ -185,6 +185,8 @@ struct RacesConfig {
     int _7;
 };
 
+struct TTextQuest {};
+
 /*
 
 TEther - 18

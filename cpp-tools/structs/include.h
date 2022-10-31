@@ -1,8 +1,3 @@
-/**
- * @file include.h
- * @brief Файл для импорта в программы
- */
-
 #pragma once
 #include <cstdint>
 

@@ -2,7 +2,7 @@
 struct TShip {
     VMT cls;
 
-    int id;
+    uint32_t id;
     STR name;
     WSTR custom_type_name;
     byte type;

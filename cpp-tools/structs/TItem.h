@@ -22,10 +22,7 @@ struct TItem {
     _gap _2A;
     _gap _2B;
     PTR script_item;
-    _gap _30;
-    _gap _31;
-    _gap _32;
-    _gap _33;
+    int very_important_value;
     byte no_drop;
     _gap _35;
     _gap _36;
@@ -95,10 +92,7 @@ struct THull: TEquipment {
     _gap _73;
     int series;
     TShip* ship;
-    _gap _7C;
-    _gap _7D;
-    _gap _7E;
-    _gap _7F;
+    TShip* _7C; // ?
     _gap_32 _80;
     _gap_32 _84;
     _gap_32 _88;
@@ -256,10 +250,7 @@ struct TSatellite: TEquipment {
     _gap _6E;
     _gap _6F;
     TPlanet* planet;
-    _gap _74;
-    _gap _75;
-    _gap _76;
-    _gap _77;
+    uint32_t orbit_num;
     _gap _78;
     _gap _79;
     _gap _7A;
