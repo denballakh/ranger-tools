@@ -1,44 +1,78 @@
 from __future__ import annotations
 
-from typing import Literal, Type, ClassVar
+from typing import Iterator, Literal, Type, ClassVar
 from types import TracebackType
+from pathlib import Path
+from itertools import repeat
 
-import sys
 import time
 import json
-import os
 import statistics
 import math
 
-from ..common import fmt_time, round_to_three_chars
-from .mixin import PrintableMixin
+
+def fmt_time(t: float) -> tuple[float, str]:
+    if not t or math.isinf(t) or math.isnan(t):
+        return t, '  '
+
+    sign, t = [-1, 1][t > 0], abs(t)
+
+    units = {
+        -5: 'fs',
+        -4: 'ps',
+        -3: 'ns',
+        -2: 'μs',
+        -1: 'ms',
+        +0: 's ',
+    }
+
+    unit_p = 0
+
+    while t >= 999.5 and unit_p + 1 in units:
+        t /= 1000.0
+        unit_p += 1
+
+    while t < 0.995 and unit_p - 1 in units:
+        t *= 1000.0
+        unit_p -= 1
+
+    return t * sign, units[unit_p]
 
 
-class Timer(PrintableMixin):
-    __slots__ = ('start_time', 'end_time', 'time')
-    start_time: float | None
-    end_time: float | None
-    time: float | None
+def round_to_three_chars(f: float) -> float | int:
+    if abs(f) >= 999.5:
+        return float('inf')
+    if abs(f) >= 9.95:
+        return round(f)
+    return round(f, 1)
 
-    def __init__(self) -> None:
-        self.start_time = None
-        self.end_time = None
-        self.time = None
 
-    def __enter__(self) -> Timer:
-        self.start_time = time.perf_counter()
-        return self
+def format_value(t: float, n: int = 3) -> str:
+    value, unit = fmt_time(t)
+    value = round_to_three_chars(value)
+    return f'{value:>{n}} {unit}'
 
-    def __exit__(
-        self,
-        exc_type: Type[Exception],
-        exc_value: Type[Exception] | Exception,
-        traceback: TracebackType,
-    ) -> Literal[False]:
-        self.end_time = time.perf_counter()
-        assert self.start_time is not None
-        self.time = self.end_time - self.start_time
-        return False
+
+def format_result(key: str, avg: float, dev: float, rt: float, cnt: int) -> str:
+    return f'{key:50}{format_value(avg, 4)} ± {format_value(dev)} [{format_value(rt)} / {cnt:>9}]'
+
+
+def print_stats(file: Path | str) -> None:
+    try:
+        his: dict[str, tuple[int, float, list[float]]] = json.load(Path(file).open('rt', encoding='utf-8'))
+    except OSError:
+        return
+
+    for key, (cnt, k, history) in his.items():
+        if not history:
+            t = float('nan')
+        else:
+            t = history[-1]
+
+
+        stdev = statistics.stdev(history[1:]) if len(history) >= 3 else float('nan')
+
+        print(format_result(key, t / k, stdev / k, t * cnt, cnt))
 
 
 class AdaptiveTimer:
@@ -51,6 +85,7 @@ class AdaptiveTimer:
     cnt: int
     case_id: str
     extra: float
+    k: float
 
     _calibration: ClassVar[float] = 0.0
 
@@ -60,11 +95,13 @@ class AdaptiveTimer:
         case_id: str,
         cnt: int,
         extra: float = 1.0,
+        k: float = 1.0,
     ) -> None:
         self.atm = atm
         self.cnt = max(round(cnt * extra), 1)
         self.case_id = case_id
         self.extra = extra
+        self.k = k
 
         self.start_time = None
         self.end_time = None
@@ -76,9 +113,9 @@ class AdaptiveTimer:
         assert t >= 0
         cls._calibration = t
 
-    def __enter__(self) -> int:
+    def __enter__(self) -> Iterator[None]:
         self.start_time = time.perf_counter()
-        return self.cnt
+        return repeat(None, self.cnt)
 
     def __exit__(
         self,
@@ -89,78 +126,63 @@ class AdaptiveTimer:
         if exc_type is None:
             self.end_time = time.perf_counter()
         else:
+
             self.end_time = float('inf')
 
         assert self.start_time is not None
         self.real_time = self.end_time - self.start_time
         self.time = self.real_time / self.cnt - self._calibration
 
-        stdev = self.atm.register(self)
-        stdev, std_unit = fmt_time(stdev)
-        stdev = round_to_three_chars(stdev)
-
-        m_time, m_unit = fmt_time(self.time)
-        m_time = round_to_three_chars(m_time)
-
-        rt_time, rt_unit = fmt_time(self.real_time)
-        rt_time = round_to_three_chars(rt_time)
-
         print(
-            f'{self.case_id:35}{m_time:>4} {m_unit} ± {stdev:>3} {std_unit} '
-            f'[{rt_time:>3} {rt_unit} / {self.cnt:>9}]'
+            format_result(
+                self.case_id,
+                self.time / self.k,
+                self.atm.register(self) / self.k,
+                self.real_time,
+                self.cnt,
+            )
         )
 
         return False
 
 
 class AdaptiveTimeMeasurer:
-    config: dict[str, tuple[int, list[float]]]
+    config: dict[str, tuple[int, float, list[float]]]
     target_time: float
     history_len: int
-    growth_ratio: float
-    adapt_ratio: float
+    config_file: Path
 
     def __init__(
         self,
         config_file: str,
         target_time: float = 1.0,
         history_len: int = 5,
-        growth_ratio: float = 5,
-        adapt_ratio: float = 3,
-        print_to: str = None,
+        flush: bool = False,
     ) -> None:
         assert history_len > 2
         assert target_time > 0
-        assert growth_ratio >= 2
-        assert adapt_ratio >= 0
-        if print_to is not None:
-            fs = open(print_to, 'wt', encoding='utf-8', buffering=1)
-            sys.stdout = fs
 
-        self.config_file = config_file
+        self.config_file = Path(config_file)
         self.target_time = target_time
         self.history_len = history_len
-        self.growth_ratio = growth_ratio
-        self.adapt_ratio = adapt_ratio
 
-        if not os.path.isfile(config_file):
+        try:
+            if flush:
+                raise FileNotFoundError
+
+            config = json.load(self.config_file.open('rt', encoding='utf-8'))
             self.config = {}
-        else:
-            try:
-                with open(config_file, 'rt', encoding='utf-8') as file:
-                    config = json.load(file)
-                    self.config = {}
-                    for key, (cnt, history) in config.items():
-                        self.config[key] = cnt, history
+            for key, (cnt, k, history) in config.items():
+                self.config[key] = cnt, k, history # ?
 
-            except json.decoder.JSONDecodeError:
-                self.config = {}
+        except (json.decoder.JSONDecodeError, FileNotFoundError):
+            self.config = {}
 
-    def __call__(self, case_id: str, extra: float = 1.0) -> AdaptiveTimer:
+    def __call__(self, case_id: str, extra: float = 1.0, k: float = 1.0) -> AdaptiveTimer:
         if case_id not in self.config:
-            self.config[case_id] = (1, [])
+            self.config[case_id] = (1, k, [])
 
-        return AdaptiveTimer(self, case_id, self.config[case_id][0], extra=extra)
+        return AdaptiveTimer(self, case_id, self.config[case_id][0], extra=extra, k=k)
 
     def __enter__(self) -> AdaptiveTimeMeasurer:
         return self
@@ -174,8 +196,6 @@ class AdaptiveTimeMeasurer:
         with open(self.config_file, 'wt', encoding='utf-8') as file:
             json.dump(self.config, file, indent=4)
 
-        sys.stdout = sys.__stdout__
-
         return False
 
     def register(self, at: AdaptiveTimer) -> float:
@@ -186,28 +206,24 @@ class AdaptiveTimeMeasurer:
         value = at.time
         assert value is not None
 
-        cnt, history = self.config[at.case_id]
+        cnt, k, history = self.config[at.case_id]
         rt = at.real_time
 
         if math.isinf(value):
-            self.config[case_id] = 1, []
+            self.config[case_id] = 1, at.k, []
             return float('nan')
 
         if not value:
-            cnt *= int(max(cnt * self.growth_ratio, 1))
+            cnt *= int(max(cnt * 2, 1))
 
         else:
-            cnt = round(
-                cnt
-                * (at.extra * self.target_time / rt * self.adapt_ratio + 1)
-                / (self.adapt_ratio + 1)
-            )
+            cnt = round(cnt * (at.extra * self.target_time / rt * 2 + 1) / (2 + 1))
             cnt = max(round(cnt), 1)
 
         history = history + [value]
         history = history[-self.history_len :]
 
-        self.config[case_id] = cnt, history
+        self.config[case_id] = cnt, at.k, history
 
         if len(history) >= 3:
             return statistics.stdev(history[1:])
