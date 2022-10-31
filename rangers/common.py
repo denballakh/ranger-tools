@@ -10,14 +10,13 @@ from typing import (
     TypeGuard,
     TypeVar,
     Iterator,
-    Sequence,
     overload,
 )
 
 import sys
 import gc
-import os
-
+from pathlib import Path
+import warnings
 from collections import defaultdict
 from functools import lru_cache
 import random
@@ -85,6 +84,15 @@ class Falsy(Protocol):
         ...
 
 
+def debug_level() -> Literal[0, 1, 2]:
+    """docstring for internal use"""
+    if __debug__:
+        return 0
+    if debug_level.__doc__ is not None:
+        return 1
+    return 2
+
+
 def typed_memory_usage() -> dict[type, int]:
     gc.collect()
     objs = gc.get_objects()
@@ -147,7 +155,7 @@ def noop(*_: Any, **__: Any) -> None:
     pass
 
 
-def call(c: Callable[[], _T]) -> _T:
+def call(c: Callable[[], _T], /) -> _T:
     return c()
 
 
@@ -161,13 +169,13 @@ def probability(
     return __uniform(0.0, 1.0) < f
 
 
-def minmax(a: _TLC, b: _TLC) -> tuple[_TLC, _TLC]:
+def minmax(a: _TLC, b: _TLC, /) -> tuple[_TLC, _TLC]:
     if a < b:
         return a, b
     return b, a
 
 
-def clamp(v: _TLC, lt: _TLC, gt: _TLC) -> _TLC:
+def clamp(v: _TLC, lt: _TLC, gt: _TLC, /) -> _TLC:
     if v < lt:
         return lt
     if gt < v:
@@ -175,31 +183,31 @@ def clamp(v: _TLC, lt: _TLC, gt: _TLC) -> _TLC:
     return v
 
 
-def fmt_file_size(size: float) -> tuple[float, str]:
-    if not size:
-        return size, '  '
-    sign = [-1, 1][size > 0]
-    size = abs(size)
+# def fmt_file_size(size: float) -> tuple[float, str]:
+#     if not size:
+#         return size, '  '
+#     sign = [-1, 1][size > 0]
+#     size = abs(size)
 
-    units = {
-        +0: 'B ',
-        +1: 'KB',
-        +2: 'MB',
-        +3: 'GB',
-        +4: 'TB',
-    }
+#     units = {
+#         +0: 'B ',
+#         +1: 'KB',
+#         +2: 'MB',
+#         +3: 'GB',
+#         +4: 'TB',
+#     }
 
-    unit_p = 0
+#     unit_p = 0
 
-    while size >= 1000.0 and unit_p + 1 in units:
-        size /= 1000.0
-        unit_p += 1
+#     while size >= 1000.0 and unit_p + 1 in units:
+#         size /= 1000.0
+#         unit_p += 1
 
-    while size < 1.0 and unit_p - 1 in units:
-        size *= 1000.0
-        unit_p -= 1
+#     while size < 1.0 and unit_p - 1 in units:
+#         size *= 1000.0
+#         unit_p -= 1
 
-    return size * sign, units[unit_p]
+#     return size * sign, units[unit_p]
 
 
 def fmt_time(time: float) -> tuple[float, str]:
@@ -230,8 +238,8 @@ def fmt_time(time: float) -> tuple[float, str]:
     return time * sign, units[unit_p]
 
 
-def make_number(num: float, unit: str, n: int) -> str:
-    return f'{round_to_n_chars(num, n)} {unit}'
+# def make_number(num: float, unit: str, n: int) -> str:
+#     return f'{round_to_n_chars(num, n)} {unit}'
 
 
 def round_to_three_chars(f: float) -> float | int:
@@ -242,50 +250,20 @@ def round_to_three_chars(f: float) -> float | int:
     return round(f, 1)
 
 
-def round_to_n_chars(f: float, n: int) -> float | int:
-    for i in reversed(range(21)):
-        if len(str(round(f, i))) <= n:
-            return round(f, i)
-    return round(f)
+# def round_to_n_chars(f: float, n: int) -> float | int:
+#     for i in reversed(range(21)):
+#         if len(str(round(f, i))) <= n:
+#             return round(f, i)
+#     return round(f)
 
 
-def rand31pm(seed: int) -> Iterator[int]:
+def rand31pm(seed: int, /) -> Iterator[int]:
     while True:
-        hi: int
-        lo: int
         hi, lo = divmod(seed, 0x1F31D)
         seed = lo * 0x41A7 - hi * 0xB14
         if seed < 1:
             seed += 0x7FFFFFFF
         yield seed - 1
-
-
-def is_dunder(s: str) -> bool:
-    """
-    __x__
-    """
-    return s.startswith('__') and s.endswith('__')
-
-
-def is_sunder(s: str) -> bool:
-    """
-    _x_
-    """
-    return s.startswith('_') and s.endswith('_') and not s.startswith('__') and not s.endswith('__')
-
-
-def is_private(s: str) -> bool:
-    """
-    _x
-    """
-    return s.startswith('_') and not s.startswith('__')
-
-
-def is_mangled(s: str) -> bool:
-    """
-    _cls__x
-    """
-    return is_private(s) and not s.endswith('_') and '__' in s
 
 
 def is_compiled(cls: type, unknown: int = -1) -> int:
@@ -303,7 +281,6 @@ def is_compiled(cls: type, unknown: int = -1) -> int:
     """
 
     try:
-        # print(*[getattr(cls, attr, None).__class__.__name__ for attr in dir(cls)])
         if any(
             getattr(cls, attr, None).__class__.__name__ == (lambda: None).__class__.__name__
             for attr in dir(cls)
@@ -392,37 +369,16 @@ def coerce_parent(cls1: type[_T], cls2: type[_G], /) -> type[_T] | type[_G] | No
     return None
 
 
-def recursive_subclasses(cls: type, /) -> list[type]:
-    subclasses = type.__subclasses__(cls)
-    result: set[type] = set(subclasses)
-    for c in subclasses:
-        result |= set(recursive_subclasses(c))
-    return list(result)
-
-
-def create_empty_instance(cls: type[_T], /) -> _T | None:
-    try:
-        return cls()
-    except TypeError:
-        pass
-
-    try:
-        return object.__new__(cls)
-    except TypeError:
-        pass
-
-    return None
-
 
 def get_attributes(obj: object, /) -> list[tuple[str, object]]:
     cls = type(obj)
     kwarg_pairs: list[tuple[str, Any]] = []
 
-    for attr_list_attr in {
+    for attr_list_attr in (
         '__slots__',  # classes with slots
         '__mypyc_attrs__',  # compiled mypyc classes
         '__attrs_attrs__',  # attrs classes
-    }:
+    ):
         if (attr_list := getattr(cls, attr_list_attr, None)) is not None:
             for attr in attr_list:
                 if hasattr(obj, attr):
@@ -434,81 +390,6 @@ def get_attributes(obj: object, /) -> list[tuple[str, object]]:
 
     return kwarg_pairs
 
-
-def check_dir(path: str) -> None:
-    path = path.replace('\\', '/').replace('//', '/')
-    splitted = path.split('/')[:-1]
-    splitted = [name.strip('/') for name in splitted]
-    splitted = [name for name in splitted if name != '']
-    splitted = [name + '/' for name in splitted]
-    res = './'
-    for item in splitted:
-        res += item
-        if not os.path.isdir(res):
-            try:
-                os.mkdir(res)
-            except FileExistsError:
-                pass
-
-
-_tree_walker_def_cond: Callable[[str], bool] = lambda x: True
-
-
-def tree_walker(
-    path: str,
-    cond: Callable[[str], bool] = _tree_walker_def_cond,
-    exts: Sequence[str] = (),
-    root: bool = False,
-) -> tuple[list[str], list[str]]:
-    if exts is not None and cond is not _tree_walker_def_cond:
-        raise TypeError
-
-    if cond is _tree_walker_def_cond:
-        if exts:
-            cond = lambda s: any(s.endswith(x) for x in exts)
-
-    files = list[str]()
-    dirs = list[str]()
-    iterator = (
-        list(os.walk(path))
-        if not root
-        else [
-            (
-                '',
-                [
-                    os.path.join(path, x)
-                    for x in os.listdir(path)
-                    if os.path.isdir(os.path.join(path, x))
-                ],
-                [
-                    os.path.join(path, x)
-                    for x in os.listdir(path)
-                    if os.path.isfile(os.path.join(path, x))
-                ],
-            )
-        ]
-    )
-
-    for prefix, dirs_, files_ in iterator:
-        for file in files_:
-            fullfile = os.path.join(prefix, file)
-            if cond(fullfile):
-                files.append(fullfile)
-
-        for dir_ in dirs_:
-            fulldir = os.path.join(prefix, dir_)
-            if cond(fulldir):
-                dirs.append(fulldir)
-
-    return files, dirs
-
-
-def file_rebase(file: str, base: str, new_base: str) -> str:
-    return file.replace(base, new_base, 1)
-
-
-def change_ext(file: str, before: str, after: str) -> str:
-    return file[::-1].replace(before[::-1], after[::-1], 1)[::-1]
 
 
 def convert_ini_to_dict(content: str) -> dict[str, str]:
