@@ -1,22 +1,22 @@
+from pathlib import Path
+
 from rangers.graphics.hai import HAI
-from rangers.common import tree_walker, check_dir, file_rebase, change_ext
 
-_in = '_input/'
-_out = '_output/'
+_in = Path('_input')
+_out = Path('_output')
 
+_in.mkdir(exist_ok=True)
+_out.mkdir(exist_ok=True)
 
-check_dir(_in)
-check_dir(_out)
-
-for filename in tree_walker(_in, exts=('.hai'))[0]:
+for filename in _in.rglob('*.hai'):
     try:
-        output_name = change_ext(file_rebase(filename, _in, _out), '.hai', '/')
-        print(f'{filename} -> {output_name}')
+        folder_png = _out / filename.relative_to(_in).with_suffix('')
+        folder_png.mkdir(exist_ok=True, parents=True)
+        print(f'{filename} -> {folder_png}')
         hai = HAI.from_file(filename)
-        check_dir(output_name)
-        hai.to_image_folder(output_name)
+        hai.to_image_folder(folder_png)
 
     except:
         import traceback
 
-        print(traceback.format_exc())
+        traceback.print_exc()

@@ -1,25 +1,22 @@
 from __future__ import annotations
 from typing import Any
 import random as rnd
+from pathlib import Path
 
 try:
     from rangers.sav import SAV
 except ImportError:
     raise NotImplementedError('no required code') from None
 
-from rangers.common import tree_walker, check_dir, file_rebase, change_ext
-
-NEW_CONS = 50 # сколько секторов создать
-NEW_STARS = 5 # сколько систем в каждом новом секторе создать
+NEW_CONS = 50  # сколько секторов создать
+NEW_STARS = 5  # сколько систем в каждом новом секторе создать
 NEW_PLANETS = 3
 
-_in = '_input/'
-_out = '_output/'
+_in = Path('_input/')
+_out = Path('_output/')
 
-
-check_dir(_in)
-check_dir(_out)
-
+_in.mkdir(exist_ok=True, parents=True)
+_out.mkdir(exist_ok=True, parents=True)
 
 def new_cons(id: int) -> dict[str, Any]:
     return dict(
@@ -40,7 +37,7 @@ def new_cons(id: int) -> dict[str, Any]:
     )
 
 
-def new_star(id: int, con_id: int, planet: dict) -> dict[str, Any]:
+def new_star(id: int, con_id: int, planet: dict[str, Any]) -> dict[str, Any]:
     return dict(
         id=id,
         gen_seed=0,
@@ -142,6 +139,7 @@ def new_planet(id: int, rangers_cnt: int) -> dict[str, Any]:
         no_landing=False,
         no_shop_update=False,
         is_rogeria=False,
+        _164_s='',
     )
 
 
@@ -178,19 +176,25 @@ def modify_sav(sav: SAV) -> None:
 
                 star['planets'].append(planet)
 
+# from rangers._drafts.decorator import profile
 
-for filename in tree_walker(_in, exts=('.sav',))[0]:
-    try:
-        out_name = file_rebase(filename, _in, _out)
+# @profile(filename='_prof.log', sortby='calls')
+def main() -> None:
+    for filename in _in.rglob('*.sav'):
+        try:
+            out_name = _out / filename.relative_to(_in)
 
-        print(f'{filename} -> {out_name}')
+            print(f'{filename} -> {out_name}')
 
-        sav = SAV.from_file(filename)
-        modify_sav(sav)
+            sav = SAV.from_file(filename)
+            modify_sav(sav)
 
-        check_dir(out_name)
-        sav.to_file(out_name)
-    except:
-        import traceback
+            out_name.parent.mkdir(exist_ok=True, parents=True)
+            sav.to_file(out_name)
+        except:
+            import traceback
 
-        print(traceback.format_exc())
+            traceback.print_exc()
+
+if __name__ == '__main__':
+    main()

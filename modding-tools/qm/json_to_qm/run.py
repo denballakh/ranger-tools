@@ -1,23 +1,23 @@
+from pathlib import Path
+
 from rangers.qm import QM, VER_QMM
-from rangers.common import tree_walker, check_dir, file_rebase, change_ext
 
-_in = '_input/'
-_out = '_output/'
+_in = Path('_input/')
+_out = Path('_output/')
 
+_in.mkdir(exist_ok=True, parents=True)
+_out.mkdir(exist_ok=True, parents=True)
 
-check_dir(_in)
-check_dir(_out)
-
-for filename in tree_walker(_in, exts=('.json',))[0]:
+for filename in _in.rglob('*.json'):
     try:
         qm = QM.from_json(filename)
         ext = '.qmm' if qm.data['version'] in VER_QMM else '.qm'
-        output_name = change_ext(file_rebase(filename, _in, _out), '.json', ext)
-        print(f'{filename} -> {output_name}')
-        check_dir(output_name)
-        qm.to_file(output_name)
+        out_name = _out / filename.relative_to(_in).with_suffix('.json')
+        print(f'{filename} -> {out_name}')
+        out_name.parent.mkdir(exist_ok=True, parents=True)
+        qm.to_file(out_name)
 
     except:
         import traceback
 
-        print(traceback.format_exc())
+        traceback.print_exc()

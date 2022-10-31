@@ -1,19 +1,19 @@
+from pathlib import Path
+
 from rangers.dat import DAT_SIGN_AVAILABLE, check_signed, get_sign
-from rangers.common import tree_walker, check_dir, file_rebase
 
 if not DAT_SIGN_AVAILABLE:
     raise NotImplementedError('no required code')
 
-_in = '_input/'
-_out = '_output/'
+_in = Path('_input/')
+_out = Path('_output/')
 
+_in.mkdir(exist_ok=True, parents=True)
+_out.mkdir(exist_ok=True, parents=True)
 
-check_dir(_in)
-check_dir(_out)
-
-for filename in tree_walker(_in, exts=('.dat',))[0]:
+for filename in _in.rglob('*.dat'):
     try:
-        out_name = file_rebase(filename, _in, _out)
+        out_name = _out / filename.relative_to(_in)
 
         print(f'{filename} -> {out_name}')
 
@@ -26,7 +26,7 @@ for filename in tree_walker(_in, exts=('.dat',))[0]:
         else:
             signed_data = get_sign(data) + data
 
-        check_dir(out_name)
+        out_name.parent.mkdir(exist_ok=True, parents=True)
 
         with open(out_name, 'wb') as file_out:
             file_out.write(signed_data)
@@ -34,4 +34,4 @@ for filename in tree_walker(_in, exts=('.dat',))[0]:
     except:
         import traceback
 
-        print(traceback.format_exc())
+        traceback.print_exc()

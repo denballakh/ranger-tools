@@ -1,21 +1,13 @@
-import os
+from pathlib import Path
 import shutil
+import itertools
 
-from rangers.common import tree_walker
+for folder in itertools.chain(Path.cwd().rglob('_input'), Path.cwd().rglob('_output')):
+    try:
+        print(f'Deleting {folder}...')
+        shutil.rmtree(folder)
 
-_in = '_input/'
-_out = '_output/'
+    except:
+        import traceback
 
-for base, folders, files in os.walk('./'):
-    for folder in folders:
-        try:
-            folder = f'{base}/{folder}'.replace('//', '/')
-            print(f'Deleting folder {folder + "/" + _in}...')
-            shutil.rmtree(folder + '/' + _in, ignore_errors=True)
-            print(f'Deleting folder {folder + "/" + _out}...')
-            shutil.rmtree(folder + '/' + _out, ignore_errors=True)
-
-        except:
-            import traceback
-
-            print(traceback.format_exc())
+        traceback.print_exc()

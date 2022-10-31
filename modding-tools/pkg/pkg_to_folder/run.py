@@ -1,24 +1,27 @@
+from pathlib import Path
+
 from rangers.pkg import PKG
-from rangers.common import tree_walker, check_dir, file_rebase, change_ext
 
-_in = '_input/'
-_out = '_output/'
+_in = Path('_input/')
+_out = Path('_output/')
 
+_in.mkdir(exist_ok=True, parents=True)
+_out.mkdir(exist_ok=True, parents=True)
 
-check_dir(_in)
-check_dir(_out)
-
-for filename in tree_walker(_in, exts=('.pkg',))[0]:
+for filename in _in.rglob('*.pkg'):
     try:
-        folder = change_ext(file_rebase(filename, _in, _out), '.pkg', '/')
+        folder = _out / filename.relative_to(_in).with_suffix('')
 
         print(f'{filename} -> {folder}')
+        try:
+            pkg = PKG.from_file(filename)
+        except Exception:
+            pkg = PKG.from_file(filename, sr1=True)
 
-        pkg = PKG.from_file(filename)
-        check_dir(folder)
+        folder.mkdir(exist_ok=True, parents=True)
         pkg.to_folder(folder)
 
     except:
         import traceback
 
-        print(traceback.format_exc())
+        traceback.print_exc()

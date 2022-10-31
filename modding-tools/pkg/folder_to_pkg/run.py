@@ -1,29 +1,29 @@
+from pathlib import Path
+
 from rangers.pkg import PKG
-from rangers.common import tree_walker, check_dir, file_rebase
 
 # 0 - без сжатия
 # 9 - максимальное сжатие
 COMPRESSION = 9
 
-_in = '_input/'
-_out = '_output/'
+_in = Path('_input/')
+_out = Path('_output/')
 
+_in.mkdir(exist_ok=True, parents=True)
+_out.mkdir(exist_ok=True, parents=True)
 
-check_dir(_in)
-check_dir(_out)
-
-for folder in tree_walker(_in, root=True)[1]:
+for folder in _in.rglob('*/'):
     try:
-        filename = file_rebase(folder, _in, _out) + '.pkg'
+        filename = _out / folder.relative_to(_in).with_suffix('.pkg')
 
         print(f'{folder} -> {filename}')
 
         pkg = PKG.from_folder(folder)
         pkg.compress(COMPRESSION)
-        check_dir(filename)
+        filename.parent.mkdir(exist_ok=True, parents=True)
         pkg.to_file(filename)
 
     except:
         import traceback
 
-        print(traceback.format_exc())
+        traceback.print_exc()
