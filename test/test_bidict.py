@@ -6,11 +6,13 @@ import random
 
 from rangers.std.time import AdaptiveTimeMeasurer
 from rangers.std.bidict import bidict
-from rangers.common import rand31pm
-COMPILED = bidict.__init__.__class__.__name__ != 'function'
+from rangers.common import rand31pm, is_compiled
+
+COMPILED = is_compiled(bidict)
+assert COMPILED != -1
 
 
-def test_doc():
+def test_doc() -> None:
     """!
     >>> bidict()
     bidict()
@@ -57,7 +59,7 @@ def test_doc():
 
     """
 
-type
+
 def test_speed() -> None:
     runs = 1
     for _ in range(runs):
@@ -67,6 +69,8 @@ def test_speed() -> None:
             history_len=20,
             # print_to='_bidict_bench_opt.txt' if COMPILED else '_bidict_bench_pure.txt',
         ) as atm:
+            print(f'Compiled: {["no", "yes"][COMPILED]}')
+
             d = dict[int, int]()
             bd = bidict[int, int]()
             randint = random.randint
@@ -82,7 +86,6 @@ def test_speed() -> None:
 
             d1 = dict(b1.proxy)
             d2 = dict(b2.proxy)
-
 
             T = atm('empty loop', extra=2)
             T.calibrate(0)
@@ -140,7 +143,7 @@ def test_speed() -> None:
 
             with atm('bd[next(rnd)]') as cnt:
                 for _ in repeat(None, cnt):
-                    if (r := next(rnd)) in bd.proxy:
+                    if (r := next(rnd)) in bd:
                         bd[r]
 
             with atm('bd[next(rnd)] = next(rnd)') as cnt:
@@ -156,6 +159,26 @@ def test_speed() -> None:
                 for _ in repeat(None, cnt):
                     b1 | b2
 
+            if not COMPILED:
+                d100 = bidict()
+                for _ in range(100):
+                    d100 = bidict(d100)
+                # d100 = d100.inv
+                print()
+
+                with atm('d100[next(rnd)]') as cnt:
+                    for _ in repeat(None, cnt):
+                        if (r := next(rnd)) in d100:
+                            d100[r]
+
+                with atm('d100[next(rnd)] = next(rnd)') as cnt:
+                    for _ in repeat(None, cnt):
+                        d100[next(rnd)] = next(rnd)
+
+                with atm('d100[next(rnd)] = next(rnd) & del') as cnt:
+                    for _ in repeat(None, cnt):
+                        d100[(r := next(rnd))] = next(rnd)
+                        del d100[r]
 
 
 if __name__ == '__main__':
