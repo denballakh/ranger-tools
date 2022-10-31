@@ -3,7 +3,7 @@ from typing import Any, Final, TypeVar, cast
 import copy
 
 from .std.mixin import DataMixin, JSONMixin
-from .buffer import IBuffer, OBuffer
+from .std.buffer import IBuffer, OBuffer
 from .std.dataclass import (
     # base
     DataClass,

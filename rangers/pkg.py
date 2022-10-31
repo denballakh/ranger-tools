@@ -1,12 +1,11 @@
 from __future__ import annotations
-from typing import Any, Callable, Final, TypeVar, cast
+from pathlib import Path
+from typing import Any, Final, cast
 
 import zlib
 import os
-import time
 
-from .buffer import Buffer, IBuffer, OBuffer
-from .common import check_dir
+from .std.buffer import Buffer, IBuffer, OBuffer
 from .std.mixin import DataMixin
 
 __all__ = ('PKG',)
@@ -48,7 +47,7 @@ class PKG(DataMixin):
         chunks = []
         din = Buffer(data)
         while din:
-            buf = din.read(min(COMPRESS_CHUNK_SIZE, din.bytes_remains()))
+            buf = din.read(min(COMPRESS_CHUNK_SIZE, len(din) - din.pos))
             chunks.append(buf)
         dout = Buffer()
         for chunk in chunks:
@@ -57,8 +56,8 @@ class PKG(DataMixin):
             dout.write(b'ZL02')
             dout.write_uint(len(chunk))
             dout.write(comp)
-        result = bytes(dout)
-        return result
+
+        return bytes(dout)
 
     @staticmethod
     def _decompress(data: bytes) -> bytes:
@@ -78,8 +77,7 @@ class PKG(DataMixin):
             assert len(unpacked) == unpacked_size
             dout.write(unpacked)
 
-        result = bytes(dout)
-        return result
+        return bytes(dout)
 
     def compress(self, compression_level: int = DEFAULT_COMPRESSION_LEVEL) -> None:
         if self.type == PKG_RAW:
@@ -122,14 +120,14 @@ class PKG(DataMixin):
             buf.pos += bufsize - 8
         return result
 
-    def calculate_offsets(self, offset: int, offsets: dict[int, int]) -> int:
+    def calculate_offsets(self, offset: int, offsets: dict[int, int], sr1: bool = False) -> int:
         size = 0
         if self.type == PKG_DIR:
             assert isinstance(self.data, list)
-            size += 12 + len(self.data) * 158
+            size += 12 + len(self.data) * (32 + (2 * len(self.name) + 2 if sr1 else 126))
             offsets[id(self)] = offset
             for child in self.data:
-                size += child.calculate_offsets(offset + size, offsets)
+                size += child.calculate_offsets(offset + size, offsets, sr1=sr1)
         else:
             offsets[id(self)] = offset + size
             size += 4 + len(self.data)
@@ -140,17 +138,18 @@ class PKG(DataMixin):
         cls,
         buf: IBuffer,
         root: bool = False,
+        sr1: bool = False,
         **kwargs: Any,
     ) -> PKG:
         if root:
             offset = buf.read_uint()
             assert offset >= 4
             metadata = buf.read(offset - 4)
-            buf.seek(offset)
+            buf.pos = offset
             return cls(
                 name='<root>',
                 type_=PKG_DIR,
-                data=cls.read_childs(buf),
+                data=cls.read_childs(buf, sr1=sr1),
                 metadata=metadata,
             )
 
@@ -158,7 +157,7 @@ class PKG(DataMixin):
         _ = buf.read_uint()
         _ = buf.read_str(63).rstrip('\0')
         name = buf.read_str(63).rstrip('\0')
-        assert name.upper() == _
+        assert name.upper() == _, (name, _)
         datatype = buf.read_uint()
         assert datatype in {PKG_DIR, PKG_COMP, PKG_RAW}
         _ = buf.read_uint()
@@ -181,7 +180,7 @@ class PKG(DataMixin):
         if datatype == PKG_DIR:
             assert size == 0
             assert isinstance(self.data, list)
-            self.data = cls.read_childs(buf)
+            self.data = cls.read_childs(buf, sr1=sr1)
 
         else:
             buf_size = buf.read_uint()
@@ -192,7 +191,7 @@ class PKG(DataMixin):
         return self
 
     @classmethod
-    def read_childs(cls, buf: IBuffer) -> list[PKG]:
+    def read_childs(cls, buf: IBuffer, sr1: bool = False) -> list[PKG]:
         childs: list[PKG] = []
         _ = buf.read_uint()
         assert _ == 0xAA
@@ -200,7 +199,7 @@ class PKG(DataMixin):
         _ = buf.read_uint()
         assert _ == 0x9E
         for _ in range(cnt):
-            childs.append(cls.from_buffer(buf))
+            childs.append(cls.from_buffer(buf, sr1=sr1))
         return childs
 
     def to_buffer(
@@ -208,6 +207,7 @@ class PKG(DataMixin):
         buf: OBuffer,
         root: bool = False,
         offsets: dict[int, int] = None,
+        sr1: bool = False,
         **kwargs: Any,
     ) -> None:
         if root:
@@ -217,11 +217,11 @@ class PKG(DataMixin):
             offsets = {}
             self.calculate_offsets(
                 data_start_pos,
-                offsets,
+                offsets, sr1=sr1,
             )
             buf.write_uint(data_start_pos)
             buf.write(self.metadata)
-            self.write_childs(buf, offsets)
+            self.write_childs(buf, offsets, sr1=sr1)
             return
         assert offsets is not None
         assert id(self) in offsets
@@ -241,7 +241,7 @@ class PKG(DataMixin):
 
         buf.push_pos(offsets[id(self)], expand=True)
         if self.type == PKG_DIR:
-            self.write_childs(buf, offsets=offsets)
+            self.write_childs(buf, offsets=offsets, sr1=sr1)
 
         else:
             assert isinstance(self.data, (bytes, bytearray))
@@ -249,26 +249,25 @@ class PKG(DataMixin):
             buf.write(self.data)
         buf.pop_pos()
 
-    def write_childs(self, buf: OBuffer, offsets: dict[int, int]) -> None:
+    def write_childs(self, buf: OBuffer, offsets: dict[int, int], sr1: bool = False) -> None:
         assert self.type == PKG_DIR
         assert isinstance(self.data, list)
         buf.write_uint(0xAA)
         buf.write_uint(len(self.data))
         buf.write_uint(0x9E)
         for child in self.data:
-            child.to_buffer(buf, offsets=offsets)
+            child.to_buffer(buf, offsets=offsets, sr1=sr1)
 
     @classmethod
-    def from_file(cls, path: str, **kwargs: Any) -> PKG:
-        return super().from_file(path, root=True)
+    def from_file(cls, path: Path, sr1: bool = False, **kwargs: Any) -> PKG:
+        return super().from_file(path, root=True, sr1=sr1, **kwargs)
 
-    def to_file(self, path: str, **kwargs: Any) -> None:
-        super().to_file(path, root=True)
+    def to_file(self, path: Path, sr1: bool = False, **kwargs: Any) -> None:
+        super().to_file(path, root=True, sr1=sr1, **kwargs)
 
     @classmethod
-    def from_folder(cls, path: str) -> PKG:
-        print(path)
-        self = PKG('<root>', PKG_DIR, [])
+    def from_folder(cls, path: Path) -> PKG:
+        self = cls('<root>', PKG_DIR, [])
         assert isinstance(self.data, list)
 
         files = [f for f in os.listdir(path) if os.path.isfile(os.path.join(path, f))]
@@ -276,21 +275,19 @@ class PKG(DataMixin):
 
         for file in files:
             filename = os.path.join(path, file)
-            print(filename)
             with open(filename, 'rb') as fp:
                 data = fp.read()
-            self.data.append(PKG(file, PKG_RAW, data))
+            self.data.append(cls(file, PKG_RAW, data))
 
         for directory in dirs:
             dirname = os.path.join(path, directory)
-            print(dirname)
-            item = cls.from_folder(dirname)
+            item = cls.from_folder(dirname)  # type: ignore[arg-type]
             item.name = directory
             self.data.append(item)
 
         return self
 
-    def to_folder(self, path: str) -> None:
+    def to_folder(self, path: Path) -> None:
         self.decompress()
         assert isinstance(self.data, list)
         for item in self.data:
@@ -300,13 +297,22 @@ class PKG(DataMixin):
                 directory = os.path.join(path, item.name)
                 if not os.path.isdir(directory):
                     os.mkdir(directory)
-                item.to_folder(directory)
+                item.to_folder(directory)  # type: ignore[arg-type]
 
             else:
                 filename = os.path.join(path, item.name)
                 assert isinstance(item.data, (bytes, bytearray))
                 with open(filename, 'wb') as fp:
                     fp.write(item.data)
+
+    def __json__(self) -> dict[str, object]:
+        return {
+            'name': self.name,
+            'type': self.type,
+            'data': len(self.data)
+            if self.type != PKG_DIR
+            else [cast(PKG, i).__json__() for i in self.data],
+        }
 
     def copy(self) -> PKG:
         if self.type == PKG_DIR:

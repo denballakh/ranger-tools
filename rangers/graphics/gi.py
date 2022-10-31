@@ -1,4 +1,5 @@
 from __future__ import annotations
+from pathlib import Path
 
 import time
 
@@ -6,7 +7,7 @@ from PIL import Image
 from PIL.Image import Image as ImageType
 
 from ..std.mixin import DataMixin
-from ..buffer import Buffer, IBuffer, OBuffer
+from ..std.buffer import Buffer, IBuffer, OBuffer
 from ..common import rgb565le_to_rgb888, rgb24_to_rgb16, rgb888_to_rgb565le
 
 __all__ = ('GI',)
@@ -215,15 +216,22 @@ class GI(DataMixin):
             l.data_to_buffer(buf, data_positions[i])
 
     @classmethod
-    def from_gi(cls, path: str) -> GI:
+    def from_gi(cls, path: Path) -> GI:
         with open(path, 'rb') as file:
             data = file.read()
 
-        return GI.from_bytes(data)
+        return cls.from_bytes(data)
 
-    def to_gi(self, path: str) -> None:
+    def to_gi(self, path: Path) -> None:
         with open(path, 'wb') as fp:
             fp.write(self.to_bytes())
+
+    @classmethod
+    def from_png(cls, path: Path, fmt: int = 2, opt: int=16) -> GI:
+        return cls.from_image(Image.open(path), fmt=fmt, opt=opt)
+
+    def to_png(self, path: Path) -> None:
+        self.to_image().save(path)
 
     @classmethod
     def from_image(cls, img: ImageType, fmt: int | None = 2, opt: int | None = None) -> GI:
@@ -326,7 +334,7 @@ def from_image_0(img: ImageType, fmt: int, opt: int = None) -> GI:
     return gi
 
 
-def from_image_1(img: ImageType, fmt, opt=None) -> GI:
+def from_image_1(img: ImageType, fmt: int, opt: int=None) -> GI:
     assert fmt == 1
     raise NotImplementedError
 
@@ -441,7 +449,7 @@ def from_image_2(img: ImageType, fmt: int, opt: int = None) -> GI:
 
     for y in range(height):
         for x in range(width):
-            if data[index][3] not in (0, 255):
+            if data[index][3] not in {0, 255}:
                 if cnt and not pixels1:
                     buf1.write_byte(cnt)  # skip cnt pixels
                     buf2.write_byte(cnt)
@@ -536,17 +544,17 @@ def from_image_2(img: ImageType, fmt: int, opt: int = None) -> GI:
     return gi
 
 
-def from_image_3(img: ImageType, fmt, opt=None) -> GI:
+def from_image_3(img: ImageType, fmt: int, opt: int=None) -> GI:
     assert fmt == 3
     raise NotImplementedError
 
 
-def from_image_4(img: ImageType, fmt, opt=None) -> GI:
+def from_image_4(img: ImageType, fmt: int, opt: int=None) -> GI:
     assert fmt == 4
     raise NotImplementedError
 
 
-def from_image_5(img: ImageType, fmt, opt=None) -> GI:
+def from_image_5(img: ImageType, fmt: int, opt: int=None) -> GI:
     assert fmt == 5
     raise NotImplementedError
 
@@ -616,7 +624,7 @@ def to_image_2(gi: GI) -> ImageType:
         layer = gi.layers[li]
         buf = Buffer(layer.data)
 
-        if buf.bytes_remains() == 0:
+        if not buf:
             continue
         size = buf.read_uint()
         assert size == len(layer.data) - 16
@@ -652,7 +660,7 @@ def to_image_2(gi: GI) -> ImageType:
                 while cnt:
                     index = (pos.x + pos_add) * 4
 
-                    if li in (0, 1):
+                    if li in {0, 1}:
                         r, g, b = rgb565le_to_rgb888(buf.read(2))
                         a = 255
                     else:
@@ -662,7 +670,7 @@ def to_image_2(gi: GI) -> ImageType:
                         g = out_data[index + 1]
                         b = out_data[index + 2]
 
-                        if a not in (0, 255):
+                        if a not in {0, 255}:
                             # Retrieveing second layer pixel value from premultiplied alpha (destructive operation)
                             r = round((r / a) * 63) << 2
                             g = round((g / a) * 63) << 2

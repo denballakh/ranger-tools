@@ -1,18 +1,17 @@
-"""!
-@file
-@brief Реализует работу с игровыми датниками
-"""
+# TODO: переписать все
+# TODO: change str to Path
+
 from __future__ import annotations
-from typing import Final, ClassVar, Literal, TypeVar, Union
+from typing import Any, Final, ClassVar, Generic, Literal, TypeVar
 
 import zlib
 import json
+from pathlib import Path
 
 # import random
 # import enum
 
-from .buffer import Buffer
-from .io import AbstractIBuffer
+from .std.buffer import Buffer
 from .common import rand31pm
 from .std.dataclass import CryptedRand31pm, ZL, Nested
 
@@ -21,8 +20,6 @@ T = TypeVar('T')
 DAT_SIGN_AVAILABLE: bool
 try:
     from .dat_sign import get_sign, check_signed
-
-    DAT_SIGN_AVAILABLE = True
 
 except ImportError:
 
@@ -34,6 +31,8 @@ except ImportError:
 
     DAT_SIGN_AVAILABLE = False
 
+else:
+    DAT_SIGN_AVAILABLE = True
 
 __all__ = [
     'DAT',
@@ -46,9 +45,11 @@ __all__ = [
     'check_signed',
 ]
 
-DatDictVal = Union[str, list['DatDictVal'], dict[str, 'DatDictVal']]  # type: ignore[misc]
-DatDict = dict[str, DatDictVal]  # type: ignore[misc]
+# DatDictVal = Union[str, list['DatDictVal'], 'DatDict']  # type: ignore[misc]
+# DatDict = dict[str, DatDictVal]  # type: ignore[misc]
 
+DatDict = Any
+DatDictVal = Any
 # class DatFormat(enum.Flag):
 #     SR1 = 0
 #     HDMain = 1
@@ -108,10 +109,12 @@ def unsign_data(data: bytes) -> bytes:
 
 
 # пытается угадать формат датника, подбирая ключ шифрования
-def guess_format(data: bytes, check_hash: bool = True) -> str | None:
+def guess_format(
+    data: bytes, check_hash: bool = True, *, _sign_removed: bool = False
+) -> str | None:
     buf = Buffer(data)
     if check_signed(data):
-        buf.skip(8)
+        buf.pos += 8
     content_hash = buf.read_uint()
     seed_ciphered = buf.read_int()
     zl01_ciphered = buf.read(4)
@@ -125,7 +128,7 @@ def guess_format(data: bytes, check_hash: bool = True) -> str | None:
 
         rnd = rand31pm(seed_ciphered ^ key)
 
-        while not buf.is_end():
+        while buf:
             dout.write_byte(buf.read_byte() ^ (next(rnd) & 0xFF))
 
         if bytes(dout) != b'ZL01':
@@ -136,18 +139,21 @@ def guess_format(data: bytes, check_hash: bool = True) -> str | None:
 
         fbuf = Buffer(data)
         if check_signed(data):
-            fbuf.skip(8)
+            fbuf.pos += 8
         _ = fbuf.read_uint()
         _ = fbuf.read_int()
         rnd = rand31pm(seed_ciphered ^ key)
 
         dout = Buffer()
-        while not fbuf.is_end():
+        while fbuf:
             dout.write_byte(fbuf.read_byte() ^ (next(rnd) & 0xFF))
         result = bytes(dout)
 
         if zlib.crc32(result) == content_hash:
             return keyname
+
+    if not DAT_SIGN_AVAILABLE and not _sign_removed:
+        return guess_format(data[8:], check_hash=check_hash, _sign_removed=True)
 
     return None
 
@@ -157,6 +163,24 @@ def guess_file_format(filename: str) -> str | None:
     with open(filename, 'rb') as file:
         data = file.read()
     return guess_format(data)
+
+
+class AbstractIBuffer(Generic[T]):
+    data: list[T]
+    pos: int
+
+    def __init__(self, data: list[T]) -> None:
+        self.data = data
+        self.pos = 0
+
+    def get(self) -> T:
+        assert 0 <= self.pos < len(self.data)
+        result = self.data[self.pos]
+        self.pos += 1
+        return result
+
+    def end(self) -> bool:
+        return 0 <= self.pos < len(self.data)
 
 
 class DAT:
@@ -169,6 +193,11 @@ class DAT:
 
     def __repr__(self) -> str:
         return self.to_str()
+
+    def __eq__(self, other: object) -> bool:
+        if isinstance(other, DAT):
+            return self.root == other.root
+        return NotImplemented
 
     def copy(self) -> DAT:
         dat = self.__class__()
@@ -212,7 +241,7 @@ class DAT:
         buf = Buffer()
         buf.write_dcls(
             Nested(
-                CryptedRand31pm(key=ENCRYPTION_KEYS[fmt]),
+                CryptedRand31pm(key=ENCRYPTION_KEYS[fmt], seed=FORMAT_DEFAULT_SEEDS[fmt]),
                 ZL(mode=1, length=-1),
             ),
             data,
@@ -234,31 +263,87 @@ class DAT:
         return self.root.to_str(isroot=True)
 
     @classmethod
-    def from_dat(cls, path: str, fmt: str = None) -> DAT:
+    def from_dat(cls, path: Path, fmt: str = None) -> DAT:
         with open(path, 'rb') as file:
             data = file.read()
         return cls.from_bytes(data, fmt=fmt)
 
-    def to_dat(self, path: str, fmt: str, sign: bool = False) -> None:
+    def to_dat(self, path: Path, fmt: str, sign: bool = False) -> None:
+        if not path.parent.exists():
+            path.parent.mkdir(parents=True)
+
         with open(path, 'wb') as file:
             file.write(self.to_bytes(fmt=fmt, sign=sign))
 
     @classmethod
-    def from_txt(cls, path: str) -> DAT:
-        with open(path, 'rt', encoding='utf-8') as file:
-            s = file.read()
-        return cls.from_str(s)
+    def from_txt(cls, path: Path) -> DAT:
+        for encoding in ['utf8', 'utf16']:
+            try:
+                with open(path, 'rt', encoding=encoding) as file:
+                    s = file.read()
+                return cls.from_str(s)
+            except UnicodeDecodeError:
+                pass
+        raise NotImplementedError
 
-    def to_txt(self, path: str) -> None:
+    def to_txt(self, path: Path) -> None:
         with open(path, 'wt', encoding='utf-8') as file:
             file.write(self.to_str())
 
-    def to_dict(self) -> DatDict:
-        return self.root.to_dict()  # type: ignore[return-value]
+    @classmethod
+    def from_dict(cls, data: DatDict) -> DAT:
+        return cls(DATItem.from_dict(data))
 
-    def to_json(self, path: str, indent: int = 4) -> None:
+    def to_dict(self) -> DatDict:
+        return self.root.to_dict()
+
+    @classmethod
+    def from_json(cls, path: Path) -> DAT:
+        raise NotImplementedError
+
+    def to_json(self, path: Path, indent: int = 4) -> None:
         with open(path, 'wt', encoding='utf-8') as file:
             json.dump(self.root.to_dict(), file, indent=indent)
+
+    @classmethod
+    def from_file(cls, path: Path) -> DAT:
+        if path.suffix == '.txt':
+            return cls.from_txt(path)
+
+        if path.suffix == '.json':
+            return cls.from_json(path)
+
+        if path.suffix == '.dat':
+            return cls.from_dat(path)
+
+        try:
+            return cls.from_txt(path)
+        except Exception:
+            pass
+
+        try:
+            return cls.from_json(path)
+        except Exception:
+            pass
+
+        try:
+            return cls.from_dat(path)
+        except Exception:
+            pass
+
+        raise NotImplementedError(path)
+
+    def to_file(self, path: Path, fmt: str = 'HDMain', sign: bool = False) -> None:
+        if path.suffix == '.txt':
+            return self.to_txt(path)
+
+        if path.suffix == '.json':
+            return self.to_json(path)
+
+        if path.suffix == '.dat':
+            return self.to_dat(path, fmt=fmt, sign=sign)
+
+        raise NotImplementedError(path)
 
 
 class DATItem:
@@ -280,6 +365,11 @@ class DATItem:
 
     def __repr__(self) -> str:
         return self.to_str()
+
+    def __eq__(self, other: object) -> bool:
+        if isinstance(other, DATItem):
+            return self.type == other.type and self.name == other.name and self.value == other.value and self.childs == other.childs
+        return NotImplemented
 
     def copy(self) -> DATItem:
         item = self.__class__()
@@ -303,7 +393,7 @@ class DATItem:
 
         if '=' in s:
             name, _, value = s.partition('=')
-            assert ' ' not in name
+            # assert ' ' not in name
             item = cls()
             item.type = cls.PAR
             item.name = name
@@ -320,7 +410,8 @@ class DATItem:
             elif '^' in s:
                 item.sorted = True
             else:
-                raise ValueError
+                item.sorted = True # default
+                # raise ValueError
 
             while True:
                 if buf.get().partition('//')[0].strip() == '}':
@@ -453,6 +544,30 @@ class DATItem:
                     result[child.name] = [result[child.name]]
 
                 assert isinstance(result[child.name], list)
-                result[child.name].append(child.to_dict())  # type: ignore[union-attr]
+                result[child.name].append(child.to_dict())
 
         return result
+
+    @classmethod
+    def from_dict(cls, data: DatDict) -> DATItem:
+        self = cls()
+        assert isinstance(data, dict)
+        for key, value_ in data.items():
+            for value in (value_,) if not isinstance(value_, list) else value_:
+                if isinstance(value, dict):
+                    child = cls.from_dict(value)
+                    child.name = key
+                    child.type = cls.BLOCK
+                    self.childs.append(child)
+
+                elif isinstance(value, str):
+                    child = cls()
+                    child.name = key
+                    child.type = cls.PAR
+                    child.value = value
+                    self.childs.append(child)
+
+                else:
+                    raise TypeError(value)
+
+        return self

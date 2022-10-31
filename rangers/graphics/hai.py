@@ -1,6 +1,7 @@
 from __future__ import annotations
 import os
 import itertools
+from pathlib import Path
 from types import ModuleType
 
 from PIL import Image
@@ -17,7 +18,7 @@ from PIL import Image
 
 
 from ..std.mixin import DataMixin
-from ..buffer import Buffer, IBuffer, OBuffer
+from ..std.buffer import Buffer, IBuffer, OBuffer
 
 # from ..std.decorator import profile
 
@@ -155,19 +156,17 @@ class HAI(DataMixin):
         return result
 
     @classmethod
-    def from_image_folder(cls, path: str) -> HAI:
+    def from_image_folder(cls, path: Path) -> HAI:
         images: list[Image.Image] = []
         for filename in sorted(os.listdir(path)):
             images.append(Image.open(os.path.join(path, filename)))
         return cls.from_images(images)
 
-    def to_image_folder(self, path: str) -> None:
-        if not path.endswith('/') and not path.endswith('\\'):
-            path += '/'
+    def to_image_folder(self, path: Path) -> None:
 
         images = self.to_images()
         for i, img in enumerate(images):
-            filename = path + f'{i:03}.png'
+            filename = path / f'{i:03}.png'
             img.save(filename)
 
 
