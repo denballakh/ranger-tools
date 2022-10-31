@@ -240,7 +240,7 @@ class frozenbitset:
                 size=self._size,
                 _check=False,
             )
-        return NotImplemented
+        return NotImplemented  # type: ignore[unreachable]
 
     def __rand__(self: FT, other: frozenbitset | int) -> FT:
         return self & other
@@ -257,7 +257,7 @@ class frozenbitset:
                 self._value | other,
                 size=self._size,
             )
-        return NotImplemented
+        return NotImplemented  # type: ignore[unreachable]
 
     def __ror__(self: FT, other: frozenbitset | int) -> FT:
         return self | other
@@ -274,7 +274,7 @@ class frozenbitset:
                 self._value ^ other,
                 size=self._size,
             )
-        return NotImplemented
+        return NotImplemented  # type: ignore[unreachable]
 
     def __rxor__(self: FT, other: frozenbitset | int) -> FT:
         return self ^ other
@@ -286,7 +286,7 @@ class frozenbitset:
                 size=self._size + other,
                 _check=False,
             )
-        return NotImplemented
+        return NotImplemented  # type: ignore[unreachable]
 
     def __rshift__(self: FT, other: int) -> FT:
         if isinstance(other, int):
@@ -295,7 +295,7 @@ class frozenbitset:
                 size=self._size - other,
                 _check=False,
             )
-        return NotImplemented
+        return NotImplemented  # type: ignore[unreachable]
 
     def __add__(self: FT, other: frozenbitset) -> FT:
         if isinstance(other, frozenbitset):
@@ -304,11 +304,11 @@ class frozenbitset:
                 size=self._size + other._size,
                 _check=False,
             )
-        return NotImplemented
+        return NotImplemented  # type: ignore[unreachable]
 
     def __mul__(self: FT, other: int) -> FT:
         if not isinstance(other, int):
-            return NotImplemented
+            return NotImplemented  # type: ignore[unreachable]
 
         if other < 0:
             raise ValueError
@@ -337,7 +337,7 @@ class frozenbitset:
                 size=other,
                 _check=False,
             )
-        return NotImplemented
+        return NotImplemented  # type: ignore[unreachable]
 
     @property
     def bit_mask(self) -> int:

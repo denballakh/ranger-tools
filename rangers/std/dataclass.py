@@ -1,4 +1,5 @@
 from __future__ import annotations
+from pathlib import Path
 import struct
 
 from typing import (
@@ -22,66 +23,81 @@ import zlib
 import random
 from pprint import pprint
 
-from mypy_extensions import trait
 
-from ..buffer import IBuffer, OBuffer
+try:
+    from mypy_extensions import trait
+except ImportError:
+    _T = TypeVar('_T')
+
+    def trait(cls: _T) -> _T:
+        return cls
+
+
+from .buffer import IBuffer, OBuffer
 from ..common import assert_, rand31pm
 from .bidict import bidict
 
 
 T = TypeVar('T')
 G = TypeVar('G')
-TSO = TypeVar('TSO', bound='SerializableObject')
+# TSO = TypeVar('TSO', bound='SerializableObject')
 # Namespace = dict[str, Any]
 
 
 class DataClassError(Exception):
-    pass
+    def __init__(
+        self,
+        msg: str = '',
+        *,
+        dcls: DataClass[T] | None = None,
+        buf: IBuffer | OBuffer | None = None,
+    ) -> None:
+        pass
 
 
 class Memo(dict[Hashable, Any]):
     pass
 
 
-class SerializableObject:
-    __dcls__: ClassVar[DataClass[dict[str, Any]]]
-    __dcls_map__: ClassVar[bidict[str, str]]  # key to attr
+# class SerializableObject:
+#     __dcls__: ClassVar[DataClass[dict[str, Any]]]
+#     __dcls_map__: ClassVar[bidict[str, str]]  # key to attr
 
-    @classmethod
-    def __dcls_new__(cls: type[TSO]) -> TSO:
-        return cls()
+#     @classmethod
+#     def __dcls_new__(cls: type[TSO]) -> TSO:
+#         return cls()
 
-    def __dcls_before_save__(self) -> None:
-        pass
+#     def __dcls_before_save__(self) -> None:
+#         pass
 
-    def __dcls_after_load__(self) -> None:
-        pass
+#     def __dcls_after_load__(self) -> None:
+#         pass
 
-    @classmethod
-    def __dcls_from_dict__(cls: type[TSO], obj: dict[str, Any]) -> TSO:
-        self = cls.__dcls_new__()
-        for key, attr in cls.__dcls_map__.proxy.items():
-            assert key in obj
-            setattr(self, attr, obj[key])
+#     @classmethod
+#     def __dcls_from_dict__(cls: type[TSO], obj: dict[str, Any]) -> TSO:
+#         self = cls.__dcls_new__()
+#         for key, attr in cls.__dcls_map__.proxy.items():
+#             assert key in obj
+#             setattr(self, attr, obj[key])
 
-        self.__dcls_after_load__()
-        return self
+#         self.__dcls_after_load__()
+#         return self
 
-    def __dcls_to_dict__(self: TSO) -> dict[str, Any]:
-        self.__dcls_before_save__()
+#     def __dcls_to_dict__(self: TSO) -> dict[str, Any]:
+#         self.__dcls_before_save__()
 
-        obj: dict[str, Any] = {}
-        for key, attr in self.__class__.__dcls_map__.proxy.items():
-            obj[key] = getattr(self, attr)
+#         obj: dict[str, Any] = {}
+#         for key, attr in self.__class__.__dcls_map__.proxy.items():
+#             obj[key] = getattr(self, attr)
 
-        return obj
+#         return obj
 
-    @classmethod
-    def __dcls_from_buffer__(cls: type[TSO], buf: IBuffer) -> TSO:
-        return cls.__dcls_from_dict__(buf.read_dcls(cls.__dcls__))
+#     @classmethod
+#     def __dcls_from_buffer__(cls: type[TSO], buf: IBuffer) -> TSO:
+#         return cls.__dcls_from_dict__(buf.read_dcls(cls.__dcls__))
 
-    def __dcls_to_buffer__(self, buf: OBuffer) -> None:
-        buf.write_dcls(self.__class__.__dcls__, self.__dcls_to_dict__())
+#     def __dcls_to_buffer__(self, buf: OBuffer) -> None:
+#         buf.write_dcls(self.__class__.__dcls__, self.__dcls_to_dict__())
 
 
 # protocols:
@@ -187,17 +203,22 @@ class CustomCallable(DataClass[T]):
 
 
 class StructFormat(DataClass[T]):
-    __slots__ = ('struct',)
-    struct: struct.Struct
+    __slots__ = ('pack', 'unpack', 'size')
+    # struct: struct.Struct
 
     def __init__(self, fmt: str) -> None:
-        self.struct = struct.Struct(fmt)
+        s = struct.Struct(fmt)
+        self.pack = s.pack
+        self.unpack = s.unpack
+        self.size = s.size
 
     def read(self, buf: IBuffer, *, memo: Memo) -> T:
-        return buf.read_struct(self.struct)[0]
+        return self.unpack(buf.read(self.size))[0]
 
     def write(self, buf: OBuffer, obj: T, *, memo: Memo) -> None:
-        buf.write_struct(self.struct, obj)
+        buf.write(self.pack(obj))
+
+
 def SizedStr(length: int = None) -> DataClass[str]:
     return CustomCallable(
         decode=lambda buf, memo: buf.read_str(length),
@@ -212,6 +233,7 @@ def SizedWStr(length: int = None) -> DataClass[str]:
     )
 
 
+#
 DNone = NullDataClass()
 
 Byte = StructFormat[int]('B')
@@ -660,7 +682,7 @@ class ZL(DataClass[bytes]):
             else:
                 size = self.length
                 if size == -1:
-                    size = buf.bytes_remains()
+                    size = len(buf) - buf.pos
 
             magic = buf.read(4)
             if self.optional and magic == b'\0\0\0\0':
@@ -782,13 +804,18 @@ class AddToMemo(DataClass[T]):
 
 
 class GetFromMemo(DataClass[T]):
-    __slots__ = ('name',)
+    __slots__ = ('name', 'default')
+    missing: ClassVar[object] = object()
 
-    def __init__(self, name: Hashable) -> None:
+    def __init__(self, name: Hashable, default: T = missing) -> None:  # type: ignore[assignment]
         self.name = name
+        self.default = default
 
     def read(self, buf: IBuffer, *, memo: Memo) -> T:
-        return memo[self.name]
+        if self.default is self.missing:
+            return memo[self.name]
+        else:
+            return memo.get(self.name, self.default)
 
     def write(self, buf: OBuffer, obj: T, *, memo: Memo) -> None:
         pass
@@ -826,9 +853,9 @@ class _Log(NullDataClass):
 
 
 class _DumpTo(NullDataClass):
-    def __init__(self, filename: str, mode: Literal['t', 'b'] = 't') -> None:
+    def __init__(self, filename: Path, mode: Literal['t', 'b'] = 't') -> None:
         self.filename = filename
-        self.mode: Literal['t', 'b'] = mode
+        self.mode = mode
 
     def read(self, buf: IBuffer, *, memo: Memo) -> None:
         buf.dump_to_file(self.filename, self.mode)

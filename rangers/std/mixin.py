@@ -1,24 +1,27 @@
 from __future__ import annotations
-from abc import abstractmethod
+from pathlib import Path
 from typing import (
     Any,
-    Container,
     Sequence,
     Type,
     TypeVar,
     Iterable,
     final,
-    Final,
     ClassVar,
-    Literal,
 )
-import sys
 import json
 import reprlib
 
-from mypy_extensions import trait
+
+try:
+    from mypy_extensions import trait
+except ImportError:
+    _T = TypeVar('_T')
+    def trait(cls: _T) -> _T:
+        return cls
+
 from ..common import get_attributes
-from ..buffer import Buffer, IBuffer, OBuffer
+from .buffer import IBuffer, OBuffer
 
 __all__ = [
     'Mixin',
@@ -48,15 +51,15 @@ class PrintFormat:
     pos_only_attrs: tuple[str, ...]
 
     def __init__(
-        self,
-        *,
-        fmt: str = '<{class_name}: {attrs}>',
-        fmt_empty: str | None = None,
-        attr_sep: str = ' ',
-        value_sep: str = '=',
-        use_private_attrs: bool = False,
-        attrs: Sequence[str] = (),
-        pos_only_attrs: Sequence[str] = (),
+            self,
+            *,
+            fmt: str = '<{class_name}: {attrs}>',
+            fmt_empty: str | None = None,
+            attr_sep: str = ' ',
+            value_sep: str = '=',
+            use_private_attrs: bool = False,
+            attrs: Sequence[str] = (),
+            pos_only_attrs: Sequence[str] = (),
     ) -> None:
         assert frozenset(pos_only_attrs) <= frozenset(attrs), (attrs, pos_only_attrs)
         self.fmt = fmt
@@ -81,8 +84,8 @@ class PrintFormat:
         if not self.use_private_attrs:
             attrs = filter(
                 lambda pair: not pair[0].startswith('_')
-                or pair[0] in self.pos_only_attrs
-                or pair[0] in self.attrs,
+                             or pair[0] in self.pos_only_attrs
+                             or pair[0] in self.attrs,
                 attrs,
             )
 
@@ -164,7 +167,6 @@ class DataMixin(Mixin):
     __slots__ = ()
 
     @classmethod
-    @abstractmethod
     def from_buffer(cls: Type[DMT], buf: IBuffer, **kwargs: Any) -> DMT:
         raise NotImplementedError(f'Method {cls.__name__}.from_buffer is abstract')
 
@@ -173,21 +175,20 @@ class DataMixin(Mixin):
         return cls.from_buffer(IBuffer(data), **kwargs)
 
     @classmethod
-    def from_file(cls: Type[DMT], path: str, **kwargs: Any) -> DMT:
+    def from_file(cls: Type[DMT], path: Path, **kwargs: Any) -> DMT:
         with open(path, 'rb') as file:
             data = file.read()
         return cls.from_bytes(data, **kwargs)
 
-    @abstractmethod
     def to_buffer(self: DMT, buf: OBuffer, **kwargs: Any) -> None:
         raise NotImplementedError(f'Method {type(self).__name__}.to_buffer is abstract.')
 
     def to_bytes(self: DMT, **kwargs: Any) -> bytes:
         buf = OBuffer()
         self.to_buffer(buf, **kwargs)
-        return buf.to_bytes()
+        return bytes(buf)
 
-    def to_file(self: DMT, path: str, **kwargs: Any) -> None:
+    def to_file(self: DMT, path: Path, **kwargs: Any) -> None:
         with open(path, 'wb') as file:
             file.write(self.to_bytes(**kwargs))
 
@@ -201,13 +202,13 @@ class JSONMixin(Mixin):
     data: dict[str, Any] | list[Any]
 
     @classmethod
-    def from_json(cls: type[JT], filename: str) -> JT:
+    def from_json(cls: type[JT], filename: Path) -> JT:
         self = cls()
         with open(filename, 'rt', encoding='utf-8') as file:
             self.data = json.load(file)
         return self
 
-    def to_json(self: JT, filename: str) -> None:
+    def to_json(self: JT, filename: Path) -> None:
         with open(filename, 'wt', encoding='utf-8') as file:
             json.dump(
                 self.data,

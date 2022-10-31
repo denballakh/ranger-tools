@@ -137,7 +137,7 @@ class Point:
             return self.__class__(self.x % other.x, self.y % other.y)
         if isinstance(other, float):
             return self.__class__(self.x % other, self.y % other)
-        return NotImplemented
+        return NotImplemented  # type: ignore[unreachable]
 
     def __round__(self: P, ndigits: int = None, /) -> P:
         if ndigits is not None:

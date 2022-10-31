@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from typing import (
     Any,
+    Final,
     Iterator,
     Mapping,
     NoReturn,
@@ -18,13 +19,13 @@ from _collections_abc import (
     dict_items,
 )
 
-from .sentinel import sentinel, SentinelType
 
 __all__ = ('bidict',)
 
 A = TypeVar('A', bound=Hashable)
 B = TypeVar('B', bound=Hashable)
 
+MISSING: Final[Any] = object()
 
 def _inv_dict(_dict: dict[A, B], /) -> dict[B, A]:
     inversed: dict[B, A] = {}
@@ -63,7 +64,7 @@ class bidict(Generic[A, B]):
         return f'<{self.__class__.__name__!s}: {content!s}>'
 
     def __repr__(self) -> str:
-        return f'{self.__class__.__name__!s}({self._dict!r})'
+        return f'{self.__class__.__name__!s}({self._dict or ""})'
 
     def __len__(self) -> int:
         return len(self._dict)
@@ -158,11 +159,11 @@ class bidict(Generic[A, B]):
     def pop(
         self,
         key: A,
-        default: B | SentinelType = sentinel,
+        default: B = MISSING,
         /,
     ) -> B:
         if key not in self._dict:
-            if default is sentinel:
+            if default is MISSING:
                 raise KeyError(key)
             return default
 
