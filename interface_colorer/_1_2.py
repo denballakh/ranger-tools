@@ -49,12 +49,14 @@ def get_rules():
         'Red': transform(-100, 0, 160, saturation=1.20, value=1.0),
         'Green': transform(0, 100, 280, saturation=1.20, value=1.0),
         'Blue': transform(0, 0, 40),
+        'Orange': transform(0, 0, 185, saturation=1.2, value=1.2),
         'Yellow': transform(0, 0, 210, saturation=1.2, value=1.2),
-        'Cyan': transform(0, 0, 345),
+        'Cyan': transform(0, 0, 335),
         'Magenta': transform(0, 0, 100, saturation=1.2, value=1.2),
-        'Grey': to_grey(brightness=0.42),
-        'DarkGrey': to_grey(brightness=1.00, bias=1.03),
+        'Grey': to_grey(brightness=0.3, bias=1.1),
+        'DarkGrey': to_grey(brightness=1.00, bias=1.5),
         'Kling': transform(0, 0, -40, saturation=1.0, brightness=0.0),
+        # 'Neon': transform(0, 0, 345, saturation=2, brightness=10000.0, value=1.3),
     }
     return rules
 
@@ -399,7 +401,6 @@ def to_grey(brightness, bias=1.0, gamma=2.2):
         return *result, a
 
     return f
-
 
 def transform(
     red_angle,

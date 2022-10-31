@@ -1,5 +1,5 @@
-PROFILE = True
-randomize = True
+PROFILE = False
+randomize = False
 rewrite = False
 
 _dats = '_dats/'
@@ -14,8 +14,8 @@ dat_rule_mod = False
 modified_rules: list[str] = []
 dat_file = 'Main.txt'
 
-gi_type = 0
-gi_bit = 32
+gi_type = 2
+gi_bit = 16
 dither = False
 
 COMPRESS_PKG = True

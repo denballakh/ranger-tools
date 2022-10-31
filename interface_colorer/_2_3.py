@@ -113,7 +113,7 @@ def process():
                 continue
 
             if filename.endswith('.png'):
-                out_name = _out + f'{path2}/{file.replace(".png", ".gi")}'
+                out_name = _out + f'{path2}/{file.replace(".png", ".gi").replace(".32bit.",".")}'
                 if (
                     not rewrite
                     and os.path.isfile(out_name)
@@ -126,10 +126,15 @@ def process():
                 print(out_name)
 
                 img = Image.open(filename)
-
-                gi = GI.from_image(img, gi_type, gi_bit)
+                if filename.endswith('.32bit.png'):
+                    # gi = GI.from_image(img, 0, 32)
+                    # gi = GI.from_image(img, 0, 32)
+                    print(f'Warning! 32-bit image: {filename}')
+                    gi = GI.from_image(img, gi_type, gi_bit)
+                else:
+                    gi = GI.from_image(img, gi_type, gi_bit)
                 gi.metadata = (
-                    f'[[[GI image for mod UIRecolor. Author: denball. ({time.ctime()})]]]'.encode()
+                    f'[[[GI image for mod DenUIRecolor. Author: denball. ({time.ctime()})]]]'.encode()
                 )
                 gi.to_gi(out_name)
 
