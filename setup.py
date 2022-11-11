@@ -15,11 +15,11 @@ setuptools.setup(
     python_requires='>=3.10',
     install_requires=[
         'pillow',
-        'msl-loadlib',
+        # 'msl-loadlib',
         'pyyaml',
-        'mypy',
+        # 'mypy',
         'mypy-extensions',
         'typing-extensions',
-        'types-pillow',
+        # 'types-pillow',
     ]
 )
