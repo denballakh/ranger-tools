@@ -1,5 +1,16 @@
 *.exe
 
+*.zip
+*.png
+*.dat
+*.pkg
+*.gi
+*.gai
+*.hai
+*.dll
+
+rangers/_drafts/
+
 .build/
 .pytype/
 .idea/
