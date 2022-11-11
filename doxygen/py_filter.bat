@@ -1,1 +1,0 @@
-doxypypy -a %1
