@@ -409,7 +409,7 @@ def convert_ini_to_dict(content: str) -> dict[str, str]:
             result[key] = val
     return result
 
-
+# TODO: move it to gi
 def rgb565le_to_rgb888(rgb16: bytes) -> tuple[int, int, int]:
     # Unpack from little endian 2 bytes
     r = rgb16[1] & 0b11111000

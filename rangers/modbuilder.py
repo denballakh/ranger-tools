@@ -12,12 +12,16 @@ import json
 
 from .graphics.gi import GI
 from .pkg import PKG
-from .dat import DAT
+from .dat import DAT, DAT_SIGN_AVAILABLE
 
 text_encoding: Final[str] = 'utf16'
 
-legal_rus: Final[str] = '<color=0,132,15>(легален)</color>'
-legal_eng: Final[str] = '<color=0,132,15>(legal)</color>'
+if DAT_SIGN_AVAILABLE:
+    legal_rus = '<color=0,132,15>(легален)</color>'
+    legal_eng = '<color=0,132,15>(legal)</color>'
+else:
+    legal_rus = ''
+    legal_eng = ''
 
 stateless_rus: Final[str] = '<color=0,132,15>(можно подключать/отключать в течение партии)</color>'
 stateless_eng: Final[str] = '<color=0,132,15>(can be enabled/disabled during the game)</color>'
@@ -239,20 +243,20 @@ class ModBuilder:
 
     def x(
         self,
-        name: str = None,
+        name: str | None = None,
         no_normal_resources: bool = False,
         conflict: Iterable[str] = (),
         dependence: Iterable[str] = (),
         priority: int = 0,
-        author_rus: str = None,
-        author_eng: str = None,
-        section_rus: str = None,
-        section_eng: str = None,
-        languages: str = None,
-        small_description_rus: str = None,
-        small_description_eng: str = None,
-        full_description_rus: str = None,
-        full_description_eng: str = None,
+        author_rus: str | None = None,
+        author_eng: str | None = None,
+        section_rus: str | None = None,
+        section_eng: str | None = None,
+        languages: str | None = None,
+        small_description_rus: str | None = None,
+        small_description_eng: str | None = None,
+        full_description_rus: str | None = None,
+        full_description_eng: str | None = None,
         default_language: str = 'Rus',
         extra: Mapping[str, str] = MappingProxyType({}),
     ) -> None:

@@ -155,7 +155,7 @@ class pointer:
         return self.write(bytes((value,)))
 
     @property
-    def bool(self, *, __s: struct.Struct = struct.Struct('?')) -> builtins.bool:  # type: ignore[misc]
+    def bool(self, *, __s: struct.Struct = struct.Struct('?')) -> builtins.bool:
         return self.read_struct(__s)[0]
 
     @bool.setter
@@ -163,87 +163,87 @@ class pointer:
         self.write_struct(__s, value)
 
     @property
-    def int8(self, *, __s: struct.Struct = struct.Struct('b')) -> int:  # type: ignore[misc]
+    def i8(self, *, __s: struct.Struct = struct.Struct('b')) -> int:
         return self.read_struct(__s)[0]
 
-    @int8.setter
-    def int8(self, value: int, *, __s: struct.Struct = struct.Struct('b')) -> None:
+    @i8.setter
+    def i8(self, value: int, *, __s: struct.Struct = struct.Struct('b')) -> None:
         self.write_struct(__s, value)
 
     @property
-    def uint8(self, *, __s: struct.Struct = struct.Struct('B')) -> int:  # type: ignore[misc]
+    def u8(self, *, __s: struct.Struct = struct.Struct('B')) -> int:
         return self.read_struct(__s)[0]
 
-    @uint8.setter
-    def uint8(self, value: int, *, __s: struct.Struct = struct.Struct('B')) -> None:
+    @u8.setter
+    def u8(self, value: int, *, __s: struct.Struct = struct.Struct('B')) -> None:
         self.write_struct(__s, value)
 
     @property
-    def int16(self, *, __s: struct.Struct = struct.Struct('@h')) -> int:  # type: ignore[misc]
+    def i16(self, *, __s: struct.Struct = struct.Struct('@h')) -> int:
         return self.read_struct(__s)[0]
 
-    @int16.setter
-    def int16(self, value: int, *, __s: struct.Struct = struct.Struct('@h')) -> None:
+    @i16.setter
+    def i16(self, value: int, *, __s: struct.Struct = struct.Struct('@h')) -> None:
         self.write_struct(__s, value)
 
     @property
-    def uint16(self, *, __s: struct.Struct = struct.Struct('@H')) -> int:  # type: ignore[misc]
+    def u16(self, *, __s: struct.Struct = struct.Struct('@H')) -> int:
         return self.read_struct(__s)[0]
 
-    @uint16.setter
-    def uint16(self, value: int, *, __s: struct.Struct = struct.Struct('@H')) -> None:
+    @u16.setter
+    def u16(self, value: int, *, __s: struct.Struct = struct.Struct('@H')) -> None:
         self.write_struct(__s, value)
 
     @property
-    def int32(self, *, __s: struct.Struct = struct.Struct('@i')) -> int:  # type: ignore[misc]
+    def i32(self, *, __s: struct.Struct = struct.Struct('@i')) -> int:
         return self.read_struct(__s)[0]
 
-    @int32.setter
-    def int32(self, value: int, *, __s: struct.Struct = struct.Struct('@i')) -> None:
+    @i32.setter
+    def i32(self, value: int, *, __s: struct.Struct = struct.Struct('@i')) -> None:
         self.write_struct(__s, value)
 
     @property
-    def uint32(self, *, __s: struct.Struct = struct.Struct('@I')) -> int:  # type: ignore[misc]
+    def u32(self, *, __s: struct.Struct = struct.Struct('@I')) -> int:
         return self.read_struct(__s)[0]
 
-    @uint32.setter
-    def uint32(self, value: int, *, __s: struct.Struct = struct.Struct('@I')) -> None:
+    @u32.setter
+    def u32(self, value: int, *, __s: struct.Struct = struct.Struct('@I')) -> None:
         self.write_struct(__s, value)
 
     @property
-    def int64(self, *, __s: struct.Struct = struct.Struct('@q')) -> int:  # type: ignore[misc]
+    def i64(self, *, __s: struct.Struct = struct.Struct('@q')) -> int:
         return self.read_struct(__s)[0]
 
-    @int64.setter
-    def int64(self, value: int, *, __s: struct.Struct = struct.Struct('@q')) -> None:
+    @i64.setter
+    def i64(self, value: int, *, __s: struct.Struct = struct.Struct('@q')) -> None:
         self.write_struct(__s, value)
 
     @property
-    def uint64(self, *, __s: struct.Struct = struct.Struct('@Q')) -> int:  # type: ignore[misc]
+    def u64(self, *, __s: struct.Struct = struct.Struct('@Q')) -> int:
         return self.read_struct(__s)[0]
 
-    @uint64.setter
-    def uint64(self, value: int, *, __s: struct.Struct = struct.Struct('@Q')) -> None:
+    @u64.setter
+    def u64(self, value: int, *, __s: struct.Struct = struct.Struct('@Q')) -> None:
         self.write_struct(__s, value)
 
     @property
-    def float(self, *, __s: struct.Struct = struct.Struct('@f')) -> builtins.float:  # type: ignore[misc]
+    def f32(self, *, __s: struct.Struct = struct.Struct('@f')) -> float:
         return self.read_struct(__s)[0]
 
-    @float.setter
-    def float(self, value: builtins.float, *, __s: struct.Struct = struct.Struct('@f')) -> None:
+    @f32.setter
+    def f32(self, value: float, *, __s: struct.Struct = struct.Struct('@f')) -> None:
         self.write_struct(__s, value)
 
     @property
-    def double(self, *, __s: struct.Struct = struct.Struct('@d')) -> builtins.float:  # type: ignore[misc]
+    def f64(self, *, __s: struct.Struct = struct.Struct('@d')) -> float:
         return self.read_struct(__s)[0]
 
-    @double.setter
-    def double(self, value: builtins.float, *, __s: struct.Struct = struct.Struct('@d')) -> None:
+    @f64.setter
+    def f64(self, value: float, *, __s: struct.Struct = struct.Struct('@d')) -> None:
         self.write_struct(__s, value)
 
     @property
-    def size_t(self, *, __s: struct.Struct = struct.Struct('@N')) -> int:  # type: ignore[misc]
+    def size_t(self, *, __s: struct.Struct = struct.Struct('@N')) -> int:
         return self.read_struct(__s)[0]
 
     @size_t.setter
@@ -251,7 +251,7 @@ class pointer:
         self.write_struct(__s, value)
 
     @property
-    def ssize_t(self, *, __s: struct.Struct = struct.Struct('@n')) -> int:  # type: ignore[misc]
+    def ssize_t(self, *, __s: struct.Struct = struct.Struct('@n')) -> int:
         return self.read_struct(__s)[0]
 
     @ssize_t.setter
@@ -259,7 +259,7 @@ class pointer:
         self.write_struct(__s, value)
 
     @property
-    def ptr(self, *, __s: struct.Struct = struct.Struct('@P')) -> pointer:  # type: ignore[misc]
+    def ptr(self, *, __s: struct.Struct = struct.Struct('@P')) -> pointer:
         return pointer(self.read_struct(__s)[0])
 
     @ptr.setter
@@ -283,7 +283,7 @@ class pointer:
     def cwstr(self, /) -> str:
         ptr = self
         res = bytearray()
-        while t := ptr.uint16:
+        while t := ptr.u16:
             res.extend(ptr.read(2))
             ptr += 2
         return res.decode('utf-16le')
@@ -295,7 +295,7 @@ class pointer:
     @property
     def pstr(self, /) -> str:
         ptr = self
-        size = ptr.uint8
+        size = ptr.u8
         ptr += 1
         data = ptr.read(size)
         return data.decode('utf-8')
@@ -307,7 +307,7 @@ class pointer:
     @property
     def pwstr(self, /) -> str:
         ptr = self
-        size = ptr.uint16
+        size = ptr.u16
         ptr += 2
         data = ptr.read(size * 2)
         return data.decode('utf-16le')
@@ -315,4 +315,3 @@ class pointer:
     @pwstr.setter
     def pwstr(self, value: str, /) -> None:
         raise NotImplementedError
-

@@ -30,7 +30,9 @@ class frozenbitset:
     _size: int
     _str: str | None
 
-    def __init__(self: FT, value: int = 0, /, size: int = None, *, _check: bool = True) -> None:
+    def __init__(
+        self: FT, value: int = 0, /, size: int | None = None, *, _check: bool = True
+    ) -> None:
         self._str = None
 
         if not _check:
@@ -62,7 +64,10 @@ class frozenbitset:
     # alternative constructors
     @classmethod
     def from_bytes(
-        cls: type[FT], value: bytes | bytearray, size: int = None, byteorder: ByteOrder = 'little'
+        cls: type[FT],
+        value: bytes | bytearray,
+        size: int | None = None,
+        byteorder: ByteOrder = 'little',
     ) -> FT:
         if not isinstance(value, (bytes, bytearray)):
             raise TypeError
@@ -74,11 +79,11 @@ class frozenbitset:
         )
 
     @classmethod
-    def from_int(cls: type[FT], value: int, size: int = None) -> FT:
+    def from_int(cls: type[FT], value: int, size: int | None = None) -> FT:
         return cls(value, size=size)
 
     @classmethod
-    def from_str(cls: type[FT], value: str, size: int = None) -> FT:
+    def from_str(cls: type[FT], value: str, size: int | None = None) -> FT:
         if value.startswith('0b'):
             value = value[2:]
         if size is None:
@@ -92,7 +97,7 @@ class frozenbitset:
         )
 
     @classmethod
-    def from_list(cls: type[FT], value: list[BIN] | tuple[BIN], size: int = None) -> FT:
+    def from_list(cls: type[FT], value: list[BIN] | tuple[BIN], size: int | None = None) -> FT:
         if not value:
             return cls(size=size)
         if size is None:
@@ -111,13 +116,13 @@ class frozenbitset:
         )
 
     @classmethod
-    def from_file(cls: type[FT], filename: str, size: int = None) -> FT:
+    def from_file(cls: type[FT], filename: str, size: int | None = None) -> FT:
         with open(filename, 'rb') as file:
             data = file.read()
         return cls.from_bytes(data, size=size)
 
     @classmethod
-    def from_iterable(cls: type[FT], iterable: Iterable[BIN], size: int = None) -> FT:
+    def from_iterable(cls: type[FT], iterable: Iterable[BIN], size: int | None = None) -> FT:
         return cls.from_list(list(iterable), size=size)
 
     @classmethod

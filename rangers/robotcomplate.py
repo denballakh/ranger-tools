@@ -49,8 +49,8 @@ class RC(DataMixin, JSONMixin):
     @classmethod
     def from_buffer(cls, buf: IBuffer, **kwargs: Any) -> RC:
         self = cls()
-        self.data = buf.read_dcls(RCObj)
+        self.data = RCObj.read(buf)
         return self
 
     def to_buffer(self, buf: OBuffer, **kwargs: Any) -> None:
-        buf.write_dcls(RCObj, self.data)
+        RCObj.write(buf, self.data)

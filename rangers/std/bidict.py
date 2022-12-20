@@ -27,6 +27,7 @@ B = TypeVar('B', bound=Hashable)
 
 MISSING: Final[Any] = object()
 
+
 def _inv_dict(_dict: dict[A, B], /) -> dict[B, A]:
     inversed: dict[B, A] = {}
 
@@ -46,7 +47,11 @@ class bidict(Generic[A, B]):
     _inv: bidict[B, A]
 
     def __init__(
-        self: bidict[A, B], _dict: dict[A, B] = None, /, *, _inv: bidict[B, A] = None
+        self: bidict[A, B],
+        _dict: dict[A, B] | None = None,
+        /,
+        *,
+        _inv: bidict[B, A] | None = None,
     ) -> None:
         self._dict = {} if _dict is None else _dict
         cls: type[bidict[B, A]] = self.__class__  # type: ignore[assignment]

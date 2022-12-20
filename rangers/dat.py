@@ -115,8 +115,8 @@ def guess_format(
     buf = Buffer(data)
     if check_signed(data):
         buf.pos += 8
-    content_hash = buf.read_uint()
-    seed_ciphered = buf.read_int()
+    content_hash = buf.read_u32()
+    seed_ciphered = buf.read_i32()
     zl01_ciphered = buf.read(4)
 
     buf = Buffer(zl01_ciphered)
@@ -140,8 +140,8 @@ def guess_format(
         fbuf = Buffer(data)
         if check_signed(data):
             fbuf.pos += 8
-        _ = fbuf.read_uint()
-        _ = fbuf.read_int()
+        _ = fbuf.read_u32()
+        _ = fbuf.read_i32()
         rnd = rand31pm(seed_ciphered ^ key)
 
         dout = Buffer()
@@ -187,7 +187,7 @@ class DAT:
     root: DATItem
     fmt: str | None
 
-    def __init__(self, root: DATItem = None) -> None:
+    def __init__(self, root: DATItem | None = None) -> None:
         self.root = DATItem() if root is None else root
         self.fmt: str | None = None
 
@@ -209,19 +209,18 @@ class DAT:
         self.root.merge(other.root)
 
     @classmethod
-    def from_bytes(cls, data: bytes, fmt: str = None) -> DAT:
+    def from_bytes(cls, data: bytes, fmt: str | None = None) -> DAT:
         data = unsign_data(data)
 
         if fmt not in ENCRYPTION_KEYS:
             fmt = guess_format(data)
         assert fmt is not None
         assert fmt in ENCRYPTION_KEYS, f'Invalid dat format: {fmt}'
-        data_d = Buffer(data).read_dcls(
-            Nested(
-                CryptedRand31pm(key=ENCRYPTION_KEYS[fmt]),
-                ZL(mode=1, length=-1),
-            )
-        )
+        data_d = Nested(
+            CryptedRand31pm(key=ENCRYPTION_KEYS[fmt]),
+            ZL(mode=1, length=-1),
+        ).read_bytes(data)
+
         # b'\2\0\0' - тип элемента (блок == \2) и название корня (пустая строка == \0\0)
         data_d = b'\2\0\0' + data_d
         root = DATItem.from_bytes(data_d, fmt=fmt)
@@ -238,15 +237,10 @@ class DAT:
         assert fmt is not None
         assert fmt in ENCRYPTION_KEYS, f'Invalid dat format: {fmt}'
 
-        buf = Buffer()
-        buf.write_dcls(
-            Nested(
-                CryptedRand31pm(key=ENCRYPTION_KEYS[fmt], seed=FORMAT_DEFAULT_SEEDS[fmt]),
-                ZL(mode=1, length=-1),
-            ),
-            data,
-        )
-        data = bytes(buf)
+        data = Nested(
+            CryptedRand31pm(key=ENCRYPTION_KEYS[fmt], seed=FORMAT_DEFAULT_SEEDS[fmt]),
+            ZL(mode=1, length=-1),
+        ).write_bytes(data)
 
         if sign:
             data = sign_data(data)
@@ -263,7 +257,7 @@ class DAT:
         return self.root.to_str(isroot=True)
 
     @classmethod
-    def from_dat(cls, path: Path, fmt: str = None) -> DAT:
+    def from_dat(cls, path: Path, fmt: str | None = None) -> DAT:
         with open(path, 'rb') as file:
             data = file.read()
         return cls.from_bytes(data, fmt=fmt)
@@ -368,7 +362,12 @@ class DATItem:
 
     def __eq__(self, other: object) -> bool:
         if isinstance(other, DATItem):
-            return self.type == other.type and self.name == other.name and self.value == other.value and self.childs == other.childs
+            return (
+                self.type == other.type
+                and self.name == other.name
+                and self.value == other.value
+                and self.childs == other.childs
+            )
         return NotImplemented
 
     def copy(self) -> DATItem:
@@ -410,7 +409,7 @@ class DATItem:
             elif '^' in s:
                 item.sorted = True
             else:
-                item.sorted = True # default
+                item.sorted = True  # default
                 # raise ValueError
 
             while True:
@@ -470,12 +469,12 @@ class DATItem:
             else:
                 item.sorted = False
 
-            childs_cnt = buf.read_uint()
+            childs_cnt = buf.read_u32()
 
             for _ in range(childs_cnt):
                 if item.sorted:
-                    _ = buf.read_uint()
-                    _ = buf.read_uint()
+                    _ = buf.read_u32()
+                    _ = buf.read_u32()
 
                 child = cls.from_buffer(buf, fmt=fmt)
                 item.childs.append(child)
@@ -498,7 +497,7 @@ class DATItem:
             if fmt in {'HDMain', 'ReloadMain', 'SR1'}:
                 buf.write_byte(self.sorted)
 
-            buf.write_uint(len(self.childs))
+            buf.write_u32(len(self.childs))
 
             if fmt in {'HDMain', 'ReloadMain', 'SR1'} and self.sorted:
                 glo_index: int = 0
@@ -513,8 +512,8 @@ class DATItem:
                         glo_index = [c.name for c in self.childs].count(child.name)
                     name = child.name
 
-                    buf.write_uint(loc_index)
-                    buf.write_uint(glo_index)
+                    buf.write_u32(loc_index)
+                    buf.write_u32(glo_index)
                     child.to_buffer(buf, fmt=fmt)
 
             else:

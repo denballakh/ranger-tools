@@ -42,24 +42,24 @@ class HAI(DataMixin):
     @classmethod
     def from_buffer(cls, buf: IBuffer, **kwargs: object) -> HAI:
         self = cls()
-        magic = buf.read_uint()
+        magic = buf.read_u32()
         if magic != HAI_MAGIC:
             raise ValueError('Invalid magic:', magic)
 
-        self.width = buf.read_uint()
-        self.height = buf.read_uint()
-        row_bytes = buf.read_uint()
+        self.width = buf.read_u32()
+        self.height = buf.read_u32()
+        row_bytes = buf.read_u32()
         assert row_bytes == self.width == self.height
-        frame_count = buf.read_uint()
-        frame_size = buf.read_uint()
-        _unk1 = buf.read_uint()
-        _unk2 = buf.read_uint()
-        _unk3 = buf.read_uint()
-        _unk4 = buf.read_uint()
-        _unk5 = buf.read_uint()
-        _unk6 = buf.read_uint()
+        frame_count = buf.read_u32()
+        frame_size = buf.read_u32()
+        _unk1 = buf.read_u32()
+        _unk2 = buf.read_u32()
+        _unk3 = buf.read_u32()
+        _unk4 = buf.read_u32()
+        _unk5 = buf.read_u32()
+        _unk6 = buf.read_u32()
         # assert (_unk1, _unk2, _unk2, _unk2, _unk2, _unk2) == (1, 8, 0, 0, 0, 0) # ???
-        self.pal_size = buf.read_uint() // 4
+        self.pal_size = buf.read_u32() // 4
 
         assert frame_size == self.width * self.height + self.pal_size * 4
 
@@ -71,19 +71,19 @@ class HAI(DataMixin):
         return self
 
     def to_buffer(self, buf: OBuffer, **kwargs: object) -> None:
-        buf.write_uint(HAI_MAGIC)
-        buf.write_uint(self.width)
-        buf.write_uint(self.height)
-        buf.write_uint(self.width)
-        buf.write_uint(len(self.frames))
-        buf.write_uint(self.width * self.height + self.pal_size * 4)
-        buf.write_uint(1)
-        buf.write_uint(8)
-        buf.write_uint(0)
-        buf.write_uint(0)
-        buf.write_uint(0)
-        buf.write_uint(0)
-        buf.write_uint(self.pal_size * 4)
+        buf.write_u32(HAI_MAGIC)
+        buf.write_u32(self.width)
+        buf.write_u32(self.height)
+        buf.write_u32(self.width)
+        buf.write_u32(len(self.frames))
+        buf.write_u32(self.width * self.height + self.pal_size * 4)
+        buf.write_u32(1)
+        buf.write_u32(8)
+        buf.write_u32(0)
+        buf.write_u32(0)
+        buf.write_u32(0)
+        buf.write_u32(0)
+        buf.write_u32(self.pal_size * 4)
 
         for data, palette in self.frames:
             assert len(data) == self.width * self.height

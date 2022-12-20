@@ -44,14 +44,14 @@ class Layer:
     def from_buffer(cls, buf: IBuffer) -> Layer:
         layer = cls()
 
-        seek = buf.read_uint()
-        size = buf.read_uint()
-        layer.start_X = buf.read_int()
-        layer.start_Y = buf.read_int()
-        layer.finish_X = buf.read_int()
-        layer.finish_Y = buf.read_int()
-        unknown1 = buf.read_uint()
-        unknown2 = buf.read_uint()
+        seek = buf.read_u32()
+        size = buf.read_u32()
+        layer.start_X = buf.read_i32()
+        layer.start_Y = buf.read_i32()
+        layer.finish_X = buf.read_i32()
+        layer.finish_Y = buf.read_i32()
+        unknown1 = buf.read_u32()
+        unknown2 = buf.read_u32()
         assert unknown1 == 0, unknown1
         assert unknown2 == 0, unknown2
 
@@ -64,13 +64,13 @@ class Layer:
     def to_buffer(self, buf: OBuffer) -> int:
         seek_pos = buf.pos
         buf.write(b'\xFF' * 4)
-        buf.write_uint(len(self.data))
-        buf.write_int(self.start_X)
-        buf.write_int(self.start_Y)
-        buf.write_int(self.finish_X)
-        buf.write_int(self.finish_Y)
-        buf.write_uint(0)
-        buf.write_uint(0)
+        buf.write_u32(len(self.data))
+        buf.write_i32(self.start_X)
+        buf.write_i32(self.start_Y)
+        buf.write_i32(self.finish_X)
+        buf.write_i32(self.finish_Y)
+        buf.write_u32(0)
+        buf.write_u32(0)
         return seek_pos
 
     def data_to_buffer(self, buf: OBuffer, seek_pos: int) -> None:
@@ -78,7 +78,7 @@ class Layer:
         buf.write(self.data)
 
         buf.push_pos(seek_pos)
-        buf.write_uint(pos)
+        buf.write_u32(pos)
         buf.pop_pos()
 
     def __repr__(self) -> str:
@@ -118,22 +118,22 @@ class Header:
 
         signature = buf.read(4)
         assert signature == b'gi\x00\x00', signature
-        version = buf.read_uint()
+        version = buf.read_u32()
         assert version == 1, version
-        header.start_X = buf.read_int()
-        header.start_Y = buf.read_int()
-        header.finish_X = buf.read_int()
-        header.finish_Y = buf.read_int()
-        header.r_bitmask = buf.read_uint()
-        header.g_bitmask = buf.read_uint()
-        header.b_bitmask = buf.read_uint()
-        header.a_bitmask = buf.read_uint()
-        header.frame_type = buf.read_uint()
-        header.layer_count = buf.read_uint()
-        unknown1 = buf.read_uint()
-        unknown2 = buf.read_uint()
-        unknown3 = buf.read_uint()
-        unknown4 = buf.read_uint()
+        header.start_X = buf.read_i32()
+        header.start_Y = buf.read_i32()
+        header.finish_X = buf.read_i32()
+        header.finish_Y = buf.read_i32()
+        header.r_bitmask = buf.read_u32()
+        header.g_bitmask = buf.read_u32()
+        header.b_bitmask = buf.read_u32()
+        header.a_bitmask = buf.read_u32()
+        header.frame_type = buf.read_u32()
+        header.layer_count = buf.read_u32()
+        unknown1 = buf.read_u32()
+        unknown2 = buf.read_u32()
+        unknown3 = buf.read_u32()
+        unknown4 = buf.read_u32()
         assert unknown1 == 0, unknown1
         assert unknown2 == 0, unknown2
         assert unknown3 == 0, unknown3
@@ -143,21 +143,21 @@ class Header:
 
     def to_buffer(self, buf: OBuffer) -> None:
         buf.write(b'gi\x00\x00')
-        buf.write_uint(1)
-        buf.write_int(self.start_X)
-        buf.write_int(self.start_Y)
-        buf.write_int(self.finish_X)
-        buf.write_int(self.finish_Y)
-        buf.write_uint(self.r_bitmask)
-        buf.write_uint(self.g_bitmask)
-        buf.write_uint(self.b_bitmask)
-        buf.write_uint(self.a_bitmask)
-        buf.write_uint(self.frame_type)
-        buf.write_uint(self.layer_count)
-        buf.write_uint(0)
-        buf.write_uint(0)
-        buf.write_uint(0)
-        buf.write_uint(0)
+        buf.write_u32(1)
+        buf.write_i32(self.start_X)
+        buf.write_i32(self.start_Y)
+        buf.write_i32(self.finish_X)
+        buf.write_i32(self.finish_Y)
+        buf.write_u32(self.r_bitmask)
+        buf.write_u32(self.g_bitmask)
+        buf.write_u32(self.b_bitmask)
+        buf.write_u32(self.a_bitmask)
+        buf.write_u32(self.frame_type)
+        buf.write_u32(self.layer_count)
+        buf.write_u32(0)
+        buf.write_u32(0)
+        buf.write_u32(0)
+        buf.write_u32(0)
 
     def __repr__(self) -> str:
         s = (
@@ -182,7 +182,7 @@ class GI(DataMixin):
     layers: list[Layer]
     metadata: bytes
 
-    def __init__(self, *, metadata: bytes = None) -> None:
+    def __init__(self, *, metadata: bytes | None = None) -> None:
         self.header = Header()
         self.layers = []
 
@@ -227,7 +227,7 @@ class GI(DataMixin):
             fp.write(self.to_bytes())
 
     @classmethod
-    def from_png(cls, path: Path, fmt: int = 2, opt: int=16) -> GI:
+    def from_png(cls, path: Path, fmt: int = 2, opt: int = 16) -> GI:
         return cls.from_image(Image.open(path), fmt=fmt, opt=opt)
 
     def to_png(self, path: Path) -> None:
@@ -271,7 +271,7 @@ class GI(DataMixin):
 
 
 # One layer, 16 or 32 bit, depends on mask
-def from_image_0(img: ImageType, fmt: int, opt: int = None) -> GI:
+def from_image_0(img: ImageType, fmt: int, opt: int | None = None) -> GI:
     assert fmt == 0
 
     img = img.convert('RGBA')
@@ -334,12 +334,12 @@ def from_image_0(img: ImageType, fmt: int, opt: int = None) -> GI:
     return gi
 
 
-def from_image_1(img: ImageType, fmt: int, opt: int=None) -> GI:
+def from_image_1(img: ImageType, fmt: int, opt: int | None = None) -> GI:
     assert fmt == 1
     raise NotImplementedError
 
 
-def from_image_2(img: ImageType, fmt: int, opt: int = None) -> GI:
+def from_image_2(img: ImageType, fmt: int, opt: int | None = None) -> GI:
     assert fmt == 2
     assert opt is None or opt == 16
 
@@ -517,24 +517,24 @@ def from_image_2(img: ImageType, fmt: int, opt: int = None) -> GI:
         buf2.write_byte(0x00)
 
     buf0_ = Buffer()
-    buf0_.write_uint(len(buf0))
-    buf0_.write_uint(width)
-    buf0_.write_uint(height)
-    buf0_.write_uint(0)
+    buf0_.write_u32(len(buf0))
+    buf0_.write_u32(width)
+    buf0_.write_u32(height)
+    buf0_.write_u32(0)
     buf0_.write(buf0.data)
 
     buf1_ = Buffer()
-    buf1_.write_uint(len(buf1))
-    buf1_.write_uint(width)
-    buf1_.write_uint(height)
-    buf1_.write_uint(0)
+    buf1_.write_u32(len(buf1))
+    buf1_.write_u32(width)
+    buf1_.write_u32(height)
+    buf1_.write_u32(0)
     buf1_.write(buf1.data)
 
     buf2_ = Buffer()
-    buf2_.write_uint(len(buf2))
-    buf2_.write_uint(width)
-    buf2_.write_uint(height)
-    buf2_.write_uint(0)
+    buf2_.write_u32(len(buf2))
+    buf2_.write_u32(width)
+    buf2_.write_u32(height)
+    buf2_.write_u32(0)
     buf2_.write(buf2.data)
 
     layer0.data = bytes(buf0_.data)
@@ -544,17 +544,17 @@ def from_image_2(img: ImageType, fmt: int, opt: int = None) -> GI:
     return gi
 
 
-def from_image_3(img: ImageType, fmt: int, opt: int=None) -> GI:
+def from_image_3(img: ImageType, fmt: int, opt: int | None = None) -> GI:
     assert fmt == 3
     raise NotImplementedError
 
 
-def from_image_4(img: ImageType, fmt: int, opt: int=None) -> GI:
+def from_image_4(img: ImageType, fmt: int, opt: int | None = None) -> GI:
     assert fmt == 4
     raise NotImplementedError
 
 
-def from_image_5(img: ImageType, fmt: int, opt: int=None) -> GI:
+def from_image_5(img: ImageType, fmt: int, opt: int | None = None) -> GI:
     assert fmt == 5
     raise NotImplementedError
 
@@ -626,15 +626,15 @@ def to_image_2(gi: GI) -> ImageType:
 
         if not buf:
             continue
-        size = buf.read_uint()
+        size = buf.read_u32()
         assert size == len(layer.data) - 16
 
-        layer_width = buf.read_uint()
-        layer_height = buf.read_uint()
+        layer_width = buf.read_u32()
+        layer_height = buf.read_u32()
         assert layer_width == layer.finish_X - layer.start_X
         assert layer_height == layer.finish_Y - layer.start_Y
 
-        _0 = buf.read_uint()
+        _0 = buf.read_u32()
         assert _0 == 0, _0
 
         start_X = layer.start_X - header.start_X

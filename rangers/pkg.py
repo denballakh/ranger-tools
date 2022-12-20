@@ -12,8 +12,8 @@ __all__ = ('PKG',)
 
 MIN_SIZE_TO_COMPRESS: Final = 32
 COMPRESS_PNG: Final = False
-COMPRESS_CHUNK_SIZE: Final = 2 ** 16
-COMPRESS_CHUNK_MAX_SIZE: Final = 2 ** 16  # 64 KB
+COMPRESS_CHUNK_SIZE: Final = 2**16
+COMPRESS_CHUNK_MAX_SIZE: Final = 2**16  # 64 KB
 DEFAULT_COMPRESSION_LEVEL: Final = 9
 
 PKG_RAW: Final = 1
@@ -52,9 +52,9 @@ class PKG(DataMixin):
         dout = Buffer()
         for chunk in chunks:
             comp = zlib.compress(chunk, level=compression_level)
-            dout.write_uint(len(comp) + 8)
+            dout.write_u32(len(comp) + 8)
             dout.write(b'ZL02')
-            dout.write_uint(len(chunk))
+            dout.write_u32(len(chunk))
             dout.write(comp)
 
         return bytes(dout)
@@ -65,14 +65,14 @@ class PKG(DataMixin):
         dout = Buffer()
 
         while din:
-            bufsize = din.read_uint()
+            bufsize = din.read_u32()
             buf = din.read(bufsize)
 
             bufin = Buffer(buf)
 
             zl02 = bufin.read(4)
             assert zl02 == b'ZL02', f'Invalid ZL signature: {zl02!r}'
-            unpacked_size = bufin.read_uint()
+            unpacked_size = bufin.read_u32()
             unpacked = zlib.decompress(bufin.read())
             assert len(unpacked) == unpacked_size
             dout.write(unpacked)
@@ -114,9 +114,9 @@ class PKG(DataMixin):
         result = 0
         buf = IBuffer(self.data)
         while buf:
-            bufsize = buf.read_uint()
+            bufsize = buf.read_u32()
             buf.pos += 4
-            result += buf.read_uint()
+            result += buf.read_u32()
             buf.pos += bufsize - 8
         return result
 
@@ -142,7 +142,7 @@ class PKG(DataMixin):
         **kwargs: Any,
     ) -> PKG:
         if root:
-            offset = buf.read_uint()
+            offset = buf.read_u32()
             assert offset >= 4
             metadata = buf.read(offset - 4)
             buf.pos = offset
@@ -153,21 +153,21 @@ class PKG(DataMixin):
                 metadata=metadata,
             )
 
-        size = buf.read_uint()
-        _ = buf.read_uint()
+        size = buf.read_u32()
+        _ = buf.read_u32()
         _ = buf.read_str(63).rstrip('\0')
         name = buf.read_str(63).rstrip('\0')
         assert name.upper() == _, (name, _)
-        datatype = buf.read_uint()
+        datatype = buf.read_u32()
         assert datatype in {PKG_DIR, PKG_COMP, PKG_RAW}
-        _ = buf.read_uint()
+        _ = buf.read_u32()
         assert _ == datatype
-        _ = buf.read_uint()
+        _ = buf.read_u32()
         assert _ == 0
-        _ = buf.read_uint()
+        _ = buf.read_u32()
         assert _ == 0
-        offset = buf.read_uint()
-        _ = buf.read_uint()
+        offset = buf.read_u32()
+        _ = buf.read_u32()
         assert _ == 0
 
         self = cls(
@@ -183,7 +183,7 @@ class PKG(DataMixin):
             self.data = cls.read_childs(buf, sr1=sr1)
 
         else:
-            buf_size = buf.read_uint()
+            buf_size = buf.read_u32()
             assert buf_size == size - 4
             self.data = buf.read(buf_size)
 
@@ -193,10 +193,10 @@ class PKG(DataMixin):
     @classmethod
     def read_childs(cls, buf: IBuffer, sr1: bool = False) -> list[PKG]:
         childs: list[PKG] = []
-        _ = buf.read_uint()
+        _ = buf.read_u32()
         assert _ == 0xAA
-        cnt = buf.read_uint()
-        _ = buf.read_uint()
+        cnt = buf.read_u32()
+        _ = buf.read_u32()
         assert _ == 0x9E
         for _ in range(cnt):
             childs.append(cls.from_buffer(buf, sr1=sr1))
@@ -206,7 +206,7 @@ class PKG(DataMixin):
         self,
         buf: OBuffer,
         root: bool = False,
-        offsets: dict[int, int] = None,
+        offsets: dict[int, int] | None = None,
         sr1: bool = False,
         **kwargs: Any,
     ) -> None:
@@ -217,27 +217,28 @@ class PKG(DataMixin):
             offsets = {}
             self.calculate_offsets(
                 data_start_pos,
-                offsets, sr1=sr1,
+                offsets,
+                sr1=sr1,
             )
-            buf.write_uint(data_start_pos)
+            buf.write_u32(data_start_pos)
             buf.write(self.metadata)
             self.write_childs(buf, offsets, sr1=sr1)
             return
         assert offsets is not None
         assert id(self) in offsets
-        buf.write_uint(len(self.data) + 4 if self.type != PKG_DIR else 0)
-        buf.write_uint(
+        buf.write_u32(len(self.data) + 4 if self.type != PKG_DIR else 0)
+        buf.write_u32(
             self.decompressed_size() if self.type != PKG_DIR else 0
         )  # FIXME decompressed size
         buf.write_str(self.name.upper(), 63)
         buf.write_str(self.name, 63)
 
-        buf.write_uint(self.type)
-        buf.write_uint(self.type)
-        buf.write_uint(0)
-        buf.write_uint(0)
-        buf.write_uint(offsets[id(self)])
-        buf.write_uint(0)
+        buf.write_u32(self.type)
+        buf.write_u32(self.type)
+        buf.write_u32(0)
+        buf.write_u32(0)
+        buf.write_u32(offsets[id(self)])
+        buf.write_u32(0)
 
         buf.push_pos(offsets[id(self)], expand=True)
         if self.type == PKG_DIR:
@@ -245,16 +246,16 @@ class PKG(DataMixin):
 
         else:
             assert isinstance(self.data, (bytes, bytearray))
-            buf.write_uint(len(self.data))
+            buf.write_u32(len(self.data))
             buf.write(self.data)
         buf.pop_pos()
 
     def write_childs(self, buf: OBuffer, offsets: dict[int, int], sr1: bool = False) -> None:
         assert self.type == PKG_DIR
         assert isinstance(self.data, list)
-        buf.write_uint(0xAA)
-        buf.write_uint(len(self.data))
-        buf.write_uint(0x9E)
+        buf.write_u32(0xAA)
+        buf.write_u32(len(self.data))
+        buf.write_u32(0x9E)
         for child in self.data:
             child.to_buffer(buf, offsets=offsets, sr1=sr1)
 

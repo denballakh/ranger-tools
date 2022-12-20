@@ -139,7 +139,7 @@ class Point:
             return self.__class__(self.x % other, self.y % other)
         return NotImplemented  # type: ignore[unreachable]
 
-    def __round__(self: P, ndigits: int = None, /) -> P:
+    def __round__(self: P, ndigits: int | None = None, /) -> P:
         if ndigits is not None:
             return self.__class__(self.x.__round__(ndigits), self.y.__round__(ndigits))
         else:
@@ -155,7 +155,7 @@ class Point:
         return self.__class__(self.x.__trunc__(), self.y.__trunc__())
 
     def abs(self, /) -> float:
-        return (self.x ** 2.0 + self.y ** 2.0) ** 0.5
+        return (self.x**2.0 + self.y**2.0) ** 0.5
 
     def angle(self, /) -> float:
         return atan2(self.y, self.x)
@@ -186,8 +186,7 @@ class MPoint(Point):
 
     __slots__ = ()
 
-    def __hash__(self, /) -> NoReturn:
-        raise TypeError(f'unhashable type: {self.__class__.__name__!r}')
+    __hash__ = None  # type: ignore[assignment]
 
     # __setattr__ = object.__setattr__ # breaks mypyc
     # def __setattr__(self, attr: str, value: Any, /) -> None:
@@ -259,7 +258,7 @@ def angle_cmp(p: Point, /) -> tuple[float, float]:
     return (p.angle(), p.abs())
 
 
-def dist_cmp(p: Point = None, /) -> Callable[[Point], float]:
+def dist_cmp(p: Point | None = None, /) -> Callable[[Point], float]:
     if p is None:
         return Point.abs  # compare by dist from origin
     else:

@@ -47,19 +47,19 @@ class MaybeUndefinedSizedWStr(DataClass[str | None]):
     1000 ui32 wstr -> str
     """
 
-    def read(self, buf: IBuffer, memo: Memo) -> str | None:
-        flag = buf.read_uint()
+    def read(self, buf: IBuffer, /) -> str | None:
+        flag = buf.read_u32()
         if not flag:
             return None
-        size = buf.read_uint()
+        size = buf.read_u32()
         return buf.read_wstr(size)
 
-    def write(self, buf: OBuffer, obj: str | None, memo: Memo) -> None:
+    def write(self, buf: OBuffer, obj: str | None, /) -> None:
         if obj is None:
-            buf.write_uint(0)
+            buf.write_u32(0)
             return
-        buf.write_uint(1)
-        buf.write_uint(len(obj))
+        buf.write_u32(1)
+        buf.write_u32(len(obj))
         buf.write_wstr(obj, length=len(obj))
 
 
@@ -412,17 +412,17 @@ QuestObj: DataClass[dict[str, Any]] = NamedSequence(
 class QM(DataMixin, JSONMixin):
     data: dict[str, Any]
 
-    def __init__(self, data: dict[str, Any] = None) -> None:
+    def __init__(self, data: dict[str, Any] | None = None) -> None:
         self.data = {} if data is None else data
 
     @classmethod
     def from_buffer(cls, buf: IBuffer, **kwargs: Any) -> QM:
         self = cls()
-        self.data = buf.read_dcls(QuestObj)
+        self.data = QuestObj.read(buf)
         return self
 
     def to_buffer(self, buf: OBuffer, **kwargs: Any) -> None:
-        buf.write_dcls(QuestObj, self.data)
+        QuestObj.write(buf, self.data)
 
     def __deepcopy__(self, memo: Any) -> QM:
         return QM(copy.deepcopy(self.data, memo))

@@ -11,19 +11,7 @@ from pathlib import Path
 import struct
 from struct import Struct
 
-try:
-    from mypy_extensions import trait
-except ImportError:
-    _T = TypeVar('_T')
 
-    def trait(cls: _T) -> _T:
-        return cls
-
-
-if TYPE_CHECKING:
-    from .dataclass import DataClass, Memo
-
-from .._drafts.inline import inline_builtins, inline_method, inline_var, inline_attr
 
 __all__ = (
     'BaseBuffer',
@@ -32,14 +20,9 @@ __all__ = (
     'Buffer',
 )
 
-T = TypeVar('T')
 BT = TypeVar('BT', bound='BaseBuffer')
-# FBT = TypeVar('FBT', bound='FastBuffer')
-TData_co = TypeVar('TData_co', bound=bytes | bytearray, covariant=True)
 
-_s: struct.Struct = Struct('?')
-
-_hex_char_conv: dict[int | str, str] = {
+_hex_char_conv: dict[str, str] = {
     '\x00': '..',
     '\x01': '.1',
     '\x02': '.2',
@@ -59,9 +42,9 @@ _hex_char_conv: dict[int | str, str] = {
     '\xFF': '##',
 }
 
-_str_rus_chars: str = 'абвгдеёжзийклмонпрстуфхцчшщъыьэюя' + 'АБВГДЕЁЖЗИЙКЛМОНПРСТУФХЦЧШЩЪЫЬЭЮЯ'
+_str_rus_chars: set[str] = set('абвгдеёжзийклмонпрстуфхцчшщъыьэюя' + 'АБВГДЕЁЖЗИЙКЛМОНПРСТУФХЦЧШЩЪЫЬЭЮЯ')
 
-_str_readable_chars: str = (
+_str_readable_chars: set[str] = set(
     '!"#$%&\'()*+,-./0123456789:;<=>?@[\\]^_`{|}~'
     'abcdefghijklmnopqrstuvwxyz'
     'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
@@ -73,12 +56,12 @@ _str_char_conv: dict[int | str, str] = {
     # '\xFF': '#',
 }
 
-_pg = [
-    ['│', '─'],
-    ['┌', '┬', '┐'],
-    ['├', '┼', '┤'],
-    ['└', '┴', '┘'],
-]
+# _pg = [
+#     ['│', '─'],
+#     ['┌', '┬', '┐'],
+#     ['├', '┼', '┤'],
+#     ['└', '┴', '┘'],
+# ]
 
 
 def _bytes_to_hex(d: bytes | bytearray, /) -> str:
@@ -116,7 +99,6 @@ def _bytes_to_str(d: bytes | bytearray, /) -> str:
     return ''.join(result)
 
 
-
 class BaseBuffer:
     __slots__ = ('data', '_pos', '_position_stack')
 
@@ -126,7 +108,7 @@ class BaseBuffer:
 
     def __init__(self, obj: BaseBuffer | bytes | bytearray = b'', /) -> None:
         if isinstance(obj, (bytes, bytearray)):
-            self.data = obj  # bytearray is mutable
+            self.data = obj  # note: bytearray is mutable
 
         elif isinstance(obj, BaseBuffer):
             self.data = obj.data  # it will share instances of data between instances of Buffer
@@ -147,6 +129,7 @@ class BaseBuffer:
         return self.format_str()
 
     def __bool__(self, /) -> bool:
+        # check if buffer is not exhausted
         return self._pos < len(self.data)
 
     def __repr__(self, /) -> str:
@@ -162,34 +145,63 @@ class BaseBuffer:
         width: int = 16,
         cursor: bool | int = True,
     ) -> str:
-        # FIXME: very slow and ugly
-        assert width > 0
-        s = width
-        lines: list[str] = []
-        rpos: int = self._pos // s * s
+        """
+        Format buffer representation like this:
+        ┌──────┬─────────────────────────────────────────────────┬──────────────────┐
+        │ 0x00 │ .. .1 .2 .3 .4 .5 .6 .7 .8 .9 .A .B .C .D .E .F │  ............... │
+        │ 0x10 │ 10 11 12 13 14 15 16 17 18 19 1A 1B 1C 1D 1E 1F │ ................ │
+        │ 0x20 │ 20 21 22 23 24 25 26 27 28 29 2A 2B 2C 2D 2E 2F │ _!"#$%&'()*+,-./ │
+        │ 0x30 │ 30 31 32 33 34 35 36 37 38 39 3A 3B 3C 3D 3E 3F │ 0123456789:;<=>? │
+        │ 0x40 │ 40 41 42 43 44 45 46 47 48 49 4A 4B 4C 4D 4E 4F │ @ABCDEFGHIJKLMNO │
+        │ 0x48 ├─────────────────────────╨╨──────────────────────┼─────────╨────────┤
+        │ 0x50 │ 50 51 52 53 54 55 56 57 58 59 5A 5B 5C 5D 5E 5F │ PQRSTUVWXYZ[\]^_ │
+        │ 0x60 │ 60 61 62 63 64 65 66 67 68 69 6A 6B 6C 6D 6E 6F │ `abcdefghijklmno │
+        │ 0x70 │ 70 71 72 73 74 75 76 77 78 79 7A 7B 7C 7D 7E 7F │ pqrstuvwxyz{|}~. │
+        │ 0x80 │ 80 81 82 83 84 85 86 87 88 89 8A 8B 8C 8D 8E 8F │ ................ │
+        └──────┴─────────────────────────────────────────────────┴──────────────────┘
+
+        from rangers.std.buffer import Buffer; b = Buffer(bytes(range(256))); b.pos = 72; print(b)
+        """
+        assert width > 0, width
+        assert before is None or before > 0, before
+        assert after is None or after > 0, after
+        n = width
+        lines = []
+        rpos = self.pos // n * n
 
         if before is None:
-            before = rpos // s
+            before = rpos // n
 
         if after is None:
-            after = (len(self.data) // s * s - rpos) // s
+            after = (len(self.data) // n * n - rpos) // n
 
-        hexlen = max(len(hex(rpos + s * after)[2:]), 5)
-        line_len = hexlen + 4 + 4 * s + 6
-        lines.append('┌' + '─' * (hexlen + 4) + '┬' + '─' * (3 * s + 1) + '┬' + '─' * (s + 2) + '┐')
+        hexlen = max(len(hex(rpos + n * after)[2:]), 1)
+
+        def addr_to_hex(addr: int) -> str:
+            return f'0x{addr:0{hexlen}X}'
+
+        def top_bottom_line(*, top: bool = False, bottom: bool = False) -> str:
+            assert top ^ bottom, f'Exactly one of "top" and "bottom" must be True'
+            l = '┌' if top else '└'
+            m = '┬' if top else '┴'
+            r = '┐' if top else '┘'
+
+            return l + '─' * (hexlen + 4) + m + '─' * (3 * n + 1) + m + '─' * (n + 2) + r
+
+        lines.append(top_bottom_line(top=True))
 
         for line_no in range(-before, after + 1):
-            line_start = rpos + line_no * s
+            line_start = rpos + line_no * n
             if line_start < 0 or line_start > len(self.data):
                 continue
             line = '│ '
-            line += f'0x{line_start:0{hexlen}X}'
+            line += addr_to_hex(line_start)
             line += ' │ '
 
-            chunk = self.data[line_start : line_start + s]
-            line += _bytes_to_hex(chunk).ljust(3 * s - 1)
+            chunk = self.data[line_start : line_start + n]
+            line += _bytes_to_hex(chunk).ljust(3 * n - 1)
             line += ' │ '
-            line += _bytes_to_str(chunk).ljust(s)
+            line += _bytes_to_str(chunk).ljust(n)
             line += ' │'
             line_len = len(line)
             lines.append(line)
@@ -198,17 +210,18 @@ class BaseBuffer:
                 cursor_s = '╨╨'
 
                 line = '│ '
-                line += f'0x{self.pos:0{hexlen}X}'
+                line += addr_to_hex(self.pos)
                 line += ' ├─'
-                cursor_pos = self.pos % s * 3
+                cursor_pos = self.pos % n * 3
                 line += '─' * cursor_pos + cursor_s
-                line += '───' * (s - self.pos % s - 1)
+                line += '───' * (n - self.pos % n - 1)
                 line += '─┼─'
-                line += '─' * (self.pos % s) + '╨'
+                line += '─' * (self.pos % n) + '╨'
                 line = line.ljust(line_len - 2, '─')
                 line += '─┤'
                 lines.append(line)
-        lines.append('└' + '─' * (hexlen + 4) + '┴' + '─' * (3 * s + 1) + '┴' + '─' * (s + 2) + '┘')
+
+        lines.append(top_bottom_line(bottom=True))
 
         return '\n'.join(lines)
 
@@ -232,7 +245,7 @@ class BaseBuffer:
 
     def push_pos(
         self,
-        pos: int = None,
+        pos: int | None = None,
         /,
     ) -> int:
         if pos is None:
@@ -258,7 +271,6 @@ class BaseBuffer:
                 fileb.write(self.data)
 
 
-@trait
 class IBuffer(BaseBuffer):
     __slots__ = ()
     data: bytes
@@ -269,10 +281,7 @@ class IBuffer(BaseBuffer):
     #     else:
     #         BaseBuffer.__init__(self, obj)
 
-    # @inline_builtins
-    # @inline_method('self', 'push_pos', BaseBuffer.push_pos)
-    # @inline_method('self', 'pop_pos', BaseBuffer.pop_pos)
-    def read(self, n: int = None, /) -> bytearray | bytes:
+    def read(self, n: int | None = None, /) -> bytearray | bytes:
 
         data = self.data
         first = self._pos
@@ -292,56 +301,49 @@ class IBuffer(BaseBuffer):
         self._pos = last
         return data[first:last]
 
-    # @inline_method('self', 'read', read)
-    # @inline_attr('struct', 'unpack', struct.unpack)
-    # @inline_attr('struct', 'calcsize', struct.calcsize)
     def read_format(self, fmt: str, /) -> Any:
         return struct.unpack(fmt, self.read(struct.calcsize(fmt)))[0]
 
-    # @inline_method('self', 'read', read)
-    # @inline_method('s', 'unpack', Struct.unpack)
     def read_struct(self, s: Struct, /) -> Any:
         return s.unpack(self.read(s.size))[0]
 
-    # @inline_method('self', 'read', read)
     def read_byte(self, /) -> int:
         return self.read(1)[0]
 
     def read_bool(self, /, *, _s: Struct = Struct('?')) -> bool:
         return _s.unpack(self.read(_s.size))[0]
 
-    def read_char(self, /, *, _s: Struct = Struct('b')) -> int:
+    def read_i8(self, /, *, _s: Struct = Struct('b')) -> int:
         return _s.unpack(self.read(_s.size))[0]
 
-    def read_uchar(self, /, *, _s: Struct = Struct('B')) -> int:
+    def read_u8(self, /, *, _s: Struct = Struct('B')) -> int:
         return _s.unpack(self.read(_s.size))[0]
 
-    def read_short(self, /, *, _s: Struct = Struct('<h')) -> int:
+    def read_i16(self, /, *, _s: Struct = Struct('<h')) -> int:
         return _s.unpack(self.read(_s.size))[0]
 
-    def read_ushort(self, /, *, _s: Struct = Struct('<H')) -> int:
+    def read_u16(self, /, *, _s: Struct = Struct('<H')) -> int:
         return _s.unpack(self.read(_s.size))[0]
 
-    def read_int(self, /, *, _s: Struct = Struct('<i')) -> int:
+    def read_i32(self, /, *, _s: Struct = Struct('<i')) -> int:
         return _s.unpack(self.read(_s.size))[0]
 
-    def read_uint(self, /, *, _s: Struct = Struct('<I')) -> int:
+    def read_u32(self, /, *, _s: Struct = Struct('<I')) -> int:
         return _s.unpack(self.read(_s.size))[0]
 
-    def read_long(self, /, *, _s: Struct = Struct('<q')) -> int:
+    # def read_long(self, /, *, _s: Struct = Struct('<q')) -> int:
+    #     return _s.unpack(self.read(_s.size))[0]
+
+    # def read_ulong(self, /, *, _s: Struct = Struct('<Q')) -> int:
+    #     return _s.unpack(self.read(_s.size))[0]
+
+    def read_f32(self, /, *, _s: Struct = Struct('<f')) -> float:
         return _s.unpack(self.read(_s.size))[0]
 
-    def read_ulong(self, /, *, _s: Struct = Struct('<Q')) -> int:
+    def read_f64(self, /, *, _s: Struct = Struct('<d')) -> float:
         return _s.unpack(self.read(_s.size))[0]
 
-    def read_float(self, /, *, _s: Struct = Struct('<f')) -> float:
-        return _s.unpack(self.read(_s.size))[0]
-
-    def read_double(self, /, *, _s: Struct = Struct('<d')) -> float:
-        return _s.unpack(self.read(_s.size))[0]
-
-    # @inline_method('self', 'read', read)
-    def read_str(self, /, length: int = None) -> str:
+    def read_str(self, /, length: int | None = None) -> str:
         if length is not None:
             return self.read(length).decode('utf-8')
 
@@ -355,8 +357,7 @@ class IBuffer(BaseBuffer):
         self.pos += 1
         return res
 
-    # @inline_method('self', 'read', read)
-    def read_wstr(self, /, length: int = None) -> str:
+    def read_wstr(self, /, length: int | None = None) -> str:
         if length is not None:
             return self.read(length << 1).decode('utf-16le')
 
@@ -370,15 +371,6 @@ class IBuffer(BaseBuffer):
         self.pos += 2
         return res
 
-    def read_dcls(self, dcls: DataClass[T], *, memo: Memo = None) -> T:
-        if memo is None:
-            from .dataclass import Memo
-
-            memo = Memo()
-        return dcls.read(self, memo=memo)
-
-
-@trait
 class OBuffer(BaseBuffer):
     __slots__ = ()
     data: bytearray
@@ -389,11 +381,11 @@ class OBuffer(BaseBuffer):
         elif isinstance(obj, BaseBuffer) and isinstance(obj.data, bytes):
             BaseBuffer.__init__(self, bytearray(obj.data))
         else:
-            BaseBuffer.__init__(self, obj)  # type: ignore[unreachable]
+            BaseBuffer.__init__(self, obj)
 
     def push_pos(
         self,
-        pos: int = None,
+        pos: int | None = None,
         /,
         *,
         expand: bool = False,
@@ -402,15 +394,14 @@ class OBuffer(BaseBuffer):
             self.data.extend(bytes(pos - len(self.data)))
         return super().push_pos(pos)
 
-    # @inline_builtins
-    # @inline_method('self', 'push_pos', BaseBuffer.push_pos)
-    # @inline_method('self', 'pop_pos', BaseBuffer.pop_pos)
     def write(self, data: Collection[int], /) -> None:
-        self.data[self._pos : self._pos + len(data)] = data
+        if self._pos == len(self.data):
+            # TODO: benchmark it to make sure that `bytearray.extend(x)` is faster than `bytearray[a:b]=x`
+            self.data.extend(data)
+        else:
+            self.data[self._pos : self._pos + len(data)] = data
         self._pos += len(data)
 
-    # @inline_method('self', 'write', write)
-    # @inline_method('struct', 'pack', struct.pack)
     def write_format(
         self,
         fmt: str,
@@ -418,49 +409,46 @@ class OBuffer(BaseBuffer):
     ) -> None:
         return self.write(struct.pack(fmt, *values))
 
-    # @inline_method('self', 'write', write)
-    # @inline_method('s', 'pack', Struct.pack)
     def write_struct(self, s: Struct, value: Any, /) -> None:
         return self.write(s.pack(value))
 
-    # @inline_method('self', 'write', write)
     def write_byte(self, value: int, /) -> None:
         return self.write((value,))
 
     def write_bool(self, value: bool, /, *, _s: Struct = Struct('?')) -> None:
         return self.write(_s.pack(value))
 
-    def write_char(self, value: int, /, *, _s: Struct = Struct('b')) -> None:
+    def write_i8(self, value: int, /, *, _s: Struct = Struct('b')) -> None:
         return self.write(_s.pack(value))
 
-    def write_uchar(self, value: int, /, *, _s: Struct = Struct('B')) -> None:
+    def write_u8(self, value: int, /, *, _s: Struct = Struct('B')) -> None:
         return self.write(_s.pack(value))
 
-    def write_short(self, value: int, /, *, _s: Struct = Struct('<h')) -> None:
+    def write_i16(self, value: int, /, *, _s: Struct = Struct('<h')) -> None:
         return self.write(_s.pack(value))
 
-    def write_ushort(self, value: int, /, *, _s: Struct = Struct('<H')) -> None:
+    def write_u16(self, value: int, /, *, _s: Struct = Struct('<H')) -> None:
         return self.write(_s.pack(value))
 
-    def write_int(self, value: int, /, *, _s: Struct = Struct('<i')) -> None:
+    def write_i32(self, value: int, /, *, _s: Struct = Struct('<i')) -> None:
         return self.write(_s.pack(value))
 
-    def write_uint(self, value: int, /, *, _s: Struct = Struct('<I')) -> None:
+    def write_u32(self, value: int, /, *, _s: Struct = Struct('<I')) -> None:
         return self.write(_s.pack(value))
 
-    def write_long(self, value: int, /, *, _s: Struct = Struct('<q')) -> None:
+    # def write_long(self, value: int, /, *, _s: Struct = Struct('<q')) -> None:
+    #     return self.write(_s.pack(value))
+
+    # def write_ulong(self, value: int, /, *, _s: Struct = Struct('<Q')) -> None:
+    #     return self.write(_s.pack(value))
+
+    def write_f32(self, value: float, /, *, _s: Struct = Struct('<f')) -> None:
         return self.write(_s.pack(value))
 
-    def write_ulong(self, value: int, /, *, _s: Struct = Struct('<Q')) -> None:
+    def write_f64(self, value: float, /, *, _s: Struct = Struct('<d')) -> None:
         return self.write(_s.pack(value))
 
-    def write_float(self, value: float, /, *, _s: Struct = Struct('<f')) -> None:
-        return self.write(_s.pack(value))
-
-    def write_double(self, value: float, /, *, _s: Struct = Struct('<d')) -> None:
-        return self.write(_s.pack(value))
-
-    def write_str(self, value: str, length: int = None) -> None:
+    def write_str(self, value: str, length: int | None = None) -> None:
         """
         length = None - write null-terminated string
         length = n - write string, filled with zeros
@@ -472,21 +460,15 @@ class OBuffer(BaseBuffer):
             value = value[:length].ljust(length, '\0')
         self.write(value.encode('utf-8'))
 
-    def write_wstr(self, value: str, length: int = None) -> None:
+    def write_wstr(self, value: str, length: int | None = None) -> None:
         if length is None:
             value += '\0'
         else:
             value = value[:length].ljust(length, '\0')
         self.write(value.encode('utf-16le'))
 
-    def write_dcls(self, dcls: DataClass[T], obj: T, *, memo: Memo = None) -> None:
-        if memo is None:
-            from .dataclass import Memo
-
-            memo = Memo()
-        dcls.write(self, obj, memo=memo)
-
 
 class Buffer(OBuffer, IBuffer):
     __slots__ = ()
     data: bytearray
+
