@@ -1142,7 +1142,8 @@ class CryptedRand31pm(SimpleDataclass, DataClass[bytes]):
 
     @staticmethod
     def bytes_xor(d1: bytes, d2: bytes) -> bytes:
-        return (int.from_bytes(d1) ^ int.from_bytes(d2)).to_bytes(max(len(d1), len(d2)))
+        xor_bytes = int.from_bytes(d1,byteorder = 'big') ^ int.from_bytes(d2,byteorder='big')
+        return xor_bytes.to_bytes(max(len(d1), len(d2)),byteorder ='big')
         # return bytes(map(int.__xor__, data1, data2))
         # return bytes(a ^ b for a,b in zip(data1, data2))
 
