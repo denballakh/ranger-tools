@@ -331,11 +331,11 @@ class IBuffer(BaseBuffer):
     def read_u32(self, /, *, _s: Struct = Struct('<I')) -> int:
         return _s.unpack(self.read(_s.size))[0]
 
-    # def read_long(self, /, *, _s: Struct = Struct('<q')) -> int:
-    #     return _s.unpack(self.read(_s.size))[0]
+    def read_i64(self, /, *, _s: Struct = Struct('<q')) -> int:
+        return _s.unpack(self.read(_s.size))[0]
 
-    # def read_ulong(self, /, *, _s: Struct = Struct('<Q')) -> int:
-    #     return _s.unpack(self.read(_s.size))[0]
+    def read_u64(self, /, *, _s: Struct = Struct('<Q')) -> int:
+        return _s.unpack(self.read(_s.size))[0]
 
     def read_f32(self, /, *, _s: Struct = Struct('<f')) -> float:
         return _s.unpack(self.read(_s.size))[0]
@@ -436,11 +436,11 @@ class OBuffer(BaseBuffer):
     def write_u32(self, value: int, /, *, _s: Struct = Struct('<I')) -> None:
         return self.write(_s.pack(value))
 
-    # def write_long(self, value: int, /, *, _s: Struct = Struct('<q')) -> None:
-    #     return self.write(_s.pack(value))
+    def write_i64(self, value: int, /, *, _s: Struct = Struct('<q')) -> None:
+        return self.write(_s.pack(value))
 
-    # def write_ulong(self, value: int, /, *, _s: Struct = Struct('<Q')) -> None:
-    #     return self.write(_s.pack(value))
+    def write_u64(self, value: int, /, *, _s: Struct = Struct('<Q')) -> None:
+        return self.write(_s.pack(value))
 
     def write_f32(self, value: float, /, *, _s: Struct = Struct('<f')) -> None:
         return self.write(_s.pack(value))
