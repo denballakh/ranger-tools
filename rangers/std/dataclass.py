@@ -403,6 +403,7 @@ class NullDataClass(SimpleDataclass, DataClass[None]):
 class ConstValue(DataClass[T]):
     __slots__ = ('value',)
     value: T
+
     def __init__(self, value: T) -> None:
         self.value = value
 
@@ -415,6 +416,7 @@ class ConstValue(DataClass[T]):
     def compile_read(self, c: DataClassCompiler) -> bool:
         c.add_result(c.add_const('cv', self.value))
         return True
+
 
 class ShadowedConst(DataClass[T]):
     __slots__ = ('dcls', 'value')
@@ -443,6 +445,7 @@ def ShadowedConst_(dcls: DataClass[T], value: T) -> DataClass[T]:
         decode=lambda obj, /: value,
         encode=lambda obj, /: value,
     )
+
 
 # class SizedInt(DataClass[int]):
 #     __slots__ = ('size', 'byteorder', 'signed')
@@ -598,6 +601,7 @@ class SizedWStr(SimpleDataclass, DataClass[str]):
         c.add_result(f'D[_ : (P := P + 2) - 2].decode("utf-16le")')
         return True
 
+
 DNone = NullDataClass()
 
 Int8 = StructFormat[int]('b')
@@ -738,7 +742,6 @@ class AnyOf(DataClass[T]):
 
 def Const(dcls: DataClass[T], value: T, msg: str | None = None) -> AnyOf[T]:
     return AnyOf(dcls, (value,), msg=msg)
-
 
 
 class List(DataClass[list[T]]):
@@ -923,8 +926,9 @@ def Converted_(
         encode=lambda buf, obj, /: dcls.write(buf, encode(obj)),
     )
 
+
 class Converted(DataClass[T], Generic[T, G]):
-    __slots__ = ('dcls','decode', 'encode')
+    __slots__ = ('dcls', 'decode', 'encode')
     dcls: DataClass[G]
     decode: Callable[[G], T]
     encode: Callable[[T], G]
@@ -951,7 +955,6 @@ class Converted(DataClass[T], Generic[T, G]):
         var_decode = c.add_const('conv_decode', self.decode)
         c.add_result(f'{var_decode}({c.get_result()})')
         return True
-
 
 
 def HexBytes(dcls: DataClass[bytes], *, sep: str = ' ', bytes_per_sep: int = -4) -> DataClass[str]:
@@ -1142,9 +1145,9 @@ class CryptedRand31pm(SimpleDataclass, DataClass[bytes]):
 
     @staticmethod
     def bytes_xor(d1: bytes, d2: bytes) -> bytes:
-        return (int.from_bytes(d1) ^ int.from_bytes(d2)).to_bytes(max(len(d1), len(d2)))
-        # return bytes(map(int.__xor__, data1, data2))
-        # return bytes(a ^ b for a,b in zip(data1, data2))
+        n1 = int.from_bytes(d1, byteorder='big')
+        n2 = int.from_bytes(d2, byteorder='big')
+        return (n1 ^ n2).to_bytes(max(len(d1), len(d2)), byteorder='big')
 
     def read(self, buf: IBuffer, /) -> bytes:
         content_hash = buf.read_u32()
