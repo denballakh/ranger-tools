@@ -1,5 +1,4 @@
 from __future__ import annotations
-import builtins
 from typing import Any, ClassVar, Final, Protocol, overload
 import struct
 import ctypes
@@ -15,6 +14,9 @@ class SupportsInt(Protocol):
 
 
 class pointer:
+    """
+    immutable
+    """
     __slots__ = ('addr',)
     __match_args__ = ('addr',)
 
@@ -22,12 +24,10 @@ class pointer:
     __arrays: ClassVar[dict[int, type[ctypes.Array[ctypes.c_ubyte]]]] = {}
 
     @classmethod
-    def ptr_size(cls) -> int:
+    def ptr_size(cls, /) -> int:
         return PTR_SIZE
 
     def __init__(self, addr: SupportsInt, /) -> None:
-        # if isinstance(addr, pointer):
-        #     addr = addr.addr
         addr = int(addr)
 
         if addr < 0:
@@ -47,14 +47,10 @@ class pointer:
     def __int__(self, /) -> int:
         return self.addr
 
-    # def __index__(self, /) -> int:
-    #     return self.addr
-
     def __bool__(self, /) -> bool:
         return bool(self.addr)
 
     def __copy__(self, /) -> pointer:
-        # return self.__class__(self.addr)
         return self
 
     def __hash__(self, /) -> int:
@@ -102,25 +98,14 @@ class pointer:
             return self.addr <= obj.addr
         return NotImplemented
 
-    def __add__(self, value: int | pointer, /) -> pointer:
+    def __add__(self, value: SupportsInt, /) -> pointer:
         return self.__class__(self.addr + int(value))
 
-    def __radd__(self, value: int | pointer, /) -> pointer:
+    def __radd__(self, value: SupportsInt, /) -> pointer:
         return self.__class__(self.addr + int(value))
 
-    @overload
-    def __sub__(self, value: int, /) -> pointer:
-        ...
-
-    @overload
-    def __sub__(self, value: pointer, /) -> int:
-        ...
-
-    def __sub__(self, value: int | pointer, /) -> int | pointer:
-        if isinstance(value, int):
-            return self.__class__(self.addr - value)
-        else:
-            return self.addr - value.addr
+    def __sub__(self, value: SupportsInt, /) -> int | pointer:
+        return self.__class__(self.addr - int(value))
 
     @classmethod
     def __get_array(cls, size: int, /) -> type[ctypes.Array[ctypes.c_ubyte]]:
@@ -155,115 +140,115 @@ class pointer:
         return self.write(bytes((value,)))
 
     @property
-    def bool(self, *, __s: struct.Struct = struct.Struct('?')) -> builtins.bool:
+    def bool8(self, /, *, __s: struct.Struct = struct.Struct('?')) -> bool:
         return self.read_struct(__s)[0]
 
-    @bool.setter
-    def bool(self, value: builtins.bool, *, __s: struct.Struct = struct.Struct('?')) -> None:
+    @bool8.setter
+    def bool8(self, value: bool, /, *, __s: struct.Struct = struct.Struct('?')) -> None:
         self.write_struct(__s, value)
 
     @property
-    def i8(self, *, __s: struct.Struct = struct.Struct('b')) -> int:
+    def i8(self, /, *, __s: struct.Struct = struct.Struct('b')) -> int:
         return self.read_struct(__s)[0]
 
     @i8.setter
-    def i8(self, value: int, *, __s: struct.Struct = struct.Struct('b')) -> None:
+    def i8(self, value: int, /, *, __s: struct.Struct = struct.Struct('b')) -> None:
         self.write_struct(__s, value)
 
     @property
-    def u8(self, *, __s: struct.Struct = struct.Struct('B')) -> int:
+    def u8(self, /, *, __s: struct.Struct = struct.Struct('B')) -> int:
         return self.read_struct(__s)[0]
 
     @u8.setter
-    def u8(self, value: int, *, __s: struct.Struct = struct.Struct('B')) -> None:
+    def u8(self, value: int, /, *, __s: struct.Struct = struct.Struct('B')) -> None:
         self.write_struct(__s, value)
 
     @property
-    def i16(self, *, __s: struct.Struct = struct.Struct('@h')) -> int:
+    def i16(self, /, *, __s: struct.Struct = struct.Struct('@h')) -> int:
         return self.read_struct(__s)[0]
 
     @i16.setter
-    def i16(self, value: int, *, __s: struct.Struct = struct.Struct('@h')) -> None:
+    def i16(self, value: int, /, *, __s: struct.Struct = struct.Struct('@h')) -> None:
         self.write_struct(__s, value)
 
     @property
-    def u16(self, *, __s: struct.Struct = struct.Struct('@H')) -> int:
+    def u16(self, /, *, __s: struct.Struct = struct.Struct('@H')) -> int:
         return self.read_struct(__s)[0]
 
     @u16.setter
-    def u16(self, value: int, *, __s: struct.Struct = struct.Struct('@H')) -> None:
+    def u16(self, value: int, /, *, __s: struct.Struct = struct.Struct('@H')) -> None:
         self.write_struct(__s, value)
 
     @property
-    def i32(self, *, __s: struct.Struct = struct.Struct('@i')) -> int:
+    def i32(self, /, *, __s: struct.Struct = struct.Struct('@i')) -> int:
         return self.read_struct(__s)[0]
 
     @i32.setter
-    def i32(self, value: int, *, __s: struct.Struct = struct.Struct('@i')) -> None:
+    def i32(self, value: int, /, *, __s: struct.Struct = struct.Struct('@i')) -> None:
         self.write_struct(__s, value)
 
     @property
-    def u32(self, *, __s: struct.Struct = struct.Struct('@I')) -> int:
+    def u32(self, /, *, __s: struct.Struct = struct.Struct('@I')) -> int:
         return self.read_struct(__s)[0]
 
     @u32.setter
-    def u32(self, value: int, *, __s: struct.Struct = struct.Struct('@I')) -> None:
+    def u32(self, value: int, /, *, __s: struct.Struct = struct.Struct('@I')) -> None:
         self.write_struct(__s, value)
 
     @property
-    def i64(self, *, __s: struct.Struct = struct.Struct('@q')) -> int:
+    def i64(self, /, *, __s: struct.Struct = struct.Struct('@q')) -> int:
         return self.read_struct(__s)[0]
 
     @i64.setter
-    def i64(self, value: int, *, __s: struct.Struct = struct.Struct('@q')) -> None:
+    def i64(self, value: int, /, *, __s: struct.Struct = struct.Struct('@q')) -> None:
         self.write_struct(__s, value)
 
     @property
-    def u64(self, *, __s: struct.Struct = struct.Struct('@Q')) -> int:
+    def u64(self, /, *, __s: struct.Struct = struct.Struct('@Q')) -> int:
         return self.read_struct(__s)[0]
 
     @u64.setter
-    def u64(self, value: int, *, __s: struct.Struct = struct.Struct('@Q')) -> None:
+    def u64(self, value: int, /, *, __s: struct.Struct = struct.Struct('@Q')) -> None:
         self.write_struct(__s, value)
 
     @property
-    def f32(self, *, __s: struct.Struct = struct.Struct('@f')) -> float:
+    def f32(self, /, *, __s: struct.Struct = struct.Struct('@f')) -> float:
         return self.read_struct(__s)[0]
 
     @f32.setter
-    def f32(self, value: float, *, __s: struct.Struct = struct.Struct('@f')) -> None:
+    def f32(self, value: float, /, *, __s: struct.Struct = struct.Struct('@f')) -> None:
         self.write_struct(__s, value)
 
     @property
-    def f64(self, *, __s: struct.Struct = struct.Struct('@d')) -> float:
+    def f64(self, /, *, __s: struct.Struct = struct.Struct('@d')) -> float:
         return self.read_struct(__s)[0]
 
     @f64.setter
-    def f64(self, value: float, *, __s: struct.Struct = struct.Struct('@d')) -> None:
+    def f64(self, value: float, /, *, __s: struct.Struct = struct.Struct('@d')) -> None:
         self.write_struct(__s, value)
 
     @property
-    def size_t(self, *, __s: struct.Struct = struct.Struct('@N')) -> int:
+    def size_t(self, /, *, __s: struct.Struct = struct.Struct('@N')) -> int:
         return self.read_struct(__s)[0]
 
     @size_t.setter
-    def size_t(self, value: int, *, __s: struct.Struct = struct.Struct('@N')) -> None:
+    def size_t(self, value: int, /, *, __s: struct.Struct = struct.Struct('@N')) -> None:
         self.write_struct(__s, value)
 
     @property
-    def ssize_t(self, *, __s: struct.Struct = struct.Struct('@n')) -> int:
+    def ssize_t(self, /, *, __s: struct.Struct = struct.Struct('@n')) -> int:
         return self.read_struct(__s)[0]
 
     @ssize_t.setter
-    def ssize_t(self, value: int, *, __s: struct.Struct = struct.Struct('@n')) -> None:
+    def ssize_t(self, value: int, /, *, __s: struct.Struct = struct.Struct('@n')) -> None:
         self.write_struct(__s, value)
 
     @property
-    def ptr(self, *, __s: struct.Struct = struct.Struct('@P')) -> pointer:
+    def ptr(self, /, *, __s: struct.Struct = struct.Struct('@P')) -> pointer:
         return pointer(self.read_struct(__s)[0])
 
     @ptr.setter
-    def ptr(self, value: pointer, *, __s: struct.Struct = struct.Struct('@P')) -> None:
+    def ptr(self, value: pointer, /, *, __s: struct.Struct = struct.Struct('@P')) -> None:
         self.write_struct(__s, int(value))
 
     @property
