@@ -8,9 +8,13 @@
 
 **dat_to_json** - особый формат\
 **dat_to_txt** - совместимый с блокпаром формат
+**txt_to_dat**
 
 **gi_to_png** - поддерживаются не все форматы\
 **png_to_gi** - по умолчанию в 32-битный подформат 0-го формата, можно настроить в файле
+
+**hai_to_png**
+**png_to_hai**
 
 **json_to_robotcomplate** - `robotcomplate.dat` - файл в документах, хранит время прохождения карт\
 **robotcomplate_to_json**
@@ -21,7 +25,10 @@
 **json_to_sav**\
 **sav_to_json**
 
-**scr_to_svr** - частично декомпилирует `.scr` в `.svr`.
+**json_to_qm**\
+**qm_to_json**
+
+**compile** - компилирует скрипты
 
 
 Остальное:

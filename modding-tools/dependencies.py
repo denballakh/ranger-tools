@@ -14,6 +14,7 @@ section_colors = {
     "Shu's Rangers": '0,1,0',
     'Солянка': '1,1,0',
     'HukMods': '1,1,0',
+    'Den': '1,1,0',
     'КОТянка': '0,0.5,0.5',
     "Fairan's Vision": '1,0.5,0',
     'default': '0,0,0',
@@ -74,7 +75,7 @@ def get_mod_infos(root: str) -> tuple[Conflicts, Dependencies, Sections, Mods]:
                     continue
             data = convert_ini_to_dict(content)
             name = data['Name']
-            if name != foldername:
+            if name.lower() != foldername.lower():
                 print(
                     f'Error: mod name {name!r} doesnt match folder name {foldername!r}. Skipping...'
                 )
@@ -186,7 +187,7 @@ def generate_dot_image() -> None:
 
 if __name__ == '__main__':
     generate_wolfram_script()
-    generate_dot_image()
+    # generate_dot_image()
     print('done')
     input()
     os._exit(0)

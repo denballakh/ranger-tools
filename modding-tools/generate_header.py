@@ -18,7 +18,7 @@ size_in_bytes = 0x388
 
 name = '__struct_name__'
 offset_length = 3
-first_field = '__cls* cls;'
+first_field = 'VMT cls;'
 name_prefix = '_'
 indent = 4
 
