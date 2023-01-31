@@ -19,7 +19,10 @@ T = TypeVar('T')
 
 DAT_SIGN_AVAILABLE: bool
 try:
-    from .dat_sign import get_sign, check_signed
+    _dat_sign = __import__('rangers.dat_sign').dat_sign
+    get_sign = _dat_sign.get_sign
+    check_signed = _dat_sign.check_signed
+    # from .dat_sign import get_sign, check_signed
 
 except ImportError:
 
