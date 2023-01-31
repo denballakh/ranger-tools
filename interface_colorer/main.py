@@ -2,12 +2,7 @@ import os
 import time as t
 from time import time
 
-import config
-
-PROFILE = config.PROFILE
-
-
-def process():
+def process() -> None:
     t0 = time()
 
     import _0_1
@@ -23,17 +18,17 @@ def process():
     print()
     t2 = time()
 
-    _1_2.process()
+    _1_2.main()
     print()
     t3 = time()
 
-    _2_3.process()
+    _2_3.main()
     print()
     t4 = time()
 
     t.sleep(60)
     t5 = time()
-    _3_4.process()
+    _3_4.main()
     print()
     t6 = time()
 
@@ -48,33 +43,10 @@ def process():
     t.sleep(10)
     print(f'Empty files:\n')
 
-    clear_empty.process()
+    clear_empty.main()
 
     print()
 
 
 if __name__ == "__main__":
-    if PROFILE:
-        import cProfile
-        import pstats
-        import io
-        from pstats import SortKey
-        pr = cProfile.Profile()
-        pr.enable()
-
     process()
-
-    if PROFILE:
-        pr.disable()
-        s = io.StringIO()
-        sortby = SortKey.TIME  # CALLS CUMULATIVE FILENAME LINE NAME NFL PCALLS STDNAME TIME
-        ps = pstats.Stats(pr, stream=s).sort_stats(sortby)
-        ps.print_stats()
-
-        if not os.path.isdir('logs'):
-            try:
-                os.mkdir('logs')
-            except FileExistsError:
-                pass
-        with open('logs/time_profiling_main.log', 'wt') as file:
-            file.write(s.getvalue())

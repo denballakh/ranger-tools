@@ -2,124 +2,69 @@
 Конвертирует .gi-файлы в .png
 Запускать его не нужно, использовался только один раз
 '''
-from PIL import Image
-from random import sample
-import os
-
+from pathlib import Path
 from rangers.graphics.gi import GI
+import shutil
 
 import config
-
-
-Image.MAX_IMAGE_PIXELS = 4096 ** 2
-
-randomize = config.randomize
-rewrite = config.rewrite
-PROFILE = config.PROFILE
 
 _in = config._0
 _out = config._1
 
+def main() -> None:
+    for in_file in _in.rglob('**/*'):
+        if not in_file.is_file():
+            continue
 
-def check_dir(path):
-    path = path.replace('\\', '/').replace('//', '/')
-    splitted = path.split('/')[:-1]
-    splitted = [name.strip('/') for name in splitted]
-    splitted = [name for name in splitted if name != '']
-    splitted = [name + '/' for name in splitted]
-    res = './'
-    for _, item in enumerate(splitted):
-        res += item
-        if not os.path.isdir(res):
-            try:
-                os.mkdir(res)
-            except FileExistsError:
-                pass
+        rel_path = in_file.relative_to(_in)
 
-
-def process():
-
-    walk = os.walk(_in)
-    if randomize:
-        walk = list(walk)
-        walk = sample(walk, k=len(walk))
-    for path, _, files in walk:
-        path2 = path.replace(_in, '', 1)
-
-        for file in sample(files, k=len(files)) if randomize else files:
-            filename = '/'.join([path, file]).replace('//', '/').replace('\\', '/')
-            if filename.endswith('.gi'):
-                if os.stat(filename).st_size == 0: continue
-
-                out_name = _out + f'{path2}/{file.replace(".gi", ".png")}'
-                if not rewrite and os.path.isfile(out_name) and os.path.getmtime(out_name) > os.path.getmtime(filename): continue
-
-                gi = GI.from_gi(filename)
-
-                # if gi.header.frame_type == 1:
-                #     gi.header.frame_type = 0
-
-                if gi.header.frame_type not in (0, 2):
-                    print(f'Unsupported gi format: {filename} (frame type: {gi.header.frame_type})')
-
-                    continue
-
-                check_dir(out_name)
-                open(out_name, 'wb').close()
-                print(out_name)
-
-                img = gi.to_image()
-                img.save(out_name)
-
+        if in_file.suffix == '.gi':
+            if in_file.stat().st_size == 0:
                 continue
 
-            if filename.endswith('.gai'):
-                if os.stat(filename).st_size == 0: continue
-                print(f'Unsupported extension: {filename}')
-
+            out_file = _out / rel_path.with_suffix('.png')
+            if out_file.is_file() and out_file.stat().st_mtime > in_file.stat().st_mtime:
                 continue
 
-            if filename.endswith('.png'):
-                if os.stat(filename).st_size == 0: continue
+            gi = GI.from_gi(in_file)
 
-                out_name = _out + f'{path2}/{file.replace(".png", ".keep_png.png")}'
-                if not rewrite and os.path.isfile(out_name) and os.path.getmtime(out_name) > os.path.getmtime(filename): continue
-
-                check_dir(out_name)
-                open(out_name, 'wb').close()
-                print(out_name)
-
-                with open(out_name, 'wb') as fout:
-                    with open(filename, 'rb') as fin:
-                        fout.write(fin.read())
-
+            if gi.header.frame_type not in {0, 2}:
+                print(f'Unsupported gi format: {in_file} (frame type: {gi.header.frame_type})')
                 continue
 
-            print(f'Unsupported extension: {filename}')
+            out_file.parent.mkdir(parents=True, exist_ok=True)
+            out_file.touch()
+            print(out_file)
+
+            gi.to_image().save(out_file)
+
+            continue
+
+        if in_file.suffix == '.gai':
+            if in_file.stat().st_size == 0:
+                continue
+
+            print(f'Unsupported extension: {in_file}')
+
+            continue
+
+        if in_file.suffix == '.png':
+            if in_file.stat().st_size == 0:
+                continue
+
+            out_file = _out / rel_path.with_suffix('.keep_png.png')
+            if out_file.is_file() and out_file.stat().st_mtime > in_file.stat().st_mtime:
+                continue
+
+            out_file.parent.mkdir(parents=True, exist_ok=True)
+            print(out_file)
+
+            shutil.copy(in_file, out_file)
+
+            continue
+
+        print(f'Unsupported extension: {in_file}')
 
 
 if __name__ == '__main__':
-    if PROFILE:
-        import cProfile
-        import pstats
-        import io
-        from pstats import SortKey
-        pr = cProfile.Profile()
-        pr.enable()
-
-    process()
-
-    if PROFILE:
-        pr.disable()
-        s = io.StringIO()
-        sortby = SortKey.TIME  # CALLS CUMULATIVE FILENAME LINE NAME NFL PCALLS STDNAME TIME
-        ps = pstats.Stats(pr, stream=s).sort_stats(sortby)
-        ps.print_stats()
-
-        if not os.path.isdir('logs'):
-            try:
-                os.mkdir('logs')
-            except FileExistsError:
-                pass
-        with open('logs/time_profiling_0_1.log', 'wt') as file:
-            file.write(s.getvalue())
+    main()
