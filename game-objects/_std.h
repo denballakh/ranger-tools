@@ -49,7 +49,7 @@ struct TList {
 };
 
 
-struct TObjectList: public TList {
+struct TObjectList: TList {
     PTR _10;           ///< указатель на VMT класса итемов?
 };
 
