@@ -283,8 +283,8 @@ class DataClassCompiler:
 
         return res
 
-    def traverse(self, dcls: DataClass) -> None:
-        pass
+    # def traverse(self, dcls: DataClass) -> None:
+    #     pass
 
 
 # protocols:
@@ -331,8 +331,8 @@ class DataClass(Generic[T]):
         with c.clean():
             c.add_line(f'{var}.write(B, R)')
 
-    def compile_traverse(self, c: DataClassCompiler) -> None:
-        c.traverse(self)
+    # def compile_traverse(self, c: DataClassCompiler) -> None:
+    #     c.traverse(self)
 
 
 class CompiledDataClass(DataClass[T]):
@@ -364,9 +364,9 @@ class CompiledDataClass(DataClass[T]):
 class SimpleDataclass(DataClass[Any]):
     __slots__ = ()
 
-    @final
-    def compile_traverse(self) -> Iterator[DataClass[Any]]:
-        yield from ()
+    # @final
+    # def compile_traverse(self) -> Iterator[DataClass[Any]]:  # type: ignore[override]
+    #     yield from ()
 
 
 class ReadOnlyDataClass(DataClass[T]):
@@ -677,10 +677,10 @@ class Maybe(DataClass[T | None]):
             c.add_result('None')
         return False
 
-    def compile_traverse(self) -> Iterator[DataClass[Any]]:
-        yield self
-        yield self.dcls
-        yield self.base
+    # def compile_traverse(self) -> Iterator[DataClass[Any]]:  # type: ignore[override]
+    #     yield self
+    #     yield self.dcls
+    #     yield self.base
 
 
 # compositions of dataclasses:
