@@ -12,16 +12,12 @@ import json
 
 from .graphics.gi import GI
 from .pkg import PKG
-from .dat import DAT, DAT_SIGN_AVAILABLE
+from .dat import DAT
 
 text_encoding: Final[str] = 'utf16'
 
-if DAT_SIGN_AVAILABLE:
-    legal_rus = '<color=0,132,15>(легален)</color>'
-    legal_eng = '<color=0,132,15>(legal)</color>'
-else:
-    legal_rus = ''
-    legal_eng = ''
+legal_rus = '<color=0,132,15>(легален)</color>'
+legal_eng = '<color=0,132,15>(legal)</color>'
 
 stateless_rus: Final[str] = '<color=0,132,15>(можно подключать/отключать в течение партии)</color>'
 stateless_eng: Final[str] = '<color=0,132,15>(can be enabled/disabled during the game)</color>'

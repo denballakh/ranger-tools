@@ -1,9 +1,6 @@
 from pathlib import Path
 
-from rangers.dat import DAT_SIGN_AVAILABLE, check_signed, get_sign
-
-if not DAT_SIGN_AVAILABLE:
-    raise NotImplementedError('no required code')
+from rangers.dat import check_signed, get_sign
 
 _in = Path('_input/')
 _out = Path('_output/')

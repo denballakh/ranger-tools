@@ -8,41 +8,32 @@ import zlib
 import json
 from pathlib import Path
 
-# import random
-# import enum
-
 from .std.buffer import Buffer
 from .common import rand31pm
 from .std.dataclass import CryptedRand31pm, ZL, Nested
 
 T = TypeVar('T')
 
-DAT_SIGN_AVAILABLE: bool
-try:
-    _dat_sign = __import__('rangers.dat_sign').dat_sign
-    get_sign = _dat_sign.get_sign
-    check_signed = _dat_sign.check_signed
-    # from .dat_sign import get_sign, check_signed
+SIGN_KEY_1 = 0xC83FCBF3
+SIGN_KEY_2 = 0x7DB6C99D
 
-except ImportError:
 
-    def get_sign(data: bytes, /) -> bytes:
-        return b''
+def get_sign(data: bytes, /) -> bytes:
+    d0_3 = len(data) ^ SIGN_KEY_1 ^ SIGN_KEY_2
+    d4_7 = zlib.crc32((zlib.crc32(data) ^ SIGN_KEY_2).to_bytes(4, 'little') + data) ^ SIGN_KEY_1
+    return d0_3.to_bytes(4, 'little') + d4_7.to_bytes(4, 'little')
 
-    def check_signed(data: bytes, /) -> bool:
-        return False
 
-    DAT_SIGN_AVAILABLE = False
+def check_signed(data: bytes, /) -> bool:
+    return data[:8] == get_sign(data[8:])
 
-else:
-    DAT_SIGN_AVAILABLE = True
+
 
 __all__ = [
     'DAT',
     'DATItem',
     'ENCRYPTION_KEYS',
     'FORMAT_DEFAULT_SEEDS',
-    'DAT_SIGN_AVAILABLE',
     # 'DatFormat',
     'get_sign',
     'check_signed',
@@ -154,9 +145,6 @@ def guess_format(
 
         if zlib.crc32(result) == content_hash:
             return keyname
-
-    if not DAT_SIGN_AVAILABLE and not _sign_removed:
-        return guess_format(data[8:], check_hash=check_hash, _sign_removed=True)
 
     return None
 

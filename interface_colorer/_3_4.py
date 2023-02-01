@@ -8,7 +8,7 @@ from pathlib import Path
 import textwrap
 
 from rangers.pkg import PKG
-from rangers.dat import DAT, DAT_SIGN_AVAILABLE
+from rangers.dat import DAT
 
 import config
 
@@ -80,14 +80,9 @@ additional_conflicts = [
     )
 ]
 
-if DAT_SIGN_AVAILABLE:
-    legal_rgb = '0,132,15'
-    legal_rus = 'легален'
-    legal_eng = 'legal'
-else:
-    legal_rgb = '255,0,0'
-    legal_rus = 'не легален'
-    legal_eng = 'non legal'
+legal_rgb = '0,132,15'
+legal_rus = 'легален'
+legal_eng = 'legal'
 
 legal_mod_rus = f'<color={legal_rgb}>({legal_rus})</color>'
 legal_mod_rus_short = legal_mod_rus

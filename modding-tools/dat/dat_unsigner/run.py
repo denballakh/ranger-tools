@@ -1,10 +1,6 @@
 from pathlib import Path
 
-from rangers.dat import DAT_SIGN_AVAILABLE, check_signed, unsign_data
-
-if not DAT_SIGN_AVAILABLE:
-    print('Warning! Cannot check dat sign')
-    print()
+from rangers.dat import check_signed, unsign_data
 
 _in = Path('_input/')
 _out = Path('_output/')
@@ -21,15 +17,11 @@ for filename in _in.rglob('*.dat'):
         with open(filename, 'rb') as file_in:
             data = file_in.read()
 
-        if DAT_SIGN_AVAILABLE:
-            if check_signed(data):
-                unsigned_data = unsign_data(data)
-            else:
-                print(f'Warning: file {filename!r} is already unsigned!')
-                unsigned_data = data
-
+        if check_signed(data):
+            unsigned_data = unsign_data(data)
         else:
-            unsigned_data = data[8:]
+            print(f'Warning: file {filename!r} is already unsigned!')
+            unsigned_data = data
 
         out_name.parent.mkdir(exist_ok=True, parents=True)
 

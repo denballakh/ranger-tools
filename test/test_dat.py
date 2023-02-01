@@ -41,8 +41,7 @@ class TestDat(unittest.TestCase):
 
 
 class TestSign(unittest.TestCase):
-    @unittest.skipUnless(rangers.dat.DAT_SIGN_AVAILABLE, 'dat sign not available')
-    def test_sign_available(self) -> None:
+    def test_sign(self) -> None:
         sign_data = rangers.dat.sign_data
         unsign_data = rangers.dat.unsign_data
         get_sign = rangers.dat.get_sign
@@ -66,17 +65,6 @@ class TestSign(unittest.TestCase):
         self.assertEqual(sign_data(data), sign_data(sign_data(data)))
         self.assertEqual(data, unsign_data(sign_data(data)))
         self.assertEqual(data, unsign_data(sign_data(sign_data(b'0123'))))
-
-    @unittest.skipIf(rangers.dat.DAT_SIGN_AVAILABLE, 'dat sign available')
-    def test_sign_not_available(self) -> None:
-        sign_data = rangers.dat.sign_data
-        unsign_data = rangers.dat.unsign_data
-        get_sign = rangers.dat.get_sign
-        check_signed = rangers.dat.check_signed
-
-        data = b'0123'
-        self.assertEqual(get_sign(data), b'')
-        self.assertEqual(check_signed(data), b'')
 
 
 if __name__ == '__main__':
