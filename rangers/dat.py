@@ -28,7 +28,6 @@ def check_signed(data: bytes, /) -> bool:
     return data[:8] == get_sign(data[8:])
 
 
-
 __all__ = [
     'DAT',
     'DATItem',

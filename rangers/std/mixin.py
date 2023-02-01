@@ -17,8 +17,10 @@ try:
     from mypy_extensions import trait
 except ImportError:
     _T = TypeVar('_T')
+
     def trait(cls: _T) -> _T:
         return cls
+
 
 from ..common import get_attributes
 from .buffer import IBuffer, OBuffer
@@ -51,15 +53,15 @@ class PrintFormat:
     pos_only_attrs: tuple[str, ...]
 
     def __init__(
-            self,
-            *,
-            fmt: str = '<{class_name}: {attrs}>',
-            fmt_empty: str | None = None,
-            attr_sep: str = ' ',
-            value_sep: str = '=',
-            use_private_attrs: bool = False,
-            attrs: Sequence[str] = (),
-            pos_only_attrs: Sequence[str] = (),
+        self,
+        *,
+        fmt: str = '<{class_name}: {attrs}>',
+        fmt_empty: str | None = None,
+        attr_sep: str = ' ',
+        value_sep: str = '=',
+        use_private_attrs: bool = False,
+        attrs: Sequence[str] = (),
+        pos_only_attrs: Sequence[str] = (),
     ) -> None:
         assert frozenset(pos_only_attrs) <= frozenset(attrs), (attrs, pos_only_attrs)
         self.fmt = fmt
@@ -84,8 +86,8 @@ class PrintFormat:
         if not self.use_private_attrs:
             attrs = filter(
                 lambda pair: not pair[0].startswith('_')
-                             or pair[0] in self.pos_only_attrs
-                             or pair[0] in self.attrs,
+                or pair[0] in self.pos_only_attrs
+                or pair[0] in self.attrs,
                 attrs,
             )
 

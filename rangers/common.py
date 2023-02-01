@@ -369,7 +369,6 @@ def coerce_parent(cls1: type[_T], cls2: type[_G], /) -> type[_T] | type[_G] | No
     return None
 
 
-
 def get_attributes(obj: object, /) -> list[tuple[str, object]]:
     cls = type(obj)
     kwarg_pairs: list[tuple[str, Any]] = []
@@ -391,7 +390,6 @@ def get_attributes(obj: object, /) -> list[tuple[str, object]]:
     return kwarg_pairs
 
 
-
 def convert_ini_to_dict(content: str) -> dict[str, str]:
     result = dict[str, str]()
     for s in content.split('\n'):
@@ -408,6 +406,7 @@ def convert_ini_to_dict(content: str) -> dict[str, str]:
         else:
             result[key] = val
     return result
+
 
 # TODO: move it to gi
 def rgb565le_to_rgb888(rgb16: bytes) -> tuple[int, int, int]:

@@ -41,9 +41,9 @@ jobs:
 
     - name: Lint syntax with black
       run: |
-        black --skip-string-normalization --line-length 100 rangers/
-        black --skip-string-normalization --line-length 100 modding-tools/
-        black --skip-string-normalization --line-length 100 test/
+        black --check --skip-string-normalization --line-length 100 rangers/
+        black --check --skip-string-normalization --line-length 100 modding-tools/
+        black --check --skip-string-normalization --line-length 100 test/
 
     - name: Typecheck with mypy
       run: |

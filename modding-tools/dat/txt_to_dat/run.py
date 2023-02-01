@@ -2,7 +2,7 @@ from pathlib import Path
 
 from rangers.dat import DAT
 
-FMT = 'HDMain' # HDMain HDCache
+FMT = 'HDMain'  # HDMain HDCache
 SIGN = False
 
 _in = Path('_input/')

@@ -12,7 +12,6 @@ import struct
 from struct import Struct
 
 
-
 __all__ = (
     'BaseBuffer',
     'IBuffer',
@@ -42,7 +41,9 @@ _hex_char_conv: dict[str, str] = {
     '\xFF': '##',
 }
 
-_str_rus_chars: set[str] = set('абвгдеёжзийклмонпрстуфхцчшщъыьэюя' + 'АБВГДЕЁЖЗИЙКЛМОНПРСТУФХЦЧШЩЪЫЬЭЮЯ')
+_str_rus_chars: set[str] = set(
+    'абвгдеёжзийклмонпрстуфхцчшщъыьэюя' + 'АБВГДЕЁЖЗИЙКЛМОНПРСТУФХЦЧШЩЪЫЬЭЮЯ'
+)
 
 _str_readable_chars: set[str] = set(
     '!"#$%&\'()*+,-./0123456789:;<=>?@[\\]^_`{|}~'
@@ -371,6 +372,7 @@ class IBuffer(BaseBuffer):
         self.pos += 2
         return res
 
+
 class OBuffer(BaseBuffer):
     __slots__ = ()
     data: bytearray
@@ -471,4 +473,3 @@ class OBuffer(BaseBuffer):
 class Buffer(OBuffer, IBuffer):
     __slots__ = ()
     data: bytearray
-

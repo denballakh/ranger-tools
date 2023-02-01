@@ -1,4 +1,5 @@
 import sys
+
 sys.ps1 = ''
 sys.ps2 = ''
 
@@ -12,7 +13,7 @@ DWORD = 'dword', 4
 field_type = GAP_32
 
 
-init_offset = 0x2e0
+init_offset = 0x2E0
 size_in_bytes = 0x388
 
 

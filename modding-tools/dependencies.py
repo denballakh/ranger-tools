@@ -25,8 +25,10 @@ Dependencies = set[tuple[str, str]]
 Mods = set[str]
 Sections = dict[str, str]
 
+
 def col2dot(col: str) -> str:
     return '#' + ''.join(f'{int(float(x) * 255):02X}' for x in col.split(','))
+
 
 def mod2col(mod: str, sections: Sections) -> str:
     if mod in sections:
@@ -34,6 +36,7 @@ def mod2col(mod: str, sections: Sections) -> str:
     else:
         section = 'default'
     return section_colors[section]
+
 
 def convert_ini_to_dict(content: str) -> dict[str, str]:
     result: dict[str, str] = {}
@@ -156,7 +159,7 @@ def get_dot_code(
     sections: Sections,
     mods: Mods,
 ) -> str:
-    sep =  ';\n'
+    sep = ';\n'
 
     used_mods: set[str] = set()
     for conflict in conflicts:
@@ -164,9 +167,20 @@ def get_dot_code(
     for dep in dependencies:
         used_mods |= set(dep)
 
-    conflicts_s = sep.join(' -> '.join(y.replace('&', '') for y in x) + '[arrowhead=none, color=red, constraint=false, len=2.0]' for x in conflicts)
-    dependencies_s = sep.join(' -> '.join(y.replace('&', '') for y in x) + '[color=blue, constraint=false, len=2.0]' for x in dependencies)
-    nodes = sep.join(node.replace('&', '') + f' [label="", xlabel={node} shape=circle, fixedsize=true, fontname="Consolas Bold", style=filled, fillcolor="{col2dot(mod2col(node, sections))}"]' for node in used_mods)
+    conflicts_s = sep.join(
+        ' -> '.join(y.replace('&', '') for y in x)
+        + '[arrowhead=none, color=red, constraint=false, len=2.0]'
+        for x in conflicts
+    )
+    dependencies_s = sep.join(
+        ' -> '.join(y.replace('&', '') for y in x) + '[color=blue, constraint=false, len=2.0]'
+        for x in dependencies
+    )
+    nodes = sep.join(
+        node.replace('&', '')
+        + f' [label="", xlabel={node} shape=circle, fixedsize=true, fontname="Consolas Bold", style=filled, fillcolor="{col2dot(mod2col(node, sections))}"]'
+        for node in used_mods
+    )
 
     return f'digraph G {{ mode="sgd"; \n{nodes + sep + conflicts_s + sep + dependencies_s}\n}}'
 
@@ -176,6 +190,7 @@ def generate_wolfram_script() -> None:
     with open('_dependencies.wl', 'wt', encoding='utf-8') as file:
         file.write(code)
 
+
 def generate_dot_image() -> None:
     code = get_dot_code(*get_mod_infos(GAME_ROOT))
     filename = '_dependencies.dot'
@@ -184,6 +199,7 @@ def generate_dot_image() -> None:
         file.write(code)
     os.system(f'neato -Tpng -o {output} {filename}')
     os.system(f'{output}')
+
 
 if __name__ == '__main__':
     generate_wolfram_script()

@@ -59,7 +59,9 @@ def format_result(key: str, avg: float, dev: float, rt: float, cnt: int) -> str:
 
 def print_stats(file: Path | str) -> None:
     try:
-        his: dict[str, tuple[int, float, list[float]]] = json.load(Path(file).open('rt', encoding='utf-8'))
+        his: dict[str, tuple[int, float, list[float]]] = json.load(
+            Path(file).open('rt', encoding='utf-8')
+        )
     except OSError:
         return
 
@@ -68,7 +70,6 @@ def print_stats(file: Path | str) -> None:
             t = float('nan')
         else:
             t = history[-1]
-
 
         stdev = statistics.stdev(history[1:]) if len(history) >= 3 else float('nan')
 
@@ -173,7 +174,7 @@ class AdaptiveTimeMeasurer:
             config = json.load(self.config_file.open('rt', encoding='utf-8'))
             self.config = {}
             for key, (cnt, k, history) in config.items():
-                self.config[key] = cnt, k, history # ?
+                self.config[key] = cnt, k, history  # ?
 
         except (json.decoder.JSONDecodeError, FileNotFoundError):
             self.config = {}

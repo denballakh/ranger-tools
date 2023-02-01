@@ -74,7 +74,7 @@ def test_speed() -> None:
             d = dict[int, int]()
             bd = bidict[int, int]()
             randint = random.randint
-            rnd = rand31pm(randint(0, 2 ** 31))
+            rnd = rand31pm(randint(0, 2**31))
 
             b1 = bidict[int, int]()
             for _ in range(1_000):

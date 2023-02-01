@@ -17,6 +17,7 @@ class pointer:
     """
     immutable
     """
+
     __slots__ = ('addr',)
     __match_args__ = ('addr',)
 

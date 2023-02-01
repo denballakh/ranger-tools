@@ -10,9 +10,9 @@ from rangers._drafts.t import AdaptiveTimeMeasurer, print_stats
 import rangers
 
 from rangers.std.buffer import Buffer
+
 # from rangers.std.buffer_old import Buffer
 # from rangers.std._buffer import Buffer
-
 
 
 def test_speed() -> None:
@@ -64,20 +64,19 @@ def test_speed() -> None:
                 for _ in repeat(None, n3):
                     b.read_bool()
 
-        with atm('read_char', k=n3) as _:
+        with atm('read_i8', k=n3) as _:
             for _ in _:
                 b.pos = 0
                 for _ in repeat(None, n3):
-                    b.read_char()
+                    b.read_i8()
 
-        with atm('read_int', k=n3) as _:
+        with atm('read_i32', k=n3) as _:
             for _ in _:
                 b.pos = 0
                 for _ in repeat(None, n3):
-                    b.read_int()
+                    b.read_i32()
 
         print()
-
 
         b = Buffer()
         with atm('write(b" ")', k=n3) as _:
@@ -94,23 +93,21 @@ def test_speed() -> None:
                     b.write_byte(1)
 
         b = Buffer()
-        with atm('write_char', k=n3) as _:
+        with atm('write_i8', k=n3) as _:
             for _ in _:
                 b.pos = 0
                 for _ in repeat(None, n3):
-                    b.write_char(1)
+                    b.write_i8(1)
 
         b = Buffer()
-        with atm('write_int', k=n3) as _:
+        with atm('write_i32', k=n3) as _:
             for _ in _:
                 b.pos = 0
                 for _ in repeat(None, n3):
-                    b.write_int(1)
-
+                    b.write_i32(1)
 
         print()
         print()
-
 
 
 def main() -> None:

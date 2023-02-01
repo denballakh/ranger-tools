@@ -449,11 +449,11 @@ def test_speed() -> None:
 
             with atm('a ** b') as cnt:
                 for _ in repeat(None, cnt):
-                    a ** b
+                    a**b
 
             with atm('a ** 2') as cnt:
                 for _ in repeat(None, cnt):
-                    a ** 2
+                    a**2
 
             with atm('a * a') as cnt:
                 for _ in repeat(None, cnt):
@@ -530,7 +530,6 @@ def test_speed() -> None:
                     noop()
 
             print()
-
 
             # with atm('int()') as cnt:
             #     for _ in repeat(None, cnt):
@@ -610,7 +609,6 @@ def test_speed() -> None:
             #         0 in {0}
 
             # print()
-
 
             # with atm('by + b"0"') as cnt:
             #     for _ in repeat(None, cnt):

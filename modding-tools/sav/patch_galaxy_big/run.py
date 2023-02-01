@@ -18,6 +18,7 @@ _out = Path('_output/')
 _in.mkdir(exist_ok=True, parents=True)
 _out.mkdir(exist_ok=True, parents=True)
 
+
 def new_cons(id: int) -> dict[str, Any]:
     return dict(
         id=id,
@@ -176,6 +177,7 @@ def modify_sav(sav: SAV) -> None:
 
                 star['planets'].append(planet)
 
+
 # from rangers._drafts.decorator import profile
 
 # @profile(filename='_prof.log', sortby='calls')
@@ -195,6 +197,7 @@ def main() -> None:
             import traceback
 
             traceback.print_exc()
+
 
 if __name__ == '__main__':
     main()
