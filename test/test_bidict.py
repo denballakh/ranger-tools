@@ -183,12 +183,5 @@ def test_speed() -> None:
 
 if __name__ == '__main__':
     import doctest
-    import os
 
     res = doctest.testmod(optionflags=doctest.ELLIPSIS)
-
-    if res.failed == 0:
-        test_speed()
-
-    input('Press enter to exit...')
-    os._exit(res.failed)

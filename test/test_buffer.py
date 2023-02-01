@@ -46,21 +46,21 @@ READ_WRITE_TEST_DATA: list[tuple[str, Any, bytes]] = [
     ('u64', 1, b'\1\0\0\0\0\0\0\0'),
     ('u64', 2**64 - 1, b'\xff\xff\xff\xff\xff\xff\xff\xff'),
     #
-    ('float', 0.0, b'\0\0\0\0'),
-    ('float', 1.0, b'\0\0\x80?'),
-    ('float', -1.0, b'\0\0\x80\xbf'),
-    ('float', math.pi, b'\xdb\x0fI@'),
-    ('float', float('inf'), b'\0\0\x80\x7f'),
-    ('float', float('-inf'), b'\0\0\x80\xff'),
-    ('float', float('nan'), b'\0\0\xc0\x7f'),
+    ('f32', 0.0, b'\0\0\0\0'),
+    ('f32', 1.0, b'\0\0\x80?'),
+    ('f32', -1.0, b'\0\0\x80\xbf'),
+    ('f32', math.pi, b'\xdb\x0fI@'),
+    ('f32', float('inf'), b'\0\0\x80\x7f'),
+    ('f32', float('-inf'), b'\0\0\x80\xff'),
+    ('f32', float('nan'), b'\0\0\xc0\x7f'),
     #
-    ('double', 0.0, b'\0\0\0\0\0\0\0\0'),
-    ('double', 1.0, b'\0\0\0\0\0\0\xf0?'),
-    ('double', -1.0, b'\0\0\0\0\0\0\xf0\xbf'),
-    ('double', math.pi, b'\x18-DT\xfb!\t@'),
-    ('double', float('inf'), b'\0\0\0\0\0\0\xf0\x7f'),
-    ('double', float('-inf'), b'\0\0\0\0\0\0\xf0\xff'),
-    ('double', float('nan'), b'\0\0\0\0\0\0\xf8\x7f'),
+    ('f64', 0.0, b'\0\0\0\0\0\0\0\0'),
+    ('f64', 1.0, b'\0\0\0\0\0\0\xf0?'),
+    ('f64', -1.0, b'\0\0\0\0\0\0\xf0\xbf'),
+    ('f64', math.pi, b'\x18-DT\xfb!\t@'),
+    ('f64', float('inf'), b'\0\0\0\0\0\0\xf0\x7f'),
+    ('f64', float('-inf'), b'\0\0\0\0\0\0\xf0\xff'),
+    ('f64', float('nan'), b'\0\0\0\0\0\0\xf8\x7f'),
     #
     ('str', '', b'\0'),
     ('str', 'hello world', b'hello world\0'),
@@ -463,11 +463,4 @@ def test_speed() -> None:
 
 
 if __name__ == '__main__':
-    try:
-        unittest.main()
-    except SystemExit as exc:
-        if exc.code == 0:
-            import os
-
-            # input()
-            os._exit(0)
+    unittest.main()
