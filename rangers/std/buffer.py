@@ -283,7 +283,6 @@ class IBuffer(BaseBuffer):
     #         BaseBuffer.__init__(self, obj)
 
     def read(self, n: int | None = None, /) -> bytearray | bytes:
-
         data = self.data
         first = self._pos
 

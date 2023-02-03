@@ -109,6 +109,7 @@ PAR_CNT: Final[DataClass[int]] = MemoSelectedDataClass(
     )[memo[TAG_VERSION]],
 )
 
+
 # depending on the version will choose the option for QM or QMM
 # if version >= minversion, then return the second parameter, otherwise - the first
 def VER_SEL(qm: DataClass[T], qmm: DataClass[T], minversion: int = VER_QMM_6) -> DataClass[T]:

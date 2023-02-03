@@ -154,7 +154,6 @@ class TestBuffer(unittest.TestCase):
         ]
         for cls in clss:
             for method_name, value, data in READ_WRITE_TEST_DATA:
-                print(cls, method_name)
                 with self.subTest(
                     msg='test_1',
                     cls=cls,
@@ -234,7 +233,6 @@ class TestBuffer(unittest.TestCase):
                 #         actual_value = meth(value)
                 #         self.assertEqual(buf.pos, n // 2)
                 #         self.assertEqual(bytes(buf), n*b'\0' + data)
-                #         # print(type(buf))
 
 
 def test_speed() -> None:

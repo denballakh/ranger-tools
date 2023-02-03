@@ -163,7 +163,6 @@ class HAI(DataMixin):
         return cls.from_images(images)
 
     def to_image_folder(self, path: Path) -> None:
-
         images = self.to_images()
         for i, img in enumerate(images):
             filename = path / f'{i:03}.png'

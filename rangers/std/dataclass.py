@@ -233,7 +233,6 @@ class DataClassCompiler:
         return name
 
     def compile(self, d: DataClass[T]) -> CompiledDataClass[T]:
-
         if isinstance(d, CompiledDataClass):
             return d
         if id(d) in self.memo:
@@ -333,6 +332,37 @@ class DataClass(Generic[T]):
 
     # def compile_traverse(self, c: DataClassCompiler) -> None:
     #     c.traverse(self)
+
+
+# class Object(DataClass[T]):
+#     __slots__ = ('dcls', 'objtype')
+
+#     def __init__(
+#         self,
+#         objtype: type[T],
+#         dcls: NamedSequence,
+#         /,
+#     ) -> None:
+#         self.dcls = dcls
+#         self.objtype = objtype
+
+#     def read(self, buf: IBuffer, /) -> T:
+#         mapping = self.dcls.read(buf)
+#         obj = self.objtype()
+#         for attr, value in mapping.items():
+#             setattr(obj, attr, value)
+
+#         if hasattr(obj, '__dcls_on_load__'):
+#             obj.__dcls_on_load__()
+#         return obj
+
+#     def write(self, buf: OBuffer, obj: T, /) -> None:
+#         res: dict[str, Any] = {}
+#         if hasattr(obj, '__dcls_on_save__'):
+#             obj.__dcls_on_save__()
+#         for attr in self.dcls.kwargs.keys():
+#             res[attr] = getattr(obj, attr)
+#         self.dcls.write(buf, res)
 
 
 class CompiledDataClass(DataClass[T]):

@@ -127,7 +127,6 @@ class AdaptiveTimer:
         if exc_type is None:
             self.end_time = time.perf_counter()
         else:
-
             self.end_time = float('inf')
 
         assert self.start_time is not None

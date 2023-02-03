@@ -87,6 +87,7 @@ FORMAT_DEFAULT_SEEDS: Final = {
     'HDCache': -319409088,
 }
 
+
 # приписывает к данным подпись, если данные не подписаны, иначе возвращает исходные данные
 def sign_data(data: bytes) -> bytes:
     if not check_signed(data):
