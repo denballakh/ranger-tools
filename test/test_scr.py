@@ -7,6 +7,7 @@ import rangers.scr
 
 test_data = Path() / 'test_data' / 'scr'
 
+
 def generate_test_data(game_path: Path) -> None:
     versions = collections.defaultdict[int, list[Path]](list)
 
@@ -29,9 +30,6 @@ class TestScr(unittest.TestCase):
                     self.assertEqual(data[0], version, msg='wrong version')
                     data_2 = obj.write_bytes(obj.read_bytes(data))
                     self.assertEqual(data, data_2)
-
-                    input()
-                    pprint(obj.read_bytes(data),sort_dicts=False)
 
 
 if __name__ == '__main__':
